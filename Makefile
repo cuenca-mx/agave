@@ -1,7 +1,7 @@
 SHELL := bash
 PATH := ./venv/bin:${PATH}
 PYTHON = python3.8
-PROJECT = chalicelib
+PROJECT = mezcal
 isort = isort $(PROJECT) tests app.py
 black = black -S -l 79 --target-version py38 $(PROJECT) $(PROJECT)/lib/* tests app.py
 
@@ -45,15 +45,10 @@ clean:
 	rm -f .coverage.*
 	rm -rf build
 	rm -rf dist
-	rm -rf .chalice/{deployments}
 
-deploy-sandbox:
-	chalice deploy --stage sandbox
-	chalice deploy --stage sandbox-omni
-
-deploy-stage:
-	chalice deploy --stage stage
-	chalice deploy --stage stage-omni
+release: test clean
+	python setup.py sdist bdist_wheel
+	twine upload dist/*
 
 
-.PHONY: all install-test test format lint clean deploy-sandbox deploy-stage
+.PHONY: all install-test test format lint clean release
