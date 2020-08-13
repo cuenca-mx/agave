@@ -1,6 +1,6 @@
 from typing import Dict
 
-from ..blueprints import AuthedRestApiBlueprint
+from mezcal.blueprints import AuthedRestApiBlueprint
 
 app = AuthedRestApiBlueprint(__name__)
 
