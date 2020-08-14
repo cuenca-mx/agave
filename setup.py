@@ -2,9 +2,7 @@ from importlib.machinery import SourceFileLoader
 
 from setuptools import find_packages, setup
 
-version = SourceFileLoader(
-    'version', 'mezcal/version.py'
-).load_module()
+version = SourceFileLoader('version', 'mezcal/version.py').load_module()
 
 
 with open('README.md', 'r') as f:
@@ -32,8 +30,7 @@ setup(
         'boto3>=1.14.42,<1.15.0',
         'mongoengine>=0.20.0,<0.21.0',
         'dnspython>=2.0.0,<2.1.0',
-        'sentry-chalice>=0.2.0,<0.3.0'
-        'dataclasses>=0.6;python_version<"3.7"',
+        'sentry-chalice>=0.2.0,<0.3.0' 'dataclasses>=0.6;python_version<"3.7"',
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

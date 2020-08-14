@@ -2,8 +2,8 @@ SHELL := bash
 PATH := ./venv/bin:${PATH}
 PYTHON = python3.8
 PROJECT = mezcal
-isort = isort $(PROJECT) tests app.py
-black = black -S -l 79 --target-version py38 $(PROJECT) $(PROJECT)/lib/* tests app.py
+isort = isort $(PROJECT) tests setup.py
+black = black -S -l 79 --target-version py38 $(PROJECT) $(PROJECT) tests setup.py
 
 
 all: test
@@ -26,10 +26,10 @@ format:
 	$(black)
 
 lint:
-	flake8 $(PROJECT) tests app.py
+	flake8 $(PROJECT) tests setup.py
 	$(isort) --check-only
 	$(black) --check
-	mypy $(PROJECT) tests app.py
+	mypy $(PROJECT) tests
 
 clean:
 	rm -rf `find . -name __pycache__`
