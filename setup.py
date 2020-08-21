@@ -10,11 +10,11 @@ with open('README.md', 'r') as f:
 
 
 setup(
-    name='mexcalli',
+    name='agave',
     version=version.__version__,
     author='Cuenca',
     author_email='dev@cuenca.com',
-    description='test-mexcalli',
+    description='test-dev',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/cuenca-mx/smezcal',
