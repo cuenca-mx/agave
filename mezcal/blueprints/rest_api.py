@@ -202,7 +202,7 @@ class RestApiBlueprint(Blueprint):
                     url: Optional[str] = f'{path}?{urlencode(params)}'
                 else:
                     url = None
-                return dict(items=items, next_page_url=url)
+                return dict(items=items, next_page_uri=url)
 
             return cls
 
