@@ -2,7 +2,7 @@ import datetime as dt
 
 from cuenca_validations.types import QueryParams, TransactionQuery
 
-from mezcal.resource.helpers import generic_query, transaction_query
+from agave.resource.helpers import generic_query, transaction_query
 
 
 def test_transaction_query():

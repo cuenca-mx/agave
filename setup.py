@@ -2,7 +2,7 @@ from importlib.machinery import SourceFileLoader
 
 from setuptools import find_packages, setup
 
-version = SourceFileLoader('version', 'mezcal/version.py').load_module()
+version = SourceFileLoader('version', 'agave/version.py').load_module()
 
 
 with open('README.md', 'r') as f:
@@ -17,7 +17,7 @@ setup(
     description='test-dev',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/cuenca-mx/smezcal',
+    url='https://github.com/cuenca-mx/agave',
     packages=find_packages(),
     include_package_data=True,
     package_data=dict(cuenca_validations=['py.typed']),
