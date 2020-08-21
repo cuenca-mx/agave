@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
+from cuenca_validations.types.queries import MAX_PAGE_LIMIT
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
@@ -188,7 +189,7 @@ class RestApiBlueprint(Blueprint):
                 items = (
                     cls.model.objects.order_by("-created_at")
                     .filter(filters)
-                    .limit(query.limit)
+                    .limit(query.limit or MAX_PAGE_LIMIT)
                 )
                 items = [i.to_dict() for i in items]
 

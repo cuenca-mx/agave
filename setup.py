@@ -10,14 +10,14 @@ with open('README.md', 'r') as f:
 
 
 setup(
-    name='mezcal',
+    name='mexcalli',
     version=version.__version__,
     author='Cuenca',
     author_email='dev@cuenca.com',
-    description='exceptions on chalice',
+    description='test-mexcalli',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/cuenca-mx/sentry-chalice',
+    url='https://github.com/cuenca-mx/smezcal',
     packages=find_packages(),
     include_package_data=True,
     package_data=dict(cuenca_validations=['py.typed']),
