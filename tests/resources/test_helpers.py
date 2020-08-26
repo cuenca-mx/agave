@@ -17,3 +17,9 @@ def test_generic_query():
     query = generic_query(params)
     assert "created_at__lt" in repr(query)
     assert "user" not in repr(query)
+
+    params = QueryParams(created_after=dt.datetime.utcnow().isoformat())
+    query = generic_query(params)
+
+    assert "created_at__gt" in repr(query)
+    assert "user" not in repr(query)
