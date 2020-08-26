@@ -67,4 +67,4 @@ def test_rest_api_validations(app):
 
     with Client(app) as client:
         response = client.http.post('/proof')
-        assert response.status_code == 200
+        assert response.status_code == 403
