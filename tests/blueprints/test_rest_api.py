@@ -1,39 +1,20 @@
-import pytest
-from chalice import Chalice, Response
+from typing import Dict
+from urllib.parse import urlencode
+
 from chalice.test import Client
-from cuenca_validations.types import TransactionQuery
-
-from agave.resource.helpers import transaction_query
-from tests.conftest import app as app_demo
 
 
-@pytest.fixture
-def app():
-    app = Chalice('myapp')
-    app.register_blueprint(app_demo)
-    return app
-
-
-@app_demo.resource('/mytest')
-class DummyRestApi:
-    @staticmethod
-    def create() -> Response:
-        user_id = 'USH827492'
-        return Response(user_id, status_code=200)
-
-    @staticmethod
-    def delete(id: str) -> Response:
-        id_dummy = id
-        return Response(id_dummy, status_code=200)
-
-    @staticmethod
-    def get_query_filter():
-        params = TransactionQuery(user_id='user', status='pending')
-        query = transaction_query(params)
-        return query
-
-
-def test_create_dummy(app) -> None:
+def test_rst_api_dummy(app, user_creds: Dict) -> None:
     with Client(app) as client:
-        response = client.http.post('/mytest')
+        id = 'Usyw23'
+        status = True
+        response = client.http.post('/mytest', headers=user_creds)
+        responses = client.http.delete(f'/mytest/{id}')
+        params = dict(active=status, count=1)
+        responseses = client.http.get(
+            f'/mytest?{urlencode(params)}', headers=user_creds
+        )
+
+        print(responseses)
         assert response.status_code == 200
+        assert responses.status_code == 200
