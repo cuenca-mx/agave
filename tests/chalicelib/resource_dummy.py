@@ -17,5 +17,6 @@ class DummyRest:
     def create(request: StrictTransferRequest) -> Response:
         transfer = DummyModel()
         transfer.create(request)
+        transfer.save()
         status_code = 200
         return Response(transfer.to_dict(), status_code=status_code)

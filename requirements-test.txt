@@ -5,3 +5,4 @@ isort==5.3.*
 flake8==3.8.*
 mypy==0.782
 pytest-chalice==0.0.*
+mongomock==3.20.*
