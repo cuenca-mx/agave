@@ -11,8 +11,7 @@ class DummyRest(Document):
     recipient_name = StringField(required=True)
     amount = IntField(required=True)
     descriptor = StringField()
-    idempotency_key = StringField(required=True, unique_with='user_id')
-    user_id = StringField(required=True)
+    idempotency_key = StringField(required=True)
 
     def create(self, transfer_request: StrictTransferRequest) -> None:
         self.account_number = transfer_request.account_number
@@ -30,7 +29,6 @@ class DummyRest(Document):
              `None` values are allowed
         """
         return dict(
-            user_id=self.user_id,
             account_number=self.account_number,
             amount=self.amount,
             descriptor=self.descriptor,

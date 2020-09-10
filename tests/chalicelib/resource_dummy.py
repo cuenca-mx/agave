@@ -15,12 +15,7 @@ class DummyRest:
     @staticmethod
     @app.validate(StrictTransferRequest)
     def create(request: StrictTransferRequest) -> Response:
-        # import pdb
-        #
-        # pdb.set_trace()
         transfer = DummyModel()
         transfer.create(request)
-        transfer.user_id = app.current_user_id
-        transfer.save()
         status_code = 200
         return Response(transfer.to_dict(), status_code=status_code)
