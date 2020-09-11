@@ -7,7 +7,7 @@ from mongoengine import DateTimeField, Document, IntField, StringField
 from agave.models.helpers import uuid_field
 
 
-class DummyRest(Document):
+class Transfer(Document):
     id = StringField(primary_key=True, default=uuid_field('TR'))
     created_at = DateTimeField(default=dt.datetime.utcnow)
     account_number = StringField(required=True)

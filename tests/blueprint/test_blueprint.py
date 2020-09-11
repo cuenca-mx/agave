@@ -46,3 +46,14 @@ def test_retrieve_transfer_not_found(app, user_creds: Dict) -> None:
             f'/mytest/{transfer_id}', headers=user_creds['auth']
         )
         assert response.status_code == 404
+
+
+def test_deactivate_api_key(app, user_creds: Dict) -> None:
+    with Client(app) as client:
+        id = 'jejdiw'
+        response = client.http.delete(
+            f'/mytest/{id}',
+            headers=user_creds['auth'],
+            body=json.dumps(dict(minutes=0)),
+        )
+        assert response.status_code == 200

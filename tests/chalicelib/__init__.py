@@ -1,4 +1,4 @@
-__all__ = ['app', 'DummyRest']
+__all__ = ['app', 'Transfer']
 
 from .base import app
-from .resource_dummy import DummyRest
+from .resource_transfer import Transfer
