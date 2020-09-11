@@ -1,4 +1,3 @@
-import base64
 import os
 from typing import Dict, Generator
 
@@ -7,6 +6,8 @@ from chalice import Chalice
 
 from agave.models.helpers import uuid_field
 from tests.app import app as demoapp
+
+from .helpers import auth_header
 
 
 @pytest.fixture()
@@ -32,16 +33,6 @@ def aws_credentials() -> None:
     os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
     os.environ['AWS_SECURITY_TOKEN'] = 'testing'
     os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
-
-
-def auth_header(username: str, password: str) -> Dict:
-    creds = base64.b64encode(f'{username}:{password}'.encode('ascii')).decode(
-        'utf-8'
-    )
-    return {
-        'Authorization': f'Basic {creds}',
-        'Content-Type': 'application/json',
-    }
 
 
 @pytest.fixture

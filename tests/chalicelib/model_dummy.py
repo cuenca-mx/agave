@@ -4,8 +4,11 @@ from typing import Dict
 from cuenca_validations.types import StrictTransferRequest
 from mongoengine import DateTimeField, Document, IntField, StringField
 
+from agave.models.helpers import uuid_field
+
 
 class DummyRest(Document):
+    id = StringField(primary_key=True, default=uuid_field('TR'))
     created_at = DateTimeField(default=dt.datetime.utcnow)
     account_number = StringField(required=True)
     recipient_name = StringField(required=True)
@@ -29,6 +32,7 @@ class DummyRest(Document):
              `None` values are allowed
         """
         return dict(
+            id=self.id,
             account_number=self.account_number,
             amount=self.amount,
             descriptor=self.descriptor,
