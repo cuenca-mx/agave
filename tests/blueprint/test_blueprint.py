@@ -59,10 +59,10 @@ def test_delete_id(app, user_creds: Dict) -> None:
         assert response.status_code == 200
 
 
-def test_update_num_account(app, transfer_dict: Dict) -> None:
+def test_update_card_bad_request(app, transfer_dict: Dict) -> None:
     with Client(app) as client:
         id = 'jjjww'
         response = client.http.patch(
             f'/mytest/{id}', body=json.dumps(transfer_dict),
         )
-        assert response.status_code == 200
+        assert response.status_code == 400
