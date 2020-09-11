@@ -11,6 +11,7 @@ class Transfer:
     model = TransferModel
     query_validator = TransferQuery
     get_query_filter = generic_query
+    update_validator = StrictTransferRequest
 
     @staticmethod
     @app.validate(StrictTransferRequest)
@@ -20,6 +21,12 @@ class Transfer:
         transfer.save()
         status_code = 200
         return Response(transfer.to_dict(), status_code=status_code)
+
+    @staticmethod
+    def update(transfer: TransferModel, request: StrictTransferRequest):
+        transfer.account_number = request
+        transfer.save()
+        return Response(transfer.to_dict(), status_code=200)
 
     @staticmethod
     def delete(id: str) -> Response:
