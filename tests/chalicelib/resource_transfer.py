@@ -2,8 +2,9 @@ from chalice import Response
 from cuenca_validations.types import StrictTransferRequest, TransferQuery
 
 from agave.resource.helpers import generic_query
-from tests.chalicelib.base import app
 from tests.chalicelib.model_transfer import Transfer as TransferModel
+
+from .base import app
 
 
 @app.resource('/mytest')
@@ -21,12 +22,6 @@ class Transfer:
         transfer.save()
         status_code = 200
         return Response(transfer.to_dict(), status_code=status_code)
-
-    @staticmethod
-    def update(transfer: TransferModel, request: StrictTransferRequest):
-        transfer.account_number = request
-        transfer.save()
-        return Response(transfer.to_dict(), status_code=200)
 
     @staticmethod
     def delete(id: str) -> Response:

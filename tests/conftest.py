@@ -1,18 +1,32 @@
 import os
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 
 import pytest
 from chalice import Chalice
+from chalice.test import Client
+from cuenca_validations.types import CardStatus
 
 from agave.models.helpers import uuid_field
 from tests.app import app as demoapp
+from tests.chalicelib.model_card import Card
 
-from .helpers import auth_header
+from .helpers import accept_json, auth_header, collection_fixture
 
 
 @pytest.fixture()
 def app() -> Chalice:
     return demoapp
+
+
+@pytest.fixture()
+def client(app) -> Generator[Client, None, None]:
+
+    with Client(app) as client:
+        client.http.patch = accept_json(  # type: ignore[assignment]
+            client.http.patch
+        )
+
+        yield client
 
 
 @pytest.fixture
@@ -43,3 +57,17 @@ def user_creds() -> Generator[Dict, None, None]:
     yield dict(
         user_id=user_id, auth=auth_header(id, sk),
     )
+
+
+@pytest.fixture
+@collection_fixture(Card)
+def virtual_cards() -> List[Card]:
+    return [
+        Card(status=CardStatus.created,),
+        Card(status=CardStatus.created,),
+    ]
+
+
+@pytest.fixture
+def virtual_card(virtual_cards: List[Card]) -> Card:
+    return virtual_cards[0]

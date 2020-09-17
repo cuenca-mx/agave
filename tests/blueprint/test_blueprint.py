@@ -3,7 +3,11 @@ from typing import Dict
 from urllib.parse import urlencode
 
 from chalice.test import Client
+from cuenca_validations.types import CardStatus
+from cuenca_validations.types.requests import CardUpdateRequest
 from mock import patch
+
+from tests.chalicelib.model_card import Card
 
 
 def test_create_transfer(app, user_creds: Dict, transfer_dict: Dict) -> None:
@@ -59,10 +63,21 @@ def test_delete_id(app, user_creds: Dict) -> None:
         assert response.status_code == 200
 
 
-def test_update_card_bad_request(app, transfer_dict: Dict) -> None:
-    with Client(app) as client:
-        id = 'jjjww'
-        response = client.http.patch(
-            f'/mytest/{id}', body=json.dumps(transfer_dict),
-        )
-        assert response.status_code == 400
+def test_update_card(client: Client, virtual_card: Card) -> None:
+    card_update_req = CardUpdateRequest(status=CardStatus.blocked)
+    resp = client.http.patch(
+        f'/cards/{virtual_card.id}', json=card_update_req.dict(),
+    )
+    virtual_card.reload()
+    assert resp.status_code == 200
+    assert virtual_card.status == CardStatus.blocked
+
+
+def test_update_card_bad_request(client: Client, virtual_card: Card) -> None:
+    card_update_dict = dict(status='NOT_EXISTS')
+    resp = client.http.patch(
+        f'/cards/{virtual_card.id}', json=card_update_dict
+    )
+    virtual_card.reload()
+    assert resp.status_code == 400
+    assert virtual_card.status == CardStatus.created
