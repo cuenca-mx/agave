@@ -4,10 +4,11 @@ from typing import Dict
 from cuenca_validations.types import StrictTransferRequest, TransactionStatus
 from mongoengine import DateTimeField, Document, IntField, StringField
 
+from agave.models.base import BaseModel
 from agave.models.helpers import EnumField, uuid_field
 
 
-class Transfer(Document):
+class Transfer(Document, BaseModel):
     id = StringField(primary_key=True, default=uuid_field('TR'))
     created_at = DateTimeField(default=dt.datetime.utcnow)
     account_number = StringField(required=True)
@@ -26,7 +27,7 @@ class Transfer(Document):
         self.descriptor = transfer_request.descriptor
         self.idempotency_key = transfer_request.idempotency_key
 
-    def to_dict(self) -> Dict:
+    def to_test_dict(self) -> Dict:
         """Returns a dictionary with data that represents a transfer request
         for Cuenca core
 

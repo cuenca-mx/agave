@@ -27,7 +27,8 @@ class Transfer:
             transfer.save()
         except NotUniqueError:
             previous = TransferModel.objects.get(
-                user_id='lemon', idempotency_key=transfer.idempotency_key
+                recipient_name='Doroteo Arango',
+                idempotency_key=transfer.idempotency_key,
             )
             if transfer == previous:
                 transfer = previous
