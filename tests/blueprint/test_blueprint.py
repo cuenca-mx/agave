@@ -3,11 +3,7 @@ from typing import Dict
 from urllib.parse import urlencode
 
 from chalice.test import Client
-from cuenca_validations.types import CardStatus
-from cuenca_validations.types.requests import CardUpdateRequest
 from mock import patch
-
-from tests.chalicelib.model_card import Card
 
 
 def test_create_transfer(app, user_creds: Dict, transfer_dict: Dict) -> None:
@@ -17,7 +13,7 @@ def test_create_transfer(app, user_creds: Dict, transfer_dict: Dict) -> None:
             headers=user_creds['auth'],
             body=json.dumps(transfer_dict),
         )
-        assert response.status_code == 200
+        assert response.status_code == 201
 
 
 def test_create_transfer_bad_request(app, user_creds: Dict) -> None:
@@ -32,7 +28,7 @@ def test_create_transfer_bad_request(app, user_creds: Dict) -> None:
 @patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_all_transfers(app, user_creds: Dict) -> None:
     with Client(app) as client:
-        query_params = dict(page_size=4, count=1)
+        query_params = dict(page_size=2)
         response = client.http.get(
             f'/mytest?{urlencode(query_params)}', headers=user_creds['auth']
         )
@@ -93,29 +89,3 @@ def test_delete_id(app, user_creds: Dict) -> None:
             body=json.dumps(dict(minutes=0)),
         )
         assert response.status_code == 200
-
-
-def test_update_card(client: Client, virtual_card: Card) -> None:
-    card_update_req = CardUpdateRequest(status=CardStatus.blocked)
-    resp = client.http.patch(
-        f'/cards/{virtual_card.id}', json=card_update_req.dict(),
-    )
-    virtual_card.reload()
-    assert resp.status_code == 200
-    assert virtual_card.status == CardStatus.blocked
-
-
-def test_update_card_bad_request(client: Client, virtual_card: Card) -> None:
-    card_update_dict = dict(status='NOT_EXISTS')
-    resp = client.http.patch(
-        f'/cards/{virtual_card.id}', json=card_update_dict
-    )
-    virtual_card.reload()
-    assert resp.status_code == 400
-    assert virtual_card.status == CardStatus.created
-
-
-def test_update_not_existing_card(client: Client) -> None:
-    card_update_req = CardUpdateRequest(status=CardStatus.blocked)
-    resp = client.http.patch('/cards/NOT_EXISTS', json=card_update_req.dict())
-    resp.status_code == 404

@@ -1,6 +1,5 @@
 import base64
 import functools
-import json as jsonlib
 from typing import Callable, Dict, Generator, List
 
 from mongoengine import Document
@@ -31,13 +30,3 @@ def collection_fixture(model: Document) -> Callable[..., FuncDecorator]:
         return wrapper
 
     return collection_decorator
-
-
-def accept_json(func: Callable) -> Callable:
-    @functools.wraps(func)
-    def wrapper(path, json=None, **kwargs):
-        body = jsonlib.dumps(json) if json else None
-        headers = {'Content-Type': 'application/json'}
-        return func(path, body=body, headers=headers, **kwargs)
-
-    return wrapper

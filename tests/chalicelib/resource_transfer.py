@@ -1,7 +1,12 @@
-from chalice import Response
-from cuenca_validations.types import StrictTransferRequest, TransferQuery
+from chalice import BadRequestError, Response
+from cuenca_validations.types import (
+    StrictTransferRequest,
+    TransactionStatus,
+    TransferQuery,
+)
+from mongoengine import NotUniqueError
 
-from agave.resource.helpers import generic_query
+from agave.resources._generic_query import generic_query
 from tests.chalicelib.model_transfer import Transfer as TransferModel
 
 from .base import app
@@ -12,15 +17,27 @@ class Transfer:
     model = TransferModel
     query_validator = TransferQuery
     get_query_filter = generic_query
-    update_validator = StrictTransferRequest
 
     @staticmethod
     @app.validate(StrictTransferRequest)
     def create(request: StrictTransferRequest) -> Response:
         transfer = TransferModel()
         transfer.create(request)
-        transfer.save()
-        status_code = 200
+        try:
+            transfer.save()
+        except NotUniqueError:
+            previous = TransferModel.objects.get(
+                user_id='lemon', idempotency_key=transfer.idempotency_key
+            )
+            if transfer == previous:
+                transfer = previous
+                status_code = 200
+            else:
+                raise BadRequestError('Duplicated idempotency key')
+        else:
+            transfer.status = TransactionStatus.submitted
+            transfer.save()
+            status_code = 201
         return Response(transfer.to_dict(), status_code=status_code)
 
     @staticmethod

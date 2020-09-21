@@ -16,9 +16,6 @@ class RestApiBlueprint(Blueprint):
     def post(self, path: str, **kwargs):
         return self.route(path, methods=['POST'], **kwargs)
 
-    def patch(self, path: str, **kwargs):
-        return self.route(path, methods=['PATCH'], **kwargs)
-
     def delete(self, path: str, **kwargs):
         return self.route(path, methods=['DELETE'], **kwargs)
 
@@ -87,14 +84,6 @@ class RestApiBlueprint(Blueprint):
                 route = self.post(path)
                 route(cls.create)
 
-            # """ PATCH /resource
-            # Create a chalice endpoint using the method "update"
-            # If the method receive body params decorate it with @validate
-            # """
-            # if hasattr(cls, 'update'):
-            #     route = self.patch(path + '/{id}')
-            #     route(cls.update)
-
             """ DELETE /resource/{id}
             Use "delete" method (if exists) to create the chalice endpoint
             """
@@ -160,25 +149,6 @@ class RestApiBlueprint(Blueprint):
                 if query_params.count:
                     return _count(filters)
                 return _all(query_params, filters)
-
-            @self.patch(path + '/{id}')
-            def update(id: str):
-                params = self.current_request.json_body or dict()
-                try:
-                    data = cls.update_validator(**params)
-                    model = cls.model.objects.get(id=id)
-                except ValidationError as e:
-                    return Response(e.json(), status_code=400)
-                except DoesNotExist:
-                    raise NotFoundError('Not valid id')
-
-                if hasattr(cls, 'update'):
-                    return cls.update(model, data)
-                else:
-                    for attr, val in data.dict().items():
-                        setattr(model, attr, val)
-                    model.save()
-                    return model.to_dict()
 
             def _count(filters: Q):
                 count = cls.model.objects.filter(filters).count()

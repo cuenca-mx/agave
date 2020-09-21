@@ -1,10 +1,10 @@
 import datetime as dt
 from typing import Dict
 
-from cuenca_validations.types import StrictTransferRequest
+from cuenca_validations.types import StrictTransferRequest, TransactionStatus
 from mongoengine import DateTimeField, Document, IntField, StringField
 
-from agave.models.helpers import uuid_field
+from agave.models.helpers import EnumField, uuid_field
 
 
 class Transfer(Document):
@@ -15,6 +15,9 @@ class Transfer(Document):
     amount = IntField(required=True)
     descriptor = StringField()
     idempotency_key = StringField(required=True)
+    status: TransactionStatus = EnumField(
+        TransactionStatus, default=TransactionStatus.created
+    )
 
     def create(self, transfer_request: StrictTransferRequest) -> None:
         self.account_number = transfer_request.account_number
