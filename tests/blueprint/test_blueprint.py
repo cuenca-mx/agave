@@ -42,16 +42,6 @@ def test_query_transfer_with_params(app, user_creds: Dict) -> None:
 
 
 @patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
-def test_query_all_transfers(app, user_creds: Dict) -> None:
-    with Client(app) as client:
-        query_params = dict(page_size=4)
-        response = client.http.get(
-            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth']
-        )
-        assert response.status_code == 200
-
-
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_invalid_params(app, user_creds: Dict) -> None:
     with Client(app) as client:
         wrong_params = dict(wrong_param='wrong_value')

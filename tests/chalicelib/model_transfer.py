@@ -11,6 +11,7 @@ from agave.models.helpers import EnumField, uuid_field
 class Transfer(Document, BaseModel):
     id = StringField(primary_key=True, default=uuid_field('TR'))
     created_at = DateTimeField(default=dt.datetime.utcnow)
+    updated_at = DateTimeField(default=dt.datetime.utcnow)
     account_number = StringField(required=True)
     recipient_name = StringField(required=True)
     amount = IntField(required=True)
