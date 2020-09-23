@@ -43,7 +43,8 @@ def user_creds() -> Generator[Dict, None, None]:
     user_id = uuid_field('US')()
     id = 'hjshEIEUw8820'
     yield dict(
-        user_id=user_id, auth=auth_header(id, sk),
+        user_id=user_id,
+        auth=auth_header(id, sk),
     )
 
 

@@ -28,7 +28,7 @@ class RestApiBlueprint(Blueprint):
         return self.current_request.api_key
 
     def validate(self, validation_type: Type[BaseModel]):
-        """ This decorator validate the request body using a custom pydantyc model
+        """This decorator validate the request body using a custom pydantyc model
         If validation fails return a BadRequest response with details
 
         @app.validate(MyPydanticModel)
@@ -49,7 +49,7 @@ class RestApiBlueprint(Blueprint):
         return decorator
 
     def resource(self, path: str):
-        """ Decorator to transform a class in Chalice REST endpoints
+        """Decorator to transform a class in Chalice REST endpoints
 
         @app.resource('/my_resource')
         class Items(Resource):
@@ -71,7 +71,7 @@ class RestApiBlueprint(Blueprint):
         """
 
         def wrapper_resource_class(cls):
-            """ Wrapper for resource class
+            """Wrapper for resource class
             :param cls: Resoucre class
             :return:
             """
@@ -93,7 +93,7 @@ class RestApiBlueprint(Blueprint):
 
             @self.get(path + '/{id}')
             def retrieve(id: str):
-                """ GET /resource/{id}
+                """GET /resource/{id}
                 :param id: Object Id
                 :return: Model object
 
@@ -119,7 +119,7 @@ class RestApiBlueprint(Blueprint):
 
             @self.get(path)
             def query():
-                """ GET /resource
+                """GET /resource
                 Method for queries in resource. Use "query_validator" type
                 defined in decorated class to validate the params.
 

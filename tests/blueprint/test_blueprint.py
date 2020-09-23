@@ -34,7 +34,8 @@ def test_query_transfer_with_params(app, user_creds: Dict) -> None:
     with Client(app) as client:
         query_params = dict(idempotency_key='key_1')
         response = client.http.get(
-            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth'],
+            f'/mytest?{urlencode(query_params)}',
+            headers=user_creds['auth'],
         )
         assert response.status_code == 200
         items = response.json_body['items']
@@ -76,8 +77,12 @@ def test_delete_id(app, user_creds: Dict) -> None:
 @patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_count(app, user_creds: Dict) -> None:
     with Client(app) as client:
-        query_params = dict(status=TransactionStatus.succeeded.value, count=1,)
+        query_params = dict(
+            status=TransactionStatus.succeeded.value,
+            count=1,
+        )
         response = client.http.get(
-            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth'],
+            f'/mytest?{urlencode(query_params)}',
+            headers=user_creds['auth'],
         )
         assert response.status_code == 200
