@@ -8,7 +8,7 @@ from agave.models.base import BaseModel
 from agave.models.helpers import EnumField, uuid_field
 
 
-class Transfer(Document, BaseModel):
+class Transfer(BaseModel, Document):
     id = StringField(primary_key=True, default=uuid_field('TR'))
     created_at = DateTimeField(default=dt.datetime.utcnow)
     updated_at = DateTimeField(default=dt.datetime.utcnow)

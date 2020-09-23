@@ -3,9 +3,8 @@ from typing import Dict
 from urllib.parse import urlencode
 
 import pytest
-from cuenca_validations.types import TransactionStatus
-
 from chalice.test import Client
+from cuenca_validations.types import TransactionStatus
 from mock import patch
 
 pytestmark = pytest.mark.usefixtures('transfers')
@@ -77,12 +76,8 @@ def test_delete_id(app, user_creds: Dict) -> None:
 @patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_count(app, user_creds: Dict) -> None:
     with Client(app) as client:
-        query_params = dict(
-            status=TransactionStatus.succeeded.value,
-            count=1,
-        )
+        query_params = dict(status=TransactionStatus.succeeded.value, count=1,)
         response = client.http.get(
-            f'/mytest?{urlencode(query_params)}',
-            headers=user_creds['auth'],
+            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth'],
         )
         assert response.status_code == 200
