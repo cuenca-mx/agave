@@ -6,7 +6,7 @@ from cuenca_validations.types import (
 )
 from mongoengine import NotUniqueError
 
-from agave.resources._generic_query import generic_query
+from tests.chalicelib._generic_query import generic_query
 from tests.chalicelib.model_transfer import Transfer as TransferModel
 
 from .base import app
