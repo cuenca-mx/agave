@@ -7,6 +7,8 @@ from chalice.test import Client
 from cuenca_validations.types import TransactionStatus
 from mock import patch
 
+from tests.chalicelib.model_transfer import Transfer
+
 pytestmark = pytest.mark.usefixtures('transfers')
 
 
@@ -51,6 +53,16 @@ def test_invalid_params(app, user_creds: Dict) -> None:
             f'/mytest?{urlencode(wrong_params)}', headers=user_creds['auth']
         )
         assert response.status_code == 400
+
+
+@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
+def test_retrieve_transfer(app, user_creds: Dict, transfer: Transfer) -> None:
+    with Client(app) as client:
+        response = client.http.get(
+            f'/mytest/{transfer.id}', headers=user_creds['auth']
+        )
+        assert response.status_code == 200
+        assert response.json_body['id'] == transfer.id
 
 
 @patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
