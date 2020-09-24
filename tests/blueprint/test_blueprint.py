@@ -86,3 +86,28 @@ def test_query_count(app, user_creds: Dict) -> None:
             headers=user_creds['auth'],
         )
         assert response.status_code == 200
+
+
+@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
+def test_query_all_transfers_with_page_size_and_limit(
+    app, user_creds: Dict
+) -> None:
+    with Client(app) as client:
+        query_params = dict(page_size=2, limit=5)
+        response = client.http.get(
+            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth']
+        )
+        assert response.status_code == 200
+        assert len(response.json_body['items']) == 2
+
+
+@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
+def test_query_all_transfers_with_limit(app, user_creds: Dict) -> None:
+    with Client(app) as client:
+        query_params = dict(limit=3)
+        response = client.http.get(
+            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth']
+        )
+        assert response.status_code == 200
+        assert len(response.json_body['items']) == 2
+        assert response.json_body['next_page_uri'] is None
