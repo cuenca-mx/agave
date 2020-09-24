@@ -111,3 +111,14 @@ def test_query_all_transfers_with_limit(app, user_creds: Dict) -> None:
         assert response.status_code == 200
         assert len(response.json_body['items']) == 2
         assert response.json_body['next_page_uri'] is None
+
+
+@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
+def test_query_all_transfers(app, user_creds: Dict) -> None:
+    # Get all items (MAX 100)
+    with Client(app) as client:
+        query_params = dict(page_size=1)
+        response = client.http.get(
+            f'/mytest?{urlencode(query_params)}', headers=user_creds['auth']
+        )
+        assert response.status_code == 200
