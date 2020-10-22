@@ -91,6 +91,13 @@ class RestApiBlueprint(Blueprint):
                 route = self.delete(path + '/{id}')
                 route(cls.delete)
 
+            """
+            If a resource can be accessed with any type of auth
+            """
+            user_filter_required = True
+            if hasattr(cls, '_no_user_filter'):
+                user_filter_required = False
+
             @self.get(path + '/{id}')
             def retrieve(id: str):
                 """GET /resource/{id}
@@ -110,7 +117,9 @@ class RestApiBlueprint(Blueprint):
                     return cls.retrieve(id)  # pragma: no cover
                 try:
                     id_query = Q(id=id)
-                    if AUTHORIZER != 'AWS_IAM':  # pragma: no cover
+                    if (
+                        AUTHORIZER != 'AWS_IAM' and user_filter_required
+                    ):  # pragma: no cover
                         id_query = id_query & Q(user_id=self.current_user_id)
                     data = cls.model.objects.get(id_query)
                 except DoesNotExist:
@@ -143,7 +152,9 @@ class RestApiBlueprint(Blueprint):
                 except ValidationError as e:
                     return Response(e.json(), status_code=400)
                 # Set user_id request as query param
-                if AUTHORIZER != 'AWS_IAM':  # pragma: no cover
+                if (
+                    AUTHORIZER != 'AWS_IAM' and user_filter_required
+                ):  # pragma: no cover
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
                 if query_params.count:
@@ -177,7 +188,9 @@ class RestApiBlueprint(Blueprint):
                     query.created_before = item_dicts[-1]['created_at']
                     path = self.current_request.context['resourcePath']
                     params = query.dict()
-                    if AUTHORIZER != 'AWS_IAM':  # pragma: no cover
+                    if (
+                        AUTHORIZER != 'AWS_IAM' and user_filter_required
+                    ):  # pragma: no cover
                         params.pop('user_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)

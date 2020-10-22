@@ -4,6 +4,7 @@ from typing import Dict, Generator, List
 
 import pytest
 from chalice import Chalice
+from chalice.test import Client
 
 from agave.models.helpers import uuid_field
 from tests.app import app as demoapp
@@ -15,6 +16,12 @@ from .helpers import auth_header, collection_fixture
 @pytest.fixture()
 def app() -> Chalice:
     return demoapp
+
+
+@pytest.fixture()
+def client(app) -> Generator[Client, None, None]:
+    with Client(app) as client:
+        yield client
 
 
 @pytest.fixture
