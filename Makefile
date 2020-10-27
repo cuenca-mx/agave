@@ -6,31 +6,38 @@ isort = isort $(PROJECT) tests setup.py
 black = black -S -l 79 --target-version py38 $(PROJECT) $(PROJECT) tests setup.py
 
 
+.PHONY: all
 all: test
 
 venv:
 	$(PYTHON) -m venv --prompt $(PROJECT) venv
 	pip install -qU pip
 
+.PHONY: install
 install:
 	pip install -qU -r requirements.txt
 
+.PHONY: install-test
 install-test: install
 	pip install -qU -r requirements-test.txt
 
+.PHONY: test
 test: clean install-test lint
 	pytest
 
+.PHONY: format
 format:
 	$(isort)
 	$(black)
 
+.PHONY: lint
 lint:
 	flake8 $(PROJECT) tests setup.py
 	$(isort) --check-only
 	$(black) --check
 	mypy $(PROJECT) tests
 
+.PHONY: clean
 clean:
 	rm -rf `find . -name __pycache__`
 	rm -f `find . -type f -name '*.py[co]' `
@@ -46,9 +53,7 @@ clean:
 	rm -rf build
 	rm -rf dist
 
+.PHONY: release
 release: test clean
 	python setup.py sdist bdist_wheel
 	twine upload dist/*
-
-
-.PHONY: all install-test test format lint clean release
