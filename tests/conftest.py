@@ -12,9 +12,9 @@ from .helpers import auth_header, collection_fixture
 
 @pytest.fixture()
 def client() -> Generator[Client, None, None]:
-    from tests.app import app as demoapp
+    from .testapp import app
 
-    with Client(demoapp) as client:
+    with Client(app) as client:
         yield client
 
 
