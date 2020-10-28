@@ -14,7 +14,7 @@ setup(
     version=version.__version__,
     author='Cuenca',
     author_email='dev@cuenca.com',
-    description='test-dev',
+    description='Rest_api',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/cuenca-mx/agave',

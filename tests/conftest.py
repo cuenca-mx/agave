@@ -1,26 +1,20 @@
 import datetime as dt
-import os
 from typing import Dict, Generator, List
 
 import pytest
-from chalice import Chalice
 from chalice.test import Client
 
 from agave.models.helpers import uuid_field
-from tests.app import app as demoapp
 from tests.chalicelib.model_transfer import TransactionStatus, Transfer
 
 from .helpers import auth_header, collection_fixture
 
 
 @pytest.fixture()
-def app() -> Chalice:
-    return demoapp
+def client() -> Generator[Client, None, None]:
+    from tests.app import app as demoapp
 
-
-@pytest.fixture()
-def client(app) -> Generator[Client, None, None]:
-    with Client(app) as client:
+    with Client(demoapp) as client:
         yield client
 
 
@@ -33,15 +27,6 @@ def transfer_dict() -> Dict:
         recipient_name='Doroteo Arango',
         idempotency_key='some unique key',
     )
-
-
-@pytest.fixture()
-def aws_credentials() -> None:
-    """Mocked AWS Credentials for moto."""
-    os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
-    os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
-    os.environ['AWS_SECURITY_TOKEN'] = 'testing'
-    os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 
 @pytest.fixture
