@@ -1,5 +1,5 @@
 import datetime as dt
-from typing import Dict
+
 from mongoengine import DateTimeField, Document, StringField
 
 from agave.models.base import BaseModel

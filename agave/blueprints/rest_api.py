@@ -95,10 +95,10 @@ class RestApiBlueprint(Blueprint):
                 route(cls.delete)
 
             """ PATCH /resource/{id}
-                        Enable PATCH method if Resource.update method exist. It validates
-                        body data using `Resource.update_validator` but update logic is
-                        completely your responsibility.
-                        """
+            Enable PATCH method if Resource.update method exist. It validates
+            body data using `Resource.update_validator` but update logic is
+            completely your responsibility.
+            """
             if hasattr(cls, 'update'):
                 route = self.patch(path + '/{id}')
 

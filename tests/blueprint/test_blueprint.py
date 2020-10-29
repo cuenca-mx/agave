@@ -57,9 +57,7 @@ def test_retrieve_user(client: Client, user_creds: Dict) -> None:
 
 def test_retrieve_user_not_found(client: Client, user_creds: Dict) -> None:
     id = '53f466e60ffa5927709972e8'
-    response = client.http.get(
-        f'/foo/{id}', headers=user_creds['auth']
-    )
+    response = client.http.get(f'/foo/{id}', headers=user_creds['auth'])
     assert response.status_code == 404
 
 
@@ -98,7 +96,7 @@ def test_update_name(client: Client, user_creds: Dict) -> None:
 def test_invalid_value(client: Client, user_creds: Dict) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.patch(
-        f'/foo/NOT_EXISTS',
+        f'/foo/{"NOT_EXISTS"}',
         headers=user_creds['auth'],
         body=json.dumps(wrong_params),
     )
