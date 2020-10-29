@@ -5,7 +5,7 @@ from chalice.test import Client
 
 from agave.models.helpers import uuid_field
 
-from .helpers import auth_header
+from .helpers import accept_json, auth_header
 
 
 @pytest.fixture()
@@ -13,6 +13,16 @@ def client() -> Generator[Client, None, None]:
     from .testapp import app
 
     with Client(app) as client:
+        client.http.post = accept_json(  # type: ignore[assignment]
+            client.http.post
+        )
+        client.http.patch = accept_json(  # type: ignore[assignment]
+            client.http.patch
+        )
+
+        client.http.delete = accept_json(  # type: ignore[assignment]
+            client.http.delete
+        )
         yield client
 
 

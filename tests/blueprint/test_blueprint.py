@@ -1,4 +1,3 @@
-import json
 from typing import Dict
 from urllib.parse import urlencode
 
@@ -10,16 +9,14 @@ def test_create_user(client: Client, user_creds: Dict) -> None:
     response = client.http.post(
         '/foo',
         headers=user_creds['auth'],
-        body=json.dumps(name),
+        json=name,
     )
     assert response.status_code == 201
 
 
 def test_create_user_bad_request(client: Client, user_creds: Dict) -> None:
     user = dict(foobar='foobar')
-    response = client.http.post(
-        '/foo', headers=user_creds['auth'], body=json.dumps(user)
-    )
+    response = client.http.post('/foo', headers=user_creds['auth'], json=user)
     assert response.status_code == 400
 
 
@@ -47,7 +44,7 @@ def test_retrieve_user(client: Client, user_creds: Dict) -> None:
     resp = client.http.post(
         '/foo',
         headers=user_creds['auth'],
-        body=json.dumps(name),
+        json=name,
     )
     id = resp.json_body['id']
     response = client.http.get(f'/foo/{id}', headers=user_creds['auth'])
@@ -66,13 +63,13 @@ def test_delete_id(client: Client, user_creds: Dict) -> None:
     response = client.http.post(
         '/foo',
         headers=user_creds['auth'],
-        body=json.dumps(name),
+        json=name,
     )
     id = response.json_body['id']
     resp = client.http.delete(
         f'/foo/{id}',
         headers=user_creds['auth'],
-        body=json.dumps(dict(code=0)),
+        json=dict(code=0),
     )
     assert resp.status_code == 200
 
@@ -82,13 +79,13 @@ def test_update_name(client: Client, user_creds: Dict) -> None:
     response = client.http.post(
         '/foo',
         headers=user_creds['auth'],
-        body=json.dumps(name),
+        json=name,
     )
     id = response.json_body['id']
     resp = client.http.patch(
         f'/foo/{id}',
         headers=user_creds['auth'],
-        body=json.dumps(dict(name='Frida')),
+        json=dict(name='Frida'),
     )
     assert resp.status_code == 200
 
@@ -98,7 +95,7 @@ def test_invalid_value(client: Client, user_creds: Dict) -> None:
     response = client.http.patch(
         f'/foo/{"NOT_EXISTS"}',
         headers=user_creds['auth'],
-        body=json.dumps(wrong_params),
+        json=wrong_params,
     )
     assert response.status_code == 400
 
