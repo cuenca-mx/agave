@@ -14,6 +14,7 @@ def generic_query(query: QueryParams) -> Q:
         'active',
         'limit',
         'page_size',
+        'key',
     }
     fields = query.dict(exclude=exclude_fields)
     if 'count' in fields:
