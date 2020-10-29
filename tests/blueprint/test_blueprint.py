@@ -90,6 +90,15 @@ def test_update_name(client: Client, user_creds: Dict) -> None:
     assert resp.status_code == 200
 
 
+def test_name_not_exit(client: Client, user_creds: Dict) -> None:
+    resp = client.http.patch(
+        f'/foo/{"5f9b4d0ff8d7255e3cc3c128"}',
+        headers=user_creds['auth'],
+        json=dict(name='Frida'),
+    )
+    assert resp.status_code == 404
+
+
 def test_invalid_value(client: Client, user_creds: Dict) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.patch(
