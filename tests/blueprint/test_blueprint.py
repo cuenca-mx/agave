@@ -55,6 +55,14 @@ def test_retrieve_user(client: Client, user_creds: Dict) -> None:
     assert response.json_body['id'] == id
 
 
+def test_retrieve_user_not_found(client: Client, user_creds: Dict) -> None:
+    transfer_id = '53f466e60ffa5927709972e8'
+    response = client.http.get(
+        f'/foo/{transfer_id}', headers=user_creds['auth']
+    )
+    assert response.status_code == 404
+
+
 def test_delete_id(client: Client, user_creds: Dict) -> None:
     name = dict(name='teodoro', key='key_1')
     response = client.http.post(
