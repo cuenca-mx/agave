@@ -16,6 +16,9 @@ class RestApiBlueprint(Blueprint):
     def post(self, path: str, **kwargs):
         return self.route(path, methods=['POST'], **kwargs)
 
+    def patch(self, path: str, **kwargs):
+        return self.route(path, methods=['PATCH'], **kwargs)
+
     def delete(self, path: str, **kwargs):
         return self.route(path, methods=['DELETE'], **kwargs)
 
@@ -91,6 +94,27 @@ class RestApiBlueprint(Blueprint):
                 route = self.delete(path + '/{id}')
                 route(cls.delete)
 
+            """ PATCH /resource/{id}
+                        Enable PATCH method if Resource.update method exist. It validates
+                        body data using `Resource.update_validator` but update logic is
+                        completely your responsibility.
+                        """
+            if hasattr(cls, 'update'):
+                route = self.patch(path + '/{id}')
+
+                def _update(id: str):
+                    params = self.current_request.json_body or dict()
+                    try:
+                        data = cls.update_validator(**params)
+                        model = cls.model.objects.get(id=id)
+                    except ValidationError as e:
+                        return Response(e.json(), status_code=400)
+                    except DoesNotExist:
+                        raise NotFoundError('Not valid id')
+                    else:
+                        return cls.update(model, data)
+
+                route(_update)
             """
             If a resource can be accessed with any type of auth
             """

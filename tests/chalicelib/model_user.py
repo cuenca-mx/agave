@@ -1,5 +1,5 @@
 import datetime as dt
-
+from typing import Dict
 from mongoengine import DateTimeField, Document, StringField
 
 from agave.models.base import BaseModel
@@ -20,3 +20,6 @@ class User(BaseModel, Document):
 
     def deactivate(self, code: int) -> None:
         self.deactivated = code
+
+    def update(self, data: NameRequest) -> None:
+        self.name = data.name

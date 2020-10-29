@@ -6,13 +6,14 @@ from tests.chalicelib.model_user import User as UserModel
 
 from .base import app
 from .queries import USerQuery
-from .request import NameRequest
+from .request import NameRequest, NameUpdate
 
 
 @app.resource('/foo')
 class User:
     model = UserModel
     query_validator = USerQuery
+    update_validator = NameUpdate
     get_query_filter = generic_query
 
     _no_user_filter = True
@@ -38,3 +39,9 @@ class User:
         code = app.current_request.json_body.get('code')
         id_user.deactivate(code)
         return Response(id_user.deactivated, status_code=200)
+
+    @staticmethod
+    def update(user: UserModel, name: NameRequest):
+        user.update(name)
+        user.save()
+        return Response(user.to_dict(), status_code=200)

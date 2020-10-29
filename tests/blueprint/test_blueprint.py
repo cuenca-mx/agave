@@ -43,7 +43,7 @@ def test_invalid_params(client: Client, user_creds: Dict) -> None:
 
 
 def test_retrieve_user(client: Client, user_creds: Dict) -> None:
-    name = dict(name='teodoro', key='key_1')
+    name = dict(name='Juan', key='key_1')
     resp = client.http.post(
         '/foo',
         headers=user_creds['auth'],
@@ -56,9 +56,9 @@ def test_retrieve_user(client: Client, user_creds: Dict) -> None:
 
 
 def test_retrieve_user_not_found(client: Client, user_creds: Dict) -> None:
-    transfer_id = '53f466e60ffa5927709972e8'
+    id = '53f466e60ffa5927709972e8'
     response = client.http.get(
-        f'/foo/{transfer_id}', headers=user_creds['auth']
+        f'/foo/{id}', headers=user_creds['auth']
     )
     assert response.status_code == 404
 
@@ -77,6 +77,32 @@ def test_delete_id(client: Client, user_creds: Dict) -> None:
         body=json.dumps(dict(code=0)),
     )
     assert resp.status_code == 200
+
+
+def test_update_name(client: Client, user_creds: Dict) -> None:
+    name = dict(name='frida', key='key_2')
+    response = client.http.post(
+        '/foo',
+        headers=user_creds['auth'],
+        body=json.dumps(name),
+    )
+    id = response.json_body['id']
+    resp = client.http.patch(
+        f'/foo/{id}',
+        headers=user_creds['auth'],
+        body=json.dumps(dict(name='Frida')),
+    )
+    assert resp.status_code == 200
+
+
+def test_invalid_value(client: Client, user_creds: Dict) -> None:
+    wrong_params = dict(wrong_param='wrong_value')
+    response = client.http.patch(
+        f'/foo/NOT_EXISTS',
+        headers=user_creds['auth'],
+        body=json.dumps(wrong_params),
+    )
+    assert response.status_code == 400
 
 
 def test_query_count(client: Client, user_creds: Dict) -> None:
