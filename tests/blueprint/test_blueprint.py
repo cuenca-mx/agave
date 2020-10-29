@@ -24,7 +24,6 @@ def test_create_user_bad_request(client: Client, user_creds: Dict) -> None:
     assert response.status_code == 400
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_user_with_params(client: Client, user_creds: Dict) -> None:
     query_params = dict(key='key_1')
     response = client.http.get(
@@ -45,7 +44,6 @@ def test_invalid_params(client: Client, user_creds: Dict) -> None:
     assert response.status_code == 400
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_retrieve_user(client: Client, user_creds: Dict) -> None:
     name = dict(name='teodoro', key='key_1')
     resp = client.http.post(
@@ -75,7 +73,6 @@ def test_delete_id(client: Client, user_creds: Dict) -> None:
     assert resp.status_code == 200
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_count(client: Client, user_creds: Dict) -> None:
     query_params = dict(
         count=1,
@@ -87,7 +84,6 @@ def test_query_count(client: Client, user_creds: Dict) -> None:
     assert response.status_code == 200
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_all_user_with_page_size_and_limit(
     client: Client, user_creds: Dict
 ) -> None:
@@ -99,7 +95,6 @@ def test_query_all_user_with_page_size_and_limit(
     assert len(response.json_body['items']) == 2
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_all_users_with_limit(client: Client, user_creds: Dict) -> None:
     query_params = dict(limit=3)
     response = client.http.get(
@@ -110,7 +105,6 @@ def test_query_all_users_with_limit(client: Client, user_creds: Dict) -> None:
     assert response.json_body['next_page_uri'] is None
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_query_all_users(client: Client, user_creds: Dict) -> None:
     query_params = dict(page_size=1)
     response = client.http.get(
