@@ -1,4 +1,4 @@
-__all__ = ['app', 'Transfer']
+__all__ = ['app', 'User']
 
 from .base import app
-from .resource_transfer import Transfer
+from .resource_user import User
