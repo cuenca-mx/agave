@@ -3,7 +3,6 @@ from typing import Dict
 from urllib.parse import urlencode
 
 from chalice.test import Client
-from mock import patch
 
 
 def test_create_user(client: Client, user_creds: Dict) -> None:
@@ -35,7 +34,6 @@ def test_query_user_with_params(client: Client, user_creds: Dict) -> None:
     assert len(items) == 1
 
 
-@patch('agave.blueprints.rest_api.AUTHORIZER', 'AWS_IAM')
 def test_invalid_params(client: Client, user_creds: Dict) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.get(
