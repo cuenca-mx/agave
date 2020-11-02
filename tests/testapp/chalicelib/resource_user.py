@@ -1,10 +1,9 @@
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist, ValidationError
 
-from tests.testapp.chalicelib import generic_query
-from tests.testapp.chalicelib.model_user import User as UserModel
-
+from ._generic_query import generic_query
 from .base import app
+from .model_user import User as UserModel
 from .queries import USerQuery
 from .request import NameRequest, NameUpdate
 

@@ -8,3 +8,7 @@ class NameRequest(BaseModel):
 
 class NameUpdate(BaseModel):
     name: str
+
+
+class TypeUser(BaseModel):
+    type: str

@@ -151,3 +151,16 @@ def test_query_all_users(client: Client, user_creds: Dict) -> None:
         f'/users?{urlencode(query_params)}', headers=user_creds['auth']
     )
     assert response.status_code == 200
+
+
+def test_types_users(client: Client, user_creds: Dict) -> None:
+    user = dict(name='Frida', key='key_1', type='human')
+    response = client.http.post(
+        '/users',
+        headers=user_creds['auth'],
+        json=user,
+    )
+    assert response.status_code == 201
+    id = response.json_body['id']
+    resp = client.http.get(f'/type/{id}', headers=user_creds['auth'])
+    assert resp.status_code == 500
