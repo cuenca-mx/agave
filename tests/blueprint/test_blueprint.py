@@ -91,8 +91,9 @@ def test_update_name(client: Client, user_creds: Dict) -> None:
 
 
 def test_name_not_exit(client: Client, user_creds: Dict) -> None:
+    id = '5f9b4d0ff8d7255e3cc3c128'
     resp = client.http.patch(
-        f'/foo/{"5f9b4d0ff8d7255e3cc3c128"}',
+        f'/foo/{id}',
         headers=user_creds['auth'],
         json=dict(name='Frida'),
     )
@@ -101,8 +102,9 @@ def test_name_not_exit(client: Client, user_creds: Dict) -> None:
 
 def test_invalid_value(client: Client, user_creds: Dict) -> None:
     wrong_params = dict(wrong_param='wrong_value')
+    id = 'NOT_EXISTS'
     response = client.http.patch(
-        f'/foo/{"NOT_EXISTS"}',
+        f'/foo/{id}',
         headers=user_creds['auth'],
         json=wrong_params,
     )

@@ -26,10 +26,6 @@ class RestApiBlueprint(Blueprint):
     def current_user_id(self):
         return self.current_request.user_id
 
-    @property
-    def current_api_key(self):
-        return self.current_request.api_key
-
     def validate(self, validation_type: Type[BaseModel]):
         """This decorator validate the request body using a custom pydantyc model
         If validation fails return a BadRequest response with details
