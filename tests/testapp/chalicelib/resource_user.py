@@ -9,7 +9,7 @@ from .queries import USerQuery
 from .request import NameRequest, NameUpdate
 
 
-@app.resource('/foo')
+@app.resource('/users')
 class User:
     model = UserModel
     query_validator = USerQuery
