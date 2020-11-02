@@ -22,9 +22,6 @@ def accept_json(func: Callable) -> Callable:
         if 'body' in kwargs:
             return func(path, **kwargs)
         body = jsonlib.dumps(json) if json else None
-        if 'headers' not in kwargs:
-            headers = {'Content-Type': 'application/json'}
-            return func(path, body=body, headers=headers, **kwargs)
         return func(path, body=body, **kwargs)
 
     return wrapper
