@@ -79,8 +79,9 @@ def test_retrieve_resource_not_found(client: Client) -> None:
 
 def test_query_all(client: Client) -> None:
     query_params = dict(page_size=1)
-    response = client.http.get(f'/users?{urlencode(query_params)}')
-    assert response.status_code == 200
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 1
 
 
 def test_cannot_create_resource(client: Client) -> None:

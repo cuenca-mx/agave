@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable, List, Optional
+from typing import Callable
 
 from chalice import Blueprint
 
@@ -9,12 +9,25 @@ class AuthedBlueprint(Blueprint):
     This dummy class is an example of Authentication/Authorization blueprint.
 
     """
-    def route(
-        self, path: str, authorizations: Optional[List[str]] = None, **kwargs
-    ):
+
+    def route(self, path: str, **kwargs):
+        """
+        Builds route decorator with custom authentication.
+        It is only a function wrapper for `Blueprint._register_handler` methods
+
+        For this example we do not validate any credentials but
+        your authentication logic could be implemented here.
+
+        :param path:
+        :param kwargs:
+        :return:
+        """
+
         def decorator(user_handler: Callable):
             @wraps(user_handler)
             def authed_handler(*args, **kwargs):
+                # your authentication logic goes here
+                # before execute `user_handler` function.
                 self.current_request.user_id = '123445'
                 return user_handler(*args, **kwargs)
 
