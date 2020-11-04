@@ -40,41 +40,48 @@ def test_retrieve_resource_not_found(client: Client) -> None:
 #     ...
 #
 #
-# def test_update_resource(client: Client) -> None:
-#     ...
-#
-#
-# def test_update_resource_bad_request(client: Client) -> None:
-#     ...
-#
-#
-# def test_delete_resource(client: Client) -> None:
-#     ...
-#
-#
-# def test_query_count(client: Client) -> None:
-#     query_params = dict(
-#         count=1,
-#     )
-#     response = client.http.get(
-#         f'/users?{urlencode(query_params)}',
-#     )
-#     assert response.status_code == 200
-#
-#
-# def test_query_all_with_page_size_and_limit(client: Client) -> None:
-#     query_params = dict(page_size=2, limit=5)
-#     response = client.http.get(f'/users?{urlencode(query_params)}')
-#     assert response.status_code == 200
-#     assert len(response.json_body['items']) == 2
-#
-#
-# def test_query_all_with_limit(client: Client) -> None:
-#     query_params = dict(limit=3)
-#     response = client.http.get(f'/users?{urlencode(query_params)}')
-#     assert response.status_code == 200
-#     assert len(response.json_body['items']) == 3
-#     assert response.json_body['next_page_uri'] is None
+
+
+def test_update_resource_bad_request(client: Client) -> None:
+    resp = client.http.patch(
+        '/accounts/5f9b4d0ff8d7255e3cc3c128',
+        json=dict(name='Frida'),
+    )
+    assert resp.status_code == 404
+
+
+def test_update_resource(client: Client) -> None:
+    model = Account.objects.get()
+    assert model.name == 'Doroteo Arango'
+    resp = client.http.patch(
+        f'/accounts/{model.id}',
+        json=dict(name='Frida'),
+    )
+
+    assert resp.json_body['name'] == 'Frida'
+    assert resp.status_code == 200
+
+
+def test_delete_resource(client: Client) -> None:
+    ...
+
+
+def test_query_count(client: Client) -> None:
+    query_params = dict(
+        count=1,
+    )
+    response = client.http.get(
+        f'/accounts?{urlencode(query_params)}',
+    )
+    assert response.status_code == 200
+
+
+def test_query_all_with_limit(client: Client) -> None:
+    query_params = dict(limit=3)
+    response = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert response.status_code == 200
+    assert len(response.json_body['items']) == 1
+    assert response.json_body['next_page_uri'] is None
 
 
 def test_query_all(client: Client) -> None:
