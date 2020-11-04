@@ -1,4 +1,4 @@
-__all__ = ['Deposit', 'User']
+__all__ = ['Account', 'Transaction']
 
-from .deposits import Deposit
-from .users import User
+from .accounts import Account
+from .transactions import Transaction

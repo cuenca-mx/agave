@@ -6,8 +6,6 @@ from cuenca_validations.types import QueryParams
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
-from ..config import AUTHORIZER
-
 
 class RestApiBlueprint(Blueprint):
     def get(self, path: str, **kwargs):
@@ -25,6 +23,9 @@ class RestApiBlueprint(Blueprint):
     @property
     def current_user_id(self):
         return self.current_request.user_id
+
+    def user_id_filter_required(self):
+        raise NotImplementedError('this method should be override')
 
     def validate(self, validation_type: Type[BaseModel]):
         """This decorator validate the request body using a custom pydantyc model
@@ -111,12 +112,6 @@ class RestApiBlueprint(Blueprint):
                         return cls.update(model, data)
 
                 route(_update)
-            """
-            If a resource can be accessed with any type of auth
-            """
-            user_filter_required = True
-            if hasattr(cls, '_no_user_filter'):
-                user_filter_required = False
 
             @self.get(path + '/{id}')
             def retrieve(id: str):
@@ -137,9 +132,7 @@ class RestApiBlueprint(Blueprint):
                     return cls.retrieve(id)  # pragma: no cover
                 try:
                     id_query = Q(id=id)
-                    if (
-                        AUTHORIZER != 'AWS_IAM' and user_filter_required
-                    ):  # pragma: no cover
+                    if self.user_id_filter_required():
                         id_query = id_query & Q(user_id=self.current_user_id)
                     data = cls.model.objects.get(id_query)
                 except DoesNotExist:
@@ -172,9 +165,7 @@ class RestApiBlueprint(Blueprint):
                 except ValidationError as e:
                     return Response(e.json(), status_code=400)
                 # Set user_id request as query param
-                if (
-                    AUTHORIZER != 'AWS_IAM' and user_filter_required
-                ):  # pragma: no cover
+                if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
                 if query_params.count:
@@ -208,9 +199,7 @@ class RestApiBlueprint(Blueprint):
                     query.created_before = item_dicts[-1]['created_at']
                     path = self.current_request.context['resourcePath']
                     params = query.dict()
-                    if (
-                        AUTHORIZER != 'AWS_IAM' and user_filter_required
-                    ):  # pragma: no cover
+                    if self.user_id_filter_required():
                         params.pop('user_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)

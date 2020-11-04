@@ -1,11 +1,11 @@
-from typing import Dict, Generator
+from typing import Generator, List
 
 import pytest
 from chalice.test import Client
 
-from agave.models.helpers import uuid_field
+from tests.testapp.chalicelib.models import Account
 
-from .helpers import accept_json, auth_header
+from .helpers import accept_json
 
 
 @pytest.fixture()
@@ -27,11 +27,21 @@ def client() -> Generator[Client, None, None]:
 
 
 @pytest.fixture
-def user_creds() -> Generator[Dict, None, None]:
-    sk = 'cuenca2020'
-    user_id = uuid_field('US')()
-    id = 'hjshEIEUw8820'
-    yield dict(
-        user_id=user_id,
-        auth=auth_header(id, sk),
-    )
+def accounts() -> Generator[List[Account], None, None]:
+    user_id = 'US123456789'
+    accs = [
+        Account(name='Frida Kahlo', user_id=user_id),
+        Account(name='Sor Juana Inés', user_id=user_id),
+        Account(name='Leona Vicario', user_id=user_id),
+    ]
+
+    for acc in accs:
+        acc.save()
+    yield accs
+    for acc in accs:
+        acc.delete()
+
+
+@pytest.fixture
+def account(accounts: List[Account]) -> Generator[Account, None, None]:
+    yield accounts[0]

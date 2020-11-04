@@ -1,12 +1,12 @@
 from chalice import Chalice
 from mongoengine import connect
 
-from tests.testapp.chalicelib import app as bp
+from .chalicelib.resources import app as resources
 
 DATABASE_URI = 'mongomock://localhost:27017/db'
 
 app = Chalice(app_name='test_app')
-app.register_blueprint(bp)
+app.register_blueprint(resources)
 
 connect(host=DATABASE_URI)
 

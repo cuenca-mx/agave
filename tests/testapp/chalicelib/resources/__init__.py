@@ -1,5 +1,5 @@
-__all__ = ['app', 'Deposit', 'User']
+__all__ = ['app', 'Account', 'Transaction']
 
+from .accounts import Account
 from .base import app
-from .deposits import Deposit
-from .users import User
+from .transactions import Transaction
