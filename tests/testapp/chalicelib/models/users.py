@@ -3,8 +3,7 @@ import datetime as dt
 from mongoengine import DateTimeField, Document, StringField
 
 from agave.models.base import BaseModel
-
-from .request import NameRequest
+from tests.testapp.chalicelib.request import NameRequest
 
 
 class User(BaseModel, Document):

@@ -1,11 +1,11 @@
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist, ValidationError
 
+from ..models.users import User as UserModel
+from ..queries import USerQuery
+from ..request import NameRequest, NameUpdate
 from ._generic_query import generic_query
 from .base import app
-from .model_user import User as UserModel
-from .queries import USerQuery
-from .request import NameRequest, NameUpdate
 
 
 @app.resource('/users')

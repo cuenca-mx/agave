@@ -1,6 +1,5 @@
-__all__ = ['app', 'User', 'generic_query', 'Type']
+__all__ = ['app', 'User', 'Deposit']
 
-from ._generic_query import generic_query
-from .base import app
-from .resource_type import Type
-from .resource_user import User
+from tests.testapp.chalicelib.resources.base import app
+from tests.testapp.chalicelib.resources.deposits import Deposit
+from tests.testapp.chalicelib.resources.users import User
