@@ -65,16 +65,12 @@ def test_update_resource(client: Client) -> None:
     assert resp.status_code == 200
 
 
-# def test_delete_resource(client: Client) -> None:
-#     data = dict(name='Doroteo Arango')
-#     resp = client.http.post('/accounts', json=data)
-#     model = Account.objects.get(id=resp.json_body['id'])
-#     resp = client.http.delete(
-#         f'/accounts/{model.id}'
-#     )
-#     import pdb
-#     pdb.set_trace()
-#     assert resp.status_code == 200
+def test_delete_resource(client: Client) -> None:
+    data = dict(name='Doroteo Arango')
+    resp = client.http.post('/accounts', json=data)
+    model = Account.objects.get(id=resp.json_body['id'])
+    resp = client.http.delete(f'/accounts/{model.id}')
+    assert resp.status_code == 200
 
 
 def test_query_count(client: Client) -> None:
@@ -91,7 +87,7 @@ def test_query_all_with_limit(client: Client) -> None:
     query_params = dict(limit=3)
     response = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert response.status_code == 200
-    assert len(response.json_body['items']) == 1
+    assert len(response.json_body['items']) == 2
     assert response.json_body['next_page_uri'] is None
 
 
