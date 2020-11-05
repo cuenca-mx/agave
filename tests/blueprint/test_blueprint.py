@@ -36,10 +36,13 @@ def test_retrieve_resource_not_found(client: Client) -> None:
 #     ...
 #
 #
-# def test_query_resource_with_invalid_params(client: Client) -> None:
-#     ...
-#
-#
+def test_query_resource_with_invalid_params(client: Client) -> None:
+    wrong_params = dict(wrong_param='wrong_value')
+    response = client.http.patch(
+        '/accounts/NOT_EXISTS',
+        json=wrong_params,
+    )
+    assert response.status_code == 400
 
 
 def test_update_resource_bad_request(client: Client) -> None:
@@ -62,8 +65,16 @@ def test_update_resource(client: Client) -> None:
     assert resp.status_code == 200
 
 
-def test_delete_resource(client: Client) -> None:
-    ...
+# def test_delete_resource(client: Client) -> None:
+#     data = dict(name='Doroteo Arango')
+#     resp = client.http.post('/accounts', json=data)
+#     model = Account.objects.get(id=resp.json_body['id'])
+#     resp = client.http.delete(
+#         f'/accounts/{model.id}'
+#     )
+#     import pdb
+#     pdb.set_trace()
+#     assert resp.status_code == 200
 
 
 def test_query_count(client: Client) -> None:
