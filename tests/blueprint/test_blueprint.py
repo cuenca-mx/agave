@@ -37,7 +37,7 @@ def test_retrieve_resource_user_id_filter_required(
     client: Client, account: Account
 ) -> None:
     resp = client.http.get(f'/accounts/{account.id}')
-    assert resp.status_code == 200
+    assert resp.status_code == 404
 
 
 def test_retrieve_resource_not_found(client: Client) -> None:
