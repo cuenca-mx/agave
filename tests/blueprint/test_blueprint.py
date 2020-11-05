@@ -1,7 +1,10 @@
+import datetime as dt
 from urllib.parse import urlencode
 
 from chalice.test import Client
+from cuenca_validations.types import QueryParams
 
+from agave.filters import generic_query
 from tests.testapp.chalicelib.models import Account
 
 
@@ -28,13 +31,6 @@ def test_retrieve_resource(client: Client, account: Account) -> None:
 def test_retrieve_resource_not_found(client: Client) -> None:
     resp = client.http.get('/accounts/unknown_id')
     assert resp.status_code == 404
-
-
-#
-#
-# def test_query_resource(client: Client) -> None:
-#     ...
-#
 
 
 def test_update_resource_with_invalid_params(client: Client) -> None:
@@ -71,6 +67,7 @@ def test_delete_resource(client: Client) -> None:
     resp = client.http.post('/accounts', json=data)
     model = Account.objects.get(id=resp.json_body['id'])
     resp = client.http.delete(f'/accounts/{model.id}')
+    assert resp.json_body['deactivated_at'] is not None
     assert resp.status_code == 200
 
 
@@ -118,3 +115,17 @@ def test_cannot_update_resource(client: Client) -> None:
 def test_cannot_delete_resource(client: Client) -> None:
     resp = client.http.delete('/transactions/TR1234')
     assert resp.status_code == 405
+
+
+def test_generic_query_before():
+    params = QueryParams(created_before=dt.datetime.utcnow().isoformat())
+    query = generic_query(params)
+    assert "created_at__lt" in repr(query)
+    assert "user" not in repr(query)
+
+
+def test_generic_query_after():
+    params = QueryParams(created_after=dt.datetime.utcnow().isoformat())
+    query = generic_query(params)
+    assert "created_at__gt" in repr(query)
+    assert "user" not in repr(query)
