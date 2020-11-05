@@ -35,8 +35,9 @@ def test_retrieve_resource_not_found(client: Client) -> None:
 # def test_query_resource(client: Client) -> None:
 #     ...
 #
-#
-def test_query_resource_with_invalid_params(client: Client) -> None:
+
+
+def test_update_resource_with_invalid_params(client: Client) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.patch(
         '/accounts/NOT_EXISTS',
@@ -73,7 +74,7 @@ def test_delete_resource(client: Client) -> None:
     assert resp.status_code == 200
 
 
-def test_query_count(client: Client) -> None:
+def test_query_count_resource(client: Client) -> None:
     query_params = dict(
         count=1,
     )
@@ -91,11 +92,17 @@ def test_query_all_with_limit(client: Client) -> None:
     assert response.json_body['next_page_uri'] is None
 
 
-def test_query_all(client: Client) -> None:
+def test_query_all_resource(client: Client) -> None:
     query_params = dict(page_size=1)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     assert len(resp.json_body['items']) == 1
+
+
+def test_query_resource_with_invalid_params(client: Client) -> None:
+    wrong_params = dict(wrong_param='wrong_value')
+    response = client.http.get(f'/accounts?{urlencode(wrong_params)}')
+    assert response.status_code == 400
 
 
 def test_cannot_create_resource(client: Client) -> None:
