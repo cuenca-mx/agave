@@ -1,10 +1,7 @@
-import datetime as dt
 from urllib.parse import urlencode
 
 from chalice.test import Client
-from cuenca_validations.types import QueryParams
 
-from agave.filters import generic_query
 from tests.testapp.chalicelib.models import Account
 
 
@@ -115,17 +112,3 @@ def test_cannot_update_resource(client: Client) -> None:
 def test_cannot_delete_resource(client: Client) -> None:
     resp = client.http.delete('/transactions/TR1234')
     assert resp.status_code == 405
-
-
-def test_generic_query_before():
-    params = QueryParams(created_before=dt.datetime.utcnow().isoformat())
-    query = generic_query(params)
-    assert "created_at__lt" in repr(query)
-    assert "user" not in repr(query)
-
-
-def test_generic_query_after():
-    params = QueryParams(created_after=dt.datetime.utcnow().isoformat())
-    query = generic_query(params)
-    assert "created_at__gt" in repr(query)
-    assert "user" not in repr(query)
