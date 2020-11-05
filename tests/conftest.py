@@ -33,6 +33,7 @@ def accounts() -> Generator[List[Account], None, None]:
         Account(name='Frida Kahlo', user_id=user_id),
         Account(name='Sor Juana Inés', user_id=user_id),
         Account(name='Leona Vicario', user_id=user_id),
+        Account(name='Remedios Varo', user_id='US987654321'),
     ]
 
     for acc in accs:

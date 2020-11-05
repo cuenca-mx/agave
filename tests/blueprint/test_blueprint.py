@@ -1,6 +1,8 @@
 from urllib.parse import urlencode
 
+import mock
 from chalice.test import Client
+from mock import patch
 
 from tests.testapp.chalicelib.models import Account
 
@@ -23,6 +25,19 @@ def test_retrieve_resource(client: Client, account: Account) -> None:
     resp = client.http.get(f'/accounts/{account.id}')
     assert resp.status_code == 200
     assert resp.json_body == account.to_dict()
+
+
+@patch(
+    'tests.testapp.'
+    'chalicelib.blueprints.authed.'
+    'AuthedBlueprint.user_id_filter_required',
+    mock.MagicMock(return_value=True),
+)
+def test_retrieve_resource_user_id_filter_required(
+    client: Client, account: Account
+) -> None:
+    resp = client.http.get(f'/accounts/{account.id}')
+    assert resp.status_code == 200
 
 
 def test_retrieve_resource_not_found(client: Client) -> None:
@@ -87,6 +102,19 @@ def test_query_all_with_limit(client: Client) -> None:
 
 
 def test_query_all_resource(client: Client) -> None:
+    query_params = dict(page_size=1)
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 1
+
+
+@patch(
+    'tests.testapp.'
+    'chalicelib.blueprints.'
+    'authed.AuthedBlueprint.user_id_filter_required',
+    mock.MagicMock(return_value=True),
+)
+def test_query_user_id_filter_required(client: Client) -> None:
     query_params = dict(page_size=1)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
