@@ -4,10 +4,10 @@ import pytest
 from chalice.test import Client
 from mock import MagicMock, patch
 
-from tests.testapp.chalicelib.models import Account
+from examples.chalicelib.models import Account
 
 USER_ID_FILTER_REQUIRED = (
-    'tests.testapp.chalicelib.blueprints.authed.'
+    'examples.chalicelib.blueprints.authed.'
     'AuthedBlueprint.user_id_filter_required'
 )
 

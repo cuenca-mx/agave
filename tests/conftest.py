@@ -4,14 +4,14 @@ from typing import Generator, List
 import pytest
 from chalice.test import Client
 
-from tests.testapp.chalicelib.models import Account
+from examples.chalicelib.models import Account
 
 from .helpers import accept_json
 
 
 @pytest.fixture()
 def client() -> Generator[Client, None, None]:
-    from .testapp import app
+    from examples import app
 
     with Client(app) as client:
         client.http.post = accept_json(  # type: ignore[assignment]
