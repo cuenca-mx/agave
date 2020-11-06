@@ -28,7 +28,7 @@ class AuthedBlueprint(Blueprint):
             def authed_handler(*args, **kwargs):
                 # your authentication logic goes here
                 # before execute `user_handler` function.
-                self.current_request.user_id = '123445'
+                self.current_request.user_id = 'US123456789'
                 return user_handler(*args, **kwargs)
 
             self._register_handler(

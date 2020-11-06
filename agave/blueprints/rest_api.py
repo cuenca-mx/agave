@@ -29,7 +29,9 @@ class RestApiBlueprint(Blueprint):
         This method is required to be implemented with your own business logic.
         You have to determine when `user_id` filter is required.
         """
-        raise NotImplementedError('this method should be override')
+        raise NotImplementedError(
+            'this method should be overrided'
+        )  # pragma: no cover
 
     def validate(self, validation_type: Type[BaseModel]):
         """This decorator validate the request body using a custom pydantyc model

@@ -1,3 +1,4 @@
+import datetime as dt
 from typing import Generator, List
 
 import pytest
@@ -30,10 +31,26 @@ def client() -> Generator[Client, None, None]:
 def accounts() -> Generator[List[Account], None, None]:
     user_id = 'US123456789'
     accs = [
-        Account(name='Frida Kahlo', user_id=user_id),
-        Account(name='Sor Juana Inés', user_id=user_id),
-        Account(name='Leona Vicario', user_id=user_id),
-        Account(name='Remedios Varo', user_id='US987654321'),
+        Account(
+            name='Frida Kahlo',
+            user_id=user_id,
+            created_at=dt.datetime(2020, 1, 1),
+        ),
+        Account(
+            name='Sor Juana Inés',
+            user_id=user_id,
+            created_at=dt.datetime(2020, 2, 1),
+        ),
+        Account(
+            name='Leona Vicario',
+            user_id=user_id,
+            created_at=dt.datetime(2020, 3, 1),
+        ),
+        Account(
+            name='Remedios Varo',
+            user_id='US987654321',
+            created_at=dt.datetime(2020, 4, 1),
+        ),
     ]
 
     for acc in accs:
@@ -46,3 +63,8 @@ def accounts() -> Generator[List[Account], None, None]:
 @pytest.fixture
 def account(accounts: List[Account]) -> Generator[Account, None, None]:
     yield accounts[0]
+
+
+@pytest.fixture
+def other_account(accounts: List[Account]) -> Generator[Account, None, None]:
+    yield accounts[-1]
