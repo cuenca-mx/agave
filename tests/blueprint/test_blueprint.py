@@ -1,9 +1,8 @@
 from urllib.parse import urlencode
 
-import mock
 import pytest
 from chalice.test import Client
-from mock import patch
+from mock import MagicMock, patch
 
 from tests.testapp.chalicelib.models import Account
 
@@ -34,7 +33,7 @@ def test_retrieve_resource(client: Client, account: Account) -> None:
     assert resp.json_body == account.to_dict()
 
 
-@patch(USER_ID_FILTER_REQUIRED, mock.MagicMock(return_value=True))
+@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_retrieve_resource_user_id_filter_required(
     client: Client, other_account: Account
 ) -> None:
@@ -105,23 +104,33 @@ def test_query_all_with_limit(client: Client) -> None:
 
 @pytest.mark.usefixtures('accounts')
 def test_query_all_resource(client: Client) -> None:
-    page_size = 2
-    query_params = dict(page_size=page_size)
+    query_params = dict(page_size=2)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
-    assert len(resp.json_body['items']) == page_size
+    assert len(resp.json_body['items']) == 2
+
+    resp = client.http.get(resp.json_body['next_page_uri'])
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 2
 
 
 @pytest.mark.usefixtures('accounts')
-@patch(USER_ID_FILTER_REQUIRED, mock.MagicMock(return_value=True))
+@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_query_user_id_filter_required(client: Client) -> None:
     query_params = dict(page_size=2)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     assert len(resp.json_body['items']) == 2
+    assert all(
+        item['user_id'] == 'US123456789' for item in resp.json_body['items']
+    )
+
     resp = client.http.get(resp.json_body['next_page_uri'])
     assert resp.status_code == 200
     assert len(resp.json_body['items']) == 1
+    assert all(
+        item['user_id'] == 'US123456789' for item in resp.json_body['items']
+    )
 
 
 def test_query_resource_with_invalid_params(client: Client) -> None:
