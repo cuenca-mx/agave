@@ -18,6 +18,7 @@ lib/
 lib64/
 !chalicelib/lib
 !tests/lib
+!agave/lib
 parts/
 sdist/
 var/

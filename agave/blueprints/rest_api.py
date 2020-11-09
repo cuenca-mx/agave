@@ -27,10 +27,10 @@ class RestApiBlueprint(Blueprint):
     def user_id_filter_required(self):
         """
         This method is required to be implemented with your own business logic.
-        You have to determine when `user_id` filter is required.
+        You are responsible of determining when `user_id` filter is required.
         """
         raise NotImplementedError(
-            'this method should be overrided'
+            'this method should be override'
         )  # pragma: no cover
 
     def validate(self, validation_type: Type[BaseModel]):

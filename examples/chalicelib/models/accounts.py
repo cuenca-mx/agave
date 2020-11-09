@@ -1,6 +1,6 @@
 from mongoengine import DateTimeField, Document, StringField
 
-from agave.models.base import BaseModel
+from agave.models import BaseModel
 from agave.models.helpers import uuid_field
 
 
