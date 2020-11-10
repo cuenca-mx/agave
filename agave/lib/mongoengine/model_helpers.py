@@ -1,6 +1,7 @@
 # mypy: ignore-errors
 from enum import Enum
 
+from bson import DBRef
 from mongoengine import (
     BooleanField,
     ComplexDateTimeField,
@@ -39,9 +40,15 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
 
         if field_name == 'id':
             continue
-
         data = obj._data[field_name]
         if isinstance(obj._fields[field_name], ListField):
+            field_name = (
+                f'{field_name}_uris'
+                if isinstance(
+                    obj._fields[field_name].field, LazyReferenceField
+                )
+                else field_name
+            )
             return_data[field_name] = list_field_to_dict(data)
         elif isinstance(obj._fields[field_name], EmbeddedDocumentField):
             return_data[field_name] = mongo_to_dict(data, [])
@@ -75,6 +82,8 @@ def list_field_to_dict(list_field: list) -> list:
             return_data.append(mongo_to_dict(item))
         elif isinstance(item, Enum):
             return_data.append(item.value)
+        elif isinstance(item, DBRef):
+            return_data.append(f'/{item._DBRef__collection}/{item.id}')
         else:
             return_data.append(mongo_to_python_type(item, item))
 
