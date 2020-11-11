@@ -21,7 +21,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data=dict(cuenca_validations=['py.typed']),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=[
         'chalice>=1.16.0,<1.21.3',
         'cuenca-validations>=0.4,<0.7',
