@@ -1,5 +1,5 @@
 blinker==1.4
-boto3==1.14.*
+boto3==1.16.*
 chalice==1.21.2
 mongoengine==0.20.0
 sentry-sdk==0.19.1
