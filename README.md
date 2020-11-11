@@ -10,7 +10,7 @@ this library allow send and receive JSON data to these endpoints to query, modif
 Install agave using pip:
 
 ```bash
-pip install agave==0.0.2.dev0
+pip install agave==0.0.1
 ```
 
 You can use agave for blueprint like this:
