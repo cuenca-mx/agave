@@ -2,8 +2,8 @@ SHELL := bash
 PATH := ./venv/bin:${PATH}
 PYTHON = python3.8
 PROJECT = agave
-isort = isort $(PROJECT) tests setup.py
-black = black -S -l 79 --target-version py38 $(PROJECT) $(PROJECT) tests setup.py
+isort = isort $(PROJECT) tests examples setup.py
+black = black -S -l 79 --target-version py38 $(PROJECT) $(PROJECT) tests examples setup.py
 
 
 .PHONY: all
@@ -32,7 +32,7 @@ format:
 
 .PHONY: lint
 lint:
-	flake8 $(PROJECT) tests setup.py
+	flake8 $(PROJECT) tests examples setup.py
 	$(isort) --check-only
 	$(black) --check
 	mypy $(PROJECT) tests
