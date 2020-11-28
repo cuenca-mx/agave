@@ -35,21 +35,28 @@ def accounts() -> Generator[List[Account], None, None]:
             name='Frida Kahlo',
             user_id=user_id,
             created_at=dt.datetime(2020, 1, 1),
+            secret='I was born in Coyoacan, CDMX!',
         ),
         Account(
             name='Sor Juana Inés',
             user_id=user_id,
             created_at=dt.datetime(2020, 2, 1),
+            secret='I speak Latin very well',
         ),
         Account(
             name='Leona Vicario',
             user_id=user_id,
             created_at=dt.datetime(2020, 3, 1),
+            secret=(
+                'my real name is María de la Soledad '
+                'Leona Camila Vicario Fernández de San Salvador'
+            ),
         ),
         Account(
             name='Remedios Varo',
             user_id='US987654321',
             created_at=dt.datetime(2020, 4, 1),
+            secret='Octavio Paz was my friend!',
         ),
     ]
 

@@ -1,6 +1,6 @@
 import functools
 from inspect import signature
-from typing import Any, Callable, Dict, Type
+from typing import Any, Callable, Dict, Type, Tuple
 
 from chalice import BadRequestError, Blueprint, NotFoundError, Response
 from chalice.app import MethodNotAllowedError
@@ -9,6 +9,8 @@ from cuenca_validations.typing import DictStrAny
 from pydantic import BaseModel, ValidationError
 
 from ..exc import ModelDoesNotExist
+
+RespTuple = Tuple[Any, int]
 
 
 class RestApiBlueprintV2(Blueprint):
@@ -29,98 +31,90 @@ class RestApiBlueprintV2(Blueprint):
         return self.current_request.user_id
 
     def resource(self, path: str):
-        def resource_class_wrapper(resource):
-            @self.get(path + '/{resource_id}')
-            def retrieve(resource_id: str) -> Response:
-                if not hasattr(resource, 'retrieve'):
-                    return default_retrieve_handler(resource_id)
+        def resource_class_wrapper(resource: Type) -> None:
+            try:
+                formatter = resource.formatter
+            except AttributeError:
+                formatter = DefaultFormatter
 
-                # you can inject new attributes or tools inside
-                # the class instance for some custom logic
-                result = resource().retrieve(resource_id)
-                if type(result) is tuple:
-                    model, status_code = result
-                    return Response(model.to_dict(), status_code=status_code)
+            @self.get(path + '/{resource_id}')
+            @format_with(formatter)
+            def retrieve(resource_id: str) -> RespTuple:
+                if not hasattr(resource, 'retrieve'):
+                    result = default_retrieve_handler(resource_id)
                 else:
-                    return Response(result.to_dict())
+                    result = resource().retrieve(resource_id)
+                return response(result)
 
             @self.get(path)
-            def query():
+            @format_with(formatter)
+            def query() -> RespTuple:
                 query_params = self.current_request.query_params
                 if not hasattr(resource, 'query'):
                     request = validate_request(
                         resource.query_validator, query_params
                     )
-                    return default_query_handler(request)
+                    result = default_query_handler(request)
                 else:
                     params = transform_request(
                         resource.query, 'query_params', query_params
                     )
-                    resp = resource().query(query_params=params)
-                    return resp
+                    result = resource().query(query_params=params)
+                return response(result)
 
             @self.post(path)
             @if_handler_exist_in(resource)
-            def create():
+            @format_with(formatter)
+            def create() -> RespTuple:
                 request = transform_request(
                     resource.create, 'request', self.current_request.json_body
                 )
                 result = resource().create(request)
-                if type(result) is tuple:
-                    model, status_code = result
-                    return Response(model.to_dict(), status_code=status_code)
-                else:
-                    return Response(result.to_dict(), status_code=201)
+                return response(result, 201)
 
             @self.patch(path + '/{resource_id}')
             @if_handler_exist_in(resource)
-            def update(resource_id: str):
+            @format_with(formatter)
+            def update(resource_id: str) -> RespTuple:
                 request = transform_request(
                     resource.create, 'request', self.current_request.json_body
                 )
-                try:
-                    model = resource.repository.get_by_id(resource_id)
-                except ModelDoesNotExist:
-                    raise NotFoundError('Not valid id')
-
+                model = get_resource_or_raise_not_found(resource_id)
                 result = resource().update(model, request)
-                if type(result) is tuple:
-                    model, status_code = result
-                    return Response(model.to_dict(), status_code=status_code)
-                else:
-                    return Response(result.to_dict())
+                return response(result)
 
             @self.delete(path + '/{resource_id}')
             @if_handler_exist_in(resource)
-            def delete(resource_id: str):
+            @format_with(formatter)
+            def delete(resource_id: str) -> RespTuple:
+                model = get_resource_or_raise_not_found(resource_id)
+                result = resource().delete(model)
+                return response(result)
+
+            def default_retrieve_handler(resource_id: str) -> Any:
+                return get_resource_or_raise_not_found(resource_id)
+
+            def default_query_handler(request: QueryParams) -> Any:
+                filters = resource.get_query_filter(request)
+                if request.count:
+                    count = resource.repository.count(filters)
+                    return dict(count=count)
+                else:
+                    return resource.repository.all(filters)
+
+            def response(result: Any, status_code: int = 200) -> RespTuple:
+                if type(result) is tuple:
+                    return result
+                else:
+                    return result, status_code
+
+            def get_resource_or_raise_not_found(resource_id: str) -> Any:
                 try:
                     model = resource.repository.get_by_id(resource_id)
                 except ModelDoesNotExist:
                     raise NotFoundError('Not valid id')
+                return model
 
-                result = resource().delete(model)
-                if type(result) is tuple:
-                    model, status_code = result
-                    return Response(model.to_dict(), status_code=status_code)
-                else:
-                    return Response(result.to_dict())
-
-            def default_retrieve_handler(resource_id: str) -> Response:
-                try:
-                    result = resource.repository.get_by_id(resource_id)
-                except ModelDoesNotExist:
-                    raise NotFoundError('Not valid id')
-                return Response(result.to_dict())
-
-            def default_query_handler(request: QueryParams) -> Response:
-                filters = resource.get_query_filter(request)
-                if request.count:
-                    count = resource.repository.count(filters)
-                    result = dict(count=count)
-                else:
-                    result = resource.repository.all(filters)
-
-                return Response([r.to_dict() for r in result])
 
         return resource_class_wrapper
 
@@ -208,3 +202,26 @@ def if_handler_exist_in(resource: Any) -> Callable:
         return wrapper
 
     return wrap_builder
+
+
+def format_with(formatter: Any):
+    def wrap_builder(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Dict:
+            results, status_code = func(*args, **kwargs)
+            if isinstance(results, list):
+                formatted = [formatter(item) for item in results]
+            elif isinstance(results, dict):
+                formatted = results
+            else:
+                formatted = formatter(results)
+            return Response(formatted, status_code=status_code)
+
+        return wrapper
+
+    return wrap_builder
+
+
+class DefaultFormatter:
+    def __call__(self, instance: Any) -> Dict:
+        return instance.to_dict()

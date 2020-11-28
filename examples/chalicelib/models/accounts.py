@@ -8,5 +8,6 @@ class Account(BaseModel, Document):
     id = StringField(primary_key=True, default=uuid_field('AC'))
     name = StringField(required=True)
     user_id = StringField(required=True)
+    secret = StringField()
     created_at = DateTimeField()
     deactivated_at = DateTimeField()
