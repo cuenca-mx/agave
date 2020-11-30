@@ -1,15 +1,19 @@
 import datetime as dt
 
-from rom import DateTime
+from rom import DateTime, util
 
-from agave.repositories import BaseModel, String, uuid_field
+from agave.models.helpers import uuid_field
+from agave.repositories import BaseModel, String
 
 
 class AccountRedis(BaseModel):
-    id = String(default=uuid_field('US'),
-                required=True,
-                unique=True,
-                index=True)
+    id = String(
+        default=uuid_field('US'),
+        required=True,
+        unique=True,
+        index=True,
+        keygen=util.IDENTITY,
+    )
     name = String(required=True)
     user_id = String(required=True)
     secret = String()
