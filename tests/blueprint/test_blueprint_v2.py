@@ -2,12 +2,12 @@ from urllib.parse import urlencode
 
 import pytest
 from chalice.test import Client
+from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account
 
-USER_ID_FILTER_REQUIRED = (
-    'examples.chalicelib.blueprints.authed.'
-    'AuthedBlueprint.user_id_filter_required'
+QUERY_DELIMITER = (
+    'examples.chalicelib.blueprints.authed.AuthedBlueprint.query_delimiter'
 )
 
 
@@ -31,12 +31,15 @@ def test_retrieve_resource(client: Client, account: Account) -> None:
     assert resp.status_code == 200
 
 
-# @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
-# def test_retrieve_resource_user_id_filter_required(
-#     client: Client, other_account: Account
-# ) -> None:
-#     resp = client.http.get(f'/accountsv2/{other_account.id}')
-#     assert resp.status_code == 404
+@patch(
+    QUERY_DELIMITER,
+    MagicMock(return_value=dict(user_id='US123456789')),
+)
+def test_retrieve_resource_user_id_filter_required(
+    client: Client, other_account: Account
+) -> None:
+    resp = client.http.get(f'/accountsv2/{other_account.id}')
+    assert resp.status_code == 404
 
 
 def test_retrieve_resource_not_found(client: Client) -> None:
@@ -100,35 +103,35 @@ def test_query_all_with_limit(client: Client) -> None:
     assert response.json_body['next_page_uri'] is None
 
 
-# @pytest.mark.usefixtures('accounts')
-# def test_query_all_resource(client: Client) -> None:
-#     query_params = dict(page_size=2)
-#     resp = client.http.get(f'/accountsv2?{urlencode(query_params)}')
-#     assert resp.status_code == 200
-#     assert len(resp.json_body['items']) == 2
+@pytest.mark.usefixtures('accounts')
+def test_query_all_resource(client: Client) -> None:
+    query_params = dict(page_size=2)
+    resp = client.http.get(f'/accountsv2?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 2
 
-#     resp = client.http.get(resp.json_body['next_page_uri'])
-#     assert resp.status_code == 200
-#     assert len(resp.json_body['items']) == 2
+    resp = client.http.get(resp.json_body['next_page_uri'])
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 2
 
 
-# @pytest.mark.usefixtures('accounts')
-# @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
-# def test_query_user_id_filter_required(client: Client) -> None:
-#     query_params = dict(page_size=2)
-#     resp = client.http.get(f'/accountsv2?{urlencode(query_params)}')
-#     assert resp.status_code == 200
-#     assert len(resp.json_body['items']) == 2
-#     assert all(
-#         item['user_id'] == 'US123456789' for item in resp.json_body['items']
-#     )
+@pytest.mark.usefixtures('accounts')
+@patch(QUERY_DELIMITER, MagicMock(return_value=dict(user_id='US123456789')))
+def test_query_user_id_filter_required(client: Client) -> None:
+    query_params = dict(page_size=2)
+    resp = client.http.get(f'/accountsv2?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 2
+    assert all(
+        item['user_id'] == 'US123456789' for item in resp.json_body['items']
+    )
 
-#     resp = client.http.get(resp.json_body['next_page_uri'])
-#     assert resp.status_code == 200
-#     assert len(resp.json_body['items']) == 1
-#     assert all(
-#         item['user_id'] == 'US123456789' for item in resp.json_body['items']
-#     )
+    resp = client.http.get(resp.json_body['next_page_uri'])
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 1
+    assert all(
+        item['user_id'] == 'US123456789' for item in resp.json_body['items']
+    )
 
 
 def test_query_resource_with_invalid_params(client: Client) -> None:

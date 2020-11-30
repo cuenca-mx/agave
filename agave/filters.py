@@ -2,7 +2,7 @@ from cuenca_validations.types import QueryParams
 from mongoengine import Q
 
 
-def generic_query(query: QueryParams) -> Q:
+def generic_query(query: QueryParams, **kwargs) -> Q:
     filters = Q()
     if query.created_before:
         filters &= Q(created_at__lt=query.created_before)
@@ -17,6 +17,7 @@ def generic_query(query: QueryParams) -> Q:
         'key',
     }
     fields = query.dict(exclude=exclude_fields)
+    fields = {**fields, **kwargs}
     if 'count' in fields:
         del fields['count']
     return filters & Q(**fields)

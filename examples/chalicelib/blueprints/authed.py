@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable, Dict
 
 from chalice import Blueprint
 
@@ -9,6 +9,13 @@ class AuthedBlueprint(Blueprint):
     This dummy class is an example of Authentication/Authorization blueprint.
 
     """
+
+    @property
+    def current_user_id(self):
+        return self.current_request.user_id
+
+    def query_delimiter(self, **_) -> Dict[str, Any]:
+        return {}
 
     def route(self, path: str, **kwargs):
         """

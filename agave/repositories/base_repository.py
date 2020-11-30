@@ -8,13 +8,13 @@ from .query_result import QueryResult
 
 class BaseRepository(ABC):
     @abstractmethod
-    def get_by_id(self, resource_id: str) -> Any:
+    def get_by_id(self, resource_id: str, **delimiters) -> Any:
         ...
 
     @abstractmethod
-    def count(self, filters: QueryParams) -> int:
+    def count(self, params: QueryParams, **delimiters) -> int:
         ...
 
     @abstractmethod
-    def all(self, filters: QueryParams) -> QueryResult:
+    def all(self, params: QueryParams, **delimiters) -> QueryResult:
         ...

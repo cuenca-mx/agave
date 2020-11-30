@@ -14,34 +14,34 @@ class MongoRepository(BaseRepository):
         self.model = model
         self.query_builder = query_builder
 
-    def get_by_id(self, resource_id: str):
+    def get_by_id(self, resource_id: str, **delimiters):
         try:
-            data = self.model.objects.get(id=resource_id)
+            data = self.model.objects.get(id=resource_id, **delimiters)
         except DoesNotExist:
             raise ModelDoesNotExist
         return data
 
-    def count(self, filters: QueryParams) -> int:
-        query = self.query_builder(filters)
+    def count(self, params: QueryParams, **delimiters) -> int:
+        query = self.query_builder(params, **delimiters)
         return self.model.objects.filter(query).count()
 
-    def all(self, query: QueryParams) -> QueryResult:
-        filters = self.query_builder(query)
-        if query.limit:
-            limit = min(query.limit, query.page_size)
-            query.limit = max(0, query.limit - limit)  # type: ignore
+    def all(self, params: QueryParams, **delimiters) -> QueryResult:
+        query = self.query_builder(params, **delimiters)
+        if params.limit:
+            limit = min(params.limit, params.page_size)
+            params.limit = max(0, params.limit - limit)  # type: ignore
         else:
-            limit = query.page_size
+            limit = params.page_size
         items = (
             self.model.objects.order_by("-created_at")
-            .filter(filters)
+            .filter(query)
             .limit(limit)
         )
 
         results = list(items)
         last = results[-1]
         has_more = None
-        wants_more = query.limit is None or query.limit > 0
+        wants_more = params.limit is None or params.limit > 0
         if wants_more:
             # only perform this query if it's necessary
             has_more = items.limit(limit + 1).count() > limit

@@ -29,9 +29,8 @@ class RestApiBlueprintV2(Blueprint):
     def delete(self, path: str, **kwargs):
         return self.route(path, methods=['DELETE'], **kwargs)
 
-    @property
-    def current_user_id(self):
-        return self.current_request.user_id
+    def query_delimiter(self, **__) -> Any:
+        return {}
 
     def resource(self, path: str):
         def resource_class_wrapper(resource: Type[Any]) -> None:
@@ -93,28 +92,39 @@ class RestApiBlueprintV2(Blueprint):
                 return response(result)
 
             def default_retrieve_handler(resource_id: str) -> Any:
-                # TODO: lógica para restringir el `user_id`
                 return get_model_or_raise_not_found(resource_id)
 
             def default_query_handler(
                 query_params: QueryParams,
             ) -> Union[Dict, QueryResult]:
+                delimiter = self.query_delimiter()
                 if query_params.count:
-                    count = resource.repository.count(query_params)
+                    count = resource.repository.count(
+                        query_params, **delimiter
+                    )
                     return dict(count=count)
 
-                query_result = resource.repository.all(query_params)
+                query_result = resource.repository.all(
+                    query_params, **delimiter
+                )
                 if query_result.has_more and query_result.wants_more:
-                    query_params.created_before = query_result.last_created_at
+                    query_params.created_before = (
+                        query_result.last_created_at.isoformat()
+                    )
                     path = self.current_request.context['resourcePath']
-                    params = query.dict()
+                    params = query_params.dict()
                     # TODO: lógica para remover el filtro `user_id`
                     query_result.next_page = f'{path}?{urlencode(params)}'
+
                 return query_result
 
             def get_model_or_raise_not_found(resource_id: str) -> Any:
+                # TODO: lógica para restringir el `user_id`
+                delimiters = self.query_delimiter()
                 try:
-                    model = resource.repository.get_by_id(resource_id)
+                    model = resource.repository.get_by_id(
+                        resource_id, **delimiters
+                    )
                 except ModelDoesNotExist:
                     raise NotFoundError('Not valid id')
                 return model
