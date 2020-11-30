@@ -4,10 +4,9 @@ from cuenca_validations.types import QueryParams
 from mongoengine import Document
 from mongoengine import DoesNotExist as DoesNotExist
 
-from agave.repositories.query_result import QueryResult
-
 from ..exc import ModelDoesNotExist
 from .base_repository import BaseRepository
+from .query_result import QueryResult
 
 
 class MongoRepository(BaseRepository):
@@ -42,13 +41,14 @@ class MongoRepository(BaseRepository):
         results = list(items)
         last = results[-1]
         has_more = None
-
-        if query.limit is None or query.limit > 0:
+        wants_more = query.limit is None or query.limit > 0
+        if wants_more:
             # only perform this query if it's necessary
             has_more = items.limit(limit + 1).count() > limit
 
         return QueryResult(
             items=list(items),
             has_more=has_more,
+            wants_more=wants_more,
             last_created_at=last.created_at,
         )

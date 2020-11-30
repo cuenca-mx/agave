@@ -1,7 +1,10 @@
-from typing import Any, Tuple, Type
+from typing import Any, Dict, Tuple, Type, Union
+from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError
 from cuenca_validations.types import QueryParams
+
+from agave.repositories.query_result import QueryResult
 
 from ..exc import ModelDoesNotExist
 from .decorators import format_with, if_handler_exist_in
@@ -90,14 +93,24 @@ class RestApiBlueprintV2(Blueprint):
                 return response(result)
 
             def default_retrieve_handler(resource_id: str) -> Any:
+                # TODO: lógica para restringir el `user_id`
                 return get_model_or_raise_not_found(resource_id)
 
-            def default_query_handler(query_params: QueryParams) -> Any:
+            def default_query_handler(
+                query_params: QueryParams,
+            ) -> Union[Dict, QueryResult]:
                 if query_params.count:
                     count = resource.repository.count(query_params)
                     return dict(count=count)
-                else:
-                    return resource.repository.all(query_params)
+
+                query_result = resource.repository.all(query_params)
+                if query_result.has_more and query_result.wants_more:
+                    query_params.created_before = query_result.last_created_at
+                    path = self.current_request.context['resourcePath']
+                    params = query.dict()
+                    # TODO: lógica para remover el filtro `user_id`
+                    query_result.next_page = f'{path}?{urlencode(params)}'
+                return query_result
 
             def get_model_or_raise_not_found(resource_id: str) -> Any:
                 try:

@@ -4,7 +4,7 @@ from typing import Any, Callable
 from chalice import Response
 from chalice.app import MethodNotAllowedError
 
-from agave.repositories.query_result import QueryResult
+from ..repositories.query_result import QueryResult
 
 
 def if_handler_exist_in(resource: Any) -> Callable:
@@ -38,7 +38,9 @@ def format_with(formatter: Any):
                     next_page_uri=results.next_page,
                 )
             elif isinstance(results, list):
-                formatted = [formatter(item) for item in results]
+                formatted = [
+                    formatter(item) for item in results
+                ]  # type: ignore
             elif isinstance(results, dict):
                 formatted = results  # type: ignore
             else:

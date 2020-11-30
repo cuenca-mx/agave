@@ -8,7 +8,7 @@ from .query_result import QueryResult
 
 class BaseRepository(ABC):
     @abstractmethod
-    def get_by_id(self, resource_id: str)-> Any:
+    def get_by_id(self, resource_id: str) -> Any:
         ...
 
     @abstractmethod
