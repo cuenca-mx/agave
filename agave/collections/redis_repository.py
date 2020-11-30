@@ -9,7 +9,7 @@ from .base_repository import BaseRepository
 
 
 class RedisRepository(BaseRepository):
-    def __int__(self, model: BaseModel, query_builder: Callable):
+    def __init__(self, model: BaseModel, query_builder: Callable):
         self.model = model
         self.query_builder = query_builder
 

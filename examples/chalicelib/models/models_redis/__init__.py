@@ -1,4 +1,4 @@
-__all__ = ['Account', 'Transaction']
+__all__ = ['AccountRedis', 'TransactionRedis']
 
-from .accounts import Account
-from .transactions import Transaction
+from .accounts import AccountRedis
+from .transactions import TransactionRedis
