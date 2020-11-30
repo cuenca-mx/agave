@@ -6,15 +6,18 @@ from agave.repositories import MongoRepository
 
 from ..models import Account as Model
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
-from .base import app_v2
+from .base import AuthedRestApiBlueprintV2, app_v2
 
 
-# @app_v2.with_request_context
 class AccountFormatter:
+    def __init__(self, app: AuthedRestApiBlueprintV2):
+        self.app = app
+
     def __call__(self, instance: Model) -> Dict:
         data = instance.to_dict()
-        secret = data['secret']
-        data['secret'] = secret[0:10] + ('*' * 10)
+        secret = data.get('secret')
+        if secret:
+            data['secret'] = secret[0:10] + ('*' * 10)
         return data
 
 
@@ -22,9 +25,9 @@ class AccountFormatter:
 class AccountV2:
     repository = MongoRepository(Model, generic_query)
     query_validator = AccountQuery
-    # it should be an instance so we can keep it compatible
-    # with a function
-    formatter = AccountFormatter()
+    #  it should be an instance so we can keep it compatible
+    #  with a function
+    formatter = AccountFormatter(app_v2)
 
     def create(self, request: AccountRequest) -> Tuple[Model, int]:
         account = Model(name=request.name, user_id=app_v2.current_user_id)

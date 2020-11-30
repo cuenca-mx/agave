@@ -1,8 +1,10 @@
-from typing import Callable, Optional
+from typing import Callable
 
 from cuenca_validations.types import QueryParams
 from mongoengine import Document
 from mongoengine import DoesNotExist as DoesNotExist
+
+from agave.repositories.query_result import QueryResult
 
 from ..exc import ModelDoesNotExist
 from .base_repository import BaseRepository
@@ -21,9 +23,10 @@ class MongoRepository(BaseRepository):
         return data
 
     def count(self, filters: QueryParams) -> int:
-        return self.model.objects.filter(filters).count()
+        query = self.query_builder(filters)
+        return self.model.objects.filter(query).count()
 
-    def all(self, query: QueryParams):
+    def all(self, query: QueryParams) -> QueryResult:
         filters = self.query_builder(query)
         if query.limit:
             limit = min(query.limit, query.page_size)
@@ -35,19 +38,17 @@ class MongoRepository(BaseRepository):
             .filter(filters)
             .limit(limit)
         )
-        item_dicts = [i.to_dict() for i in items]
 
-        has_more: Optional[bool] = None
-        if wants_more := query.limit is None or query.limit > 0:
+        results = list(items)
+        last = results[-1]
+        has_more = None
+
+        if query.limit is None or query.limit > 0:
             # only perform this query if it's necessary
             has_more = items.limit(limit + 1).count() > limit
 
-        next_page_uri: Optional[str] = None
-        if wants_more and has_more:
-            query.created_before = item_dicts[-1]['created_at']
-            path = self.current_request.context['resourcePath']
-            params = query.dict()
-            if self.user_id_filter_required():
-                params.pop('user_id')
-            next_page_uri = f'{path}?{urlencode(params)}'
-        return dict(items=item_dicts, next_page_uri=next_page_uri)
+        return QueryResult(
+            items=list(items),
+            has_more=has_more,
+            last_created_at=last.created_at,
+        )
