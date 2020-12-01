@@ -6,9 +6,8 @@ from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account
 
-USER_ID_FILTER_REQUIRED = (
-    'examples.chalicelib.blueprints.authed.'
-    'AuthedBlueprint.user_id_filter_required'
+QUERY_DELIMITER = (
+    'examples.chalicelib.blueprints.authed.AuthedBlueprint.query_delimiter'
 )
 
 
@@ -30,10 +29,12 @@ def test_create_resource_bad_request(client: Client) -> None:
 def test_retrieve_resource(client: Client, account: Account) -> None:
     resp = client.http.get(f'/accounts/{account.id}')
     assert resp.status_code == 200
-    assert resp.json_body == account.to_dict()
 
 
-@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+@patch(
+    QUERY_DELIMITER,
+    MagicMock(return_value=dict(user_id='US123456789')),
+)
 def test_retrieve_resource_user_id_filter_required(
     client: Client, other_account: Account
 ) -> None:
@@ -115,7 +116,7 @@ def test_query_all_resource(client: Client) -> None:
 
 
 @pytest.mark.usefixtures('accounts')
-@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+@patch(QUERY_DELIMITER, MagicMock(return_value=dict(user_id='US123456789')))
 def test_query_user_id_filter_required(client: Client) -> None:
     query_params = dict(page_size=2)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')

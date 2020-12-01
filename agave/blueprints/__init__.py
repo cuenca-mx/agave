@@ -1,4 +1,3 @@
-__all__ = ['RestApiBlueprint', 'RestApiBlueprintV2']
+__all__ = ['RestApiBlueprint']
 
 from .rest_api import RestApiBlueprint
-from .rest_api2 import RestApiBlueprintV2

@@ -1,47 +1,46 @@
 import datetime as dt
-
-from chalice import NotFoundError, Response
-from mongoengine import DoesNotExist
+from typing import Dict, Tuple
 
 from agave.filters import generic_query
+from agave.repositories import MongoRepository
+from examples.chalicelib.blueprints import AuthedRestApiBlueprint
 
-from ..models import Account as AccountModel
+from ..models import Account as Model
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
 
 
+class AccountFormatter:
+    def __init__(self, app: AuthedRestApiBlueprint):
+        self.app = app
+
+    def __call__(self, instance: Model) -> Dict:
+        data = instance.to_dict()
+        secret = data.get('secret')
+        if secret:
+            data['secret'] = secret[0:10] + ('*' * 10)
+        return data
+
+
 @app.resource('/accounts')
 class Account:
-    model = AccountModel
+    repository = MongoRepository(Model, generic_query)
     query_validator = AccountQuery
-    update_validator = AccountUpdateRequest
-    get_query_filter = generic_query
+    #  it should be an instance so we can keep it compatible
+    #  with a function
+    formatter = AccountFormatter(app)
 
-    @staticmethod
-    @app.validate(AccountRequest)
-    def create(request: AccountRequest) -> Response:
-        account = AccountModel(
-            name=request.name,
-            user_id=app.current_user_id,
-        )
+    def create(self, request: AccountRequest) -> Tuple[Model, int]:
+        account = Model(name=request.name, user_id=app.current_user_id)
         account.save()
-        return Response(account.to_dict(), status_code=201)
+        return account, 201
 
-    @staticmethod
-    def update(
-        account: AccountModel, request: AccountUpdateRequest
-    ) -> Response:
+    def update(self, account: Model, request: AccountUpdateRequest) -> Model:
         account.name = request.name
         account.save()
-        return Response(account.to_dict(), status_code=200)
+        return account
 
-    @staticmethod
-    def delete(id: str) -> Response:
-        try:
-            account = AccountModel.objects.get(id=id)
-        except DoesNotExist:
-            raise NotFoundError('Not valid id')
-
+    def delete(self, account: Model) -> Model:
         account.deactivated_at = dt.datetime.utcnow().replace(microsecond=0)
         account.save()
-        return Response(account.to_dict(), status_code=200)
+        return account

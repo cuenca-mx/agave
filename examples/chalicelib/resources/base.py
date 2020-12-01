@@ -1,10 +1,8 @@
 from typing import Dict
 
-from ..blueprints import AuthedRestApiBlueprint, AuthedRestApiBlueprintV2
+from ..blueprints import AuthedRestApiBlueprint
 
 app = AuthedRestApiBlueprint(__name__)
-
-app_v2 = AuthedRestApiBlueprintV2(__name__)
 
 
 @app.get('/healthy_auth')
