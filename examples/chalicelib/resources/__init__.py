@@ -7,5 +7,5 @@ __all__ = [
 
 from .accounts import Account
 from .base import app
-from .transactions import Transaction
 from .resources_redis.accounts_redis import AccountRedis
+from .transactions import Transaction
