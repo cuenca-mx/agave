@@ -17,5 +17,5 @@ class AccountRedis(BaseModel):
     name = String(required=True)
     user_id = String(required=True)
     secret = String()
-    created_at = DateTime(default=dt.datetime.utcnow)
-    deactivated_at = DateTime(default=dt.datetime.utcnow)
+    created_at = DateTime(default=dt.datetime.utcnow, index=True)
+    deactivated_at = DateTime(index=True)

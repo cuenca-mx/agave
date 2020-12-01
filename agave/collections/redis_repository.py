@@ -15,13 +15,14 @@ class RedisRepository(BaseRepository):
         self.query_builder = query_builder
 
     def get_by_id(self, resource_id: str, **delimiters):
-        data = self.model.query.filter(id=resource_id, **delimiters)
+        data = self.model.query.filter(
+            id=resource_id, **delimiters).first()
         if not data:
             raise ModelDoesNotExist
         return data
 
     def count(self, params: QueryParams, **delimiters) -> int:
-        query = self.query_builder(**params, **delimiters)
+        query = self.query_builder(params, **delimiters)
         return self.model.query.filter(query).count()
 
     def all(self, params: QueryParams, **delimiters) -> QueryResult:

@@ -14,18 +14,6 @@ from examples.chalicelib.validators import (
 from ..base import app
 
 
-class AccountFormatter:
-    def __init__(self, app: AuthedRestApiBlueprint):
-        self.app = app
-
-    def __call__(self, instance: Model) -> Dict:
-        data = instance.dict()
-        secret = data.get('secret')
-        if secret:
-            data['secret'] = secret[0:10] + ('*' * 10)
-        return data
-
-
 def redis_formatter(instance: Any) -> Dict:
     return instance.dict()
 
@@ -41,7 +29,6 @@ class AccountRedis:
     def create(self, request: AccountRequest) -> Tuple[Model, int]:
         account = Model(name=request.name, user_id=app.current_user_id)
         account.save()
-        account.dict()
         return account, 201
 
     def update(self, account: Model, request: AccountUpdateRequest) -> Model:
