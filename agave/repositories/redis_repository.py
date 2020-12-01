@@ -1,4 +1,3 @@
-from abc import ABC
 from typing import Callable
 
 from cuenca_validations.types import QueryParams
@@ -21,8 +20,8 @@ class RedisRepository(BaseRepository):
             raise ModelDoesNotExist
         return data
 
-    def count(self, filters: QueryParams, **delimiters) -> int:
-        query = self.query_builder(**filters, **delimiters)
+    def count(self, params: QueryParams, **delimiters) -> int:
+        query = self.query_builder(**params, **delimiters)
         return self.model.query.filter(query).count()
 
     def all(self, params: QueryParams, **delimiters) -> QueryResult:

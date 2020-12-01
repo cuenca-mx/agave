@@ -1,8 +1,7 @@
-from urllib.parse import urlencode
 import pytest
 from chalice.test import Client
+
 from examples.chalicelib.models.models_redis import AccountRedis
-from examples.chalicelib.models import Account
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
