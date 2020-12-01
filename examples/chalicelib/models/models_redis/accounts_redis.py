@@ -5,6 +5,8 @@ from rom import DateTime, util
 from agave.models.helpers import uuid_field
 from agave.repositories import BaseModel, String
 
+DEFAULT_MISSING_DATE = dt.datetime.utcfromtimestamp(0)
+
 
 class AccountRedis(BaseModel):
     id = String(
@@ -18,4 +20,4 @@ class AccountRedis(BaseModel):
     user_id = String(required=True)
     secret = String()
     created_at = DateTime(default=dt.datetime.utcnow, index=True)
-    deactivated_at = DateTime(index=True)
+    deactivated_at = DateTime(index=True, default=DEFAULT_MISSING_DATE)
