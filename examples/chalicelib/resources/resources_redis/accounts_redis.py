@@ -1,40 +1,45 @@
 import datetime as dt
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 from agave.filters import generic_query_redis
 from agave.repositories import RedisRepository
+from examples.chalicelib.blueprints import AuthedRestApiBlueprint
 
 from examples.chalicelib.models.models_redis import AccountRedis as Model
 from examples.chalicelib.validators import (
     AccountQuery, AccountRequest, AccountUpdateRequest
 )
-
-from examples.chalicelib.resources.base import AuthedRestApiBlueprintV2, app_v2
+from ..base import app
 
 
 class AccountFormatter:
-    def __init__(self, app: AuthedRestApiBlueprintV2):
+    def __init__(self, app: AuthedRestApiBlueprint):
         self.app = app
 
     def __call__(self, instance: Model) -> Dict:
-        data = instance.to_dict()
+        data = instance.dict()
         secret = data.get('secret')
         if secret:
             data['secret'] = secret[0:10] + ('*' * 10)
         return data
 
 
-@app_v2.resource('/account_redis')
+def redis_formatter(instance: Any) -> Dict:
+    return instance.dict()
+
+
+@app.resource('/account_redis')
 class AccountRedis:
     repository = RedisRepository(Model, generic_query_redis)
     query_validator = AccountQuery
     #  it should be an instance so we can keep it compatible
     #  with a function
-    formatter = AccountFormatter(app_v2)
+    formatter = redis_formatter
 
     def create(self, request: AccountRequest) -> Tuple[Model, int]:
-        account = Model(name=request.name, user_id=app_v2.current_user_id)
+        account = Model(name=request.name, user_id=app.current_user_id)
         account.save()
+        account.dict()
         return account, 201
 
     def update(self, account: Model, request: AccountUpdateRequest) -> Model:
