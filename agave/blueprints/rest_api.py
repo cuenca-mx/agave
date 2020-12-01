@@ -31,11 +31,15 @@ class RestApiBlueprint(Blueprint):
 
     def query_delimiter(self, **__) -> Any:
         """
+        Constraints query filters.
 
+        The default implementation for this `query_delimiter` does not
+        constraint anything. You are responsible of overriding this method
+        in a child Blueprint implementation
         :param __:
         :return:
         """
-        return {}
+        return {}  # pragma: no cover
 
     def resource(self, path: str):
         def resource_class_wrapper(resource: Type[Any]) -> None:
@@ -118,13 +122,11 @@ class RestApiBlueprint(Blueprint):
                     )
                     path = self.current_request.context['resourcePath']
                     params = query_params.dict()
-                    # TODO: lógica para remover el filtro `user_id`
                     query_result.next_page = f'{path}?{urlencode(params)}'
 
                 return query_result
 
             def get_model_or_raise_not_found(resource_id: str) -> Any:
-                # TODO: lógica para restringir el `user_id`
                 delimiters = self.query_delimiter()
                 try:
                     model = resource.repository.get_by_id(
