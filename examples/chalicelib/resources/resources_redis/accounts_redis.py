@@ -24,8 +24,8 @@ class AccountFormatter:
         return data
 
 
-@app_v2.resource('/accountredis')
-class AccountV2:
+@app_v2.resource('/account_redis')
+class AccountRedis:
     repository = RedisRepository(Model, generic_query_redis)
     query_validator = AccountQuery
     #  it should be an instance so we can keep it compatible
