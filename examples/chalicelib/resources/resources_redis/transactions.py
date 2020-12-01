@@ -3,10 +3,10 @@ from agave.repositories import RedisRepository
 from examples.chalicelib.models import TransactionRedis as TransactionModel
 from examples.chalicelib.validators import TransactionQuery
 
-from ..base import app_v2
+from ..base import app
 
 
-@app_v2.resource('/transactionsredis')
+@app.resource('/transactionsredis')
 class TransactionRedis:
     repository = RedisRepository(TransactionModel, generic_query_redis)
     query_validator = TransactionQuery
