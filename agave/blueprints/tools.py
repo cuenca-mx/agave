@@ -42,7 +42,7 @@ def validate_request(
 
 def transform_request(
     handler: Callable, validator_name: str, data: DictStrAny
-) -> BaseModel:
+) -> QueryParams:
     """
     transform `data` dictionary into a validator associated
     to `validator_name` param.

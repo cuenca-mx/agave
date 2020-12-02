@@ -54,7 +54,7 @@ class RestApiBlueprint(Blueprint):
             def default_retrieve_handler(_, resource_id: str) -> Any:
                 return get_model_or_raise_not_found(resource_id)
 
-            def default_query_handler(query_params: QueryParams) -> Any:
+            def default_query_handler(_, query_params: QueryParams) -> Any:
                 delimiter = self.query_delimiter()
                 if query_params.count:
                     count = resource_class.repository.count(
@@ -94,19 +94,19 @@ class RestApiBlueprint(Blueprint):
                 return response(result)
 
             @self.get(path)
+            @configure(resource_class, query=default_query_handler)
             @format_with(formatter)
-            def query() -> Tuple[Any, int]:
-                query = self.current_request.query_params
-                if not hasattr(resource_class, 'query'):
-                    request = validate_request(
-                        resource_class.query_validator, query
+            def query(resource) -> Tuple[Any, int]:
+                query_params = self.current_request.query_params
+                if resource.query.is_default:
+                    params = validate_request(
+                        resource_class.query_validator, query_params
                     )
-                    result = default_query_handler(request)
                 else:
                     params = transform_request(
-                        resource_class.query, 'query_params', query
+                        resource_class.query, 'query_params', query_params
                     )
-                    result = resource_class().query(params)
+                result = resource.query(params)
                 return response(result)
 
             @self.post(path)
