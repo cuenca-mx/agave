@@ -45,9 +45,9 @@ class RestApiBlueprint(Blueprint):
         return {}  # pragma: no cover
 
     def resource(self, path: str):
-        def resource_class_wrapper(resource: Type[Any]) -> None:
+        def resource_class_wrapper(resource_class: Type[Any]) -> None:
             try:
-                formatter = resource.formatter
+                formatter = resource_class.formatter
             except AttributeError:
                 formatter = default_formatter
 
@@ -57,12 +57,12 @@ class RestApiBlueprint(Blueprint):
             def default_query_handler(query_params: QueryParams) -> Any:
                 delimiter = self.query_delimiter()
                 if query_params.count:
-                    count = resource.repository.count(
+                    count = resource_class.repository.count(
                         query_params, **delimiter
                     )
                     return dict(count=count)
 
-                query_result = resource.repository.all(
+                query_result = resource_class.repository.all(
                     query_params, **delimiter
                 )
                 if query_result.has_more and query_result.wants_more:
@@ -78,7 +78,7 @@ class RestApiBlueprint(Blueprint):
             def get_model_or_raise_not_found(resource_id: str) -> Any:
                 delimiters = self.query_delimiter()
                 try:
-                    model = resource.repository.get_by_id(
+                    model = resource_class.repository.get_by_id(
                         resource_id, **delimiters
                     )
                 except ModelDoesNotExist:
@@ -86,59 +86,66 @@ class RestApiBlueprint(Blueprint):
                 return model
 
             @self.get(path + '/{resource_id}')
+            @configure(resource_class, retrieve=default_retrieve_handler)
+            @copy_properties_from(resource_class)
             @format_with(formatter)
-            @configure(resource, retrieve=default_retrieve_handler)
-            @copy_properties_from(resource)
-            def retrieve(
-                resource_instance, resource_id: str
-            ) -> Tuple[Any, int]:
-                result = resource_instance.retrieve(resource_id)
+            def retrieve(resource, resource_id: str) -> Tuple[Any, int]:
+                result = resource.retrieve(resource_id)
                 return response(result)
 
             @self.get(path)
             @format_with(formatter)
             def query() -> Tuple[Any, int]:
                 query = self.current_request.query_params
-                if not hasattr(resource, 'query'):
-                    request = validate_request(resource.query_validator, query)
+                if not hasattr(resource_class, 'query'):
+                    request = validate_request(
+                        resource_class.query_validator, query
+                    )
                     result = default_query_handler(request)
                 else:
                     params = transform_request(
-                        resource.query, 'query_params', query
+                        resource_class.query, 'query_params', query
                     )
-                    result = resource().query(params)
+                    result = resource_class().query(params)
                 return response(result)
 
             @self.post(path)
-            @if_handler_exist_in(resource)
-            @configure(resource)
+            @if_handler_exist_in(resource_class)
+            @configure(resource_class)
+            @copy_properties_from(resource_class)
             @format_with(formatter)
-            def create(resource_instance) -> Tuple[Any, int]:
+            def create(resource) -> Tuple[Any, int]:
                 request = transform_request(
-                    resource.create, 'request', self.current_request.json_body
+                    resource_class.create,
+                    'request',
+                    self.current_request.json_body,
                 )
-                result = resource_instance.create(request)
+                result = resource.create(request)
                 return response(result, 201)
 
             @self.patch(path + '/{resource_id}')
-            @if_handler_exist_in(resource)
-            @configure(resource)
+            @if_handler_exist_in(resource_class)
+            @configure(resource_class)
+            @copy_properties_from(resource_class)
             @format_with(formatter)
-            def update(resource_instance, resource_id: str) -> Tuple[Any, int]:
+            def update(resource, resource_id: str) -> Tuple[Any, int]:
                 request = transform_request(
-                    resource.create, 'request', self.current_request.json_body
+                    resource_class.create,
+                    'request',
+                    self.current_request.json_body,
                 )
                 model = get_model_or_raise_not_found(resource_id)
-                result = resource_instance.update(model, request)
+                result = resource.update(model, request)
                 return response(result)
 
             @self.delete(path + '/{resource_id}')
-            @if_handler_exist_in(resource)
-            @configure(resource)
+            @if_handler_exist_in(resource_class)
+            @configure(resource_class)
+            @copy_properties_from(resource_class)
             @format_with(formatter)
-            def delete(resource_instance, resource_id: str) -> Tuple[Any, int]:
+            def delete(resource, resource_id: str) -> Tuple[Any, int]:
                 model = get_model_or_raise_not_found(resource_id)
-                result = resource_instance.delete(model)
+                result = resource.delete(model)
                 return response(result)
 
         return resource_class_wrapper
