@@ -2,11 +2,10 @@ from typing import Callable
 
 from cuenca_validations.types import QueryParams
 
-from agave.repositories.redis.base_redis import BaseModel
-
 from agave.exc import ModelDoesNotExist
 from agave.repositories.base_repository import BaseRepository
 from agave.repositories.query_result import QueryResult
+from agave.repositories.redis.base_redis import BaseModel
 
 
 class RedisRepository(BaseRepository):
