@@ -1,4 +1,6 @@
+import os
 import datetime as dt
+import time
 from typing import Generator, List
 
 import pytest
@@ -6,8 +8,8 @@ import rom
 from _pytest.monkeypatch import MonkeyPatch
 from chalice.test import Client
 from redislite import Redis
-from examples.chalicelib.models.models_redis import AccountRedis
 
+from examples.chalicelib.models.models_redis import AccountRedis
 from tests.helpers import accept_json
 
 
@@ -50,6 +52,13 @@ def client(monkeypatchsession) -> Generator[Client, None, None]:
         yield client
 
 
+@pytest.fixture(autouse=True)
+def flush_redis() -> Generator[None, None, None]:
+    yield
+    redis_connection = Redis('/tmp/redis.db')
+    redis_connection.flushall()
+
+
 @pytest.fixture
 def accounts() -> Generator[List[AccountRedis], None, None]:
     user_id = 'US123456789'
@@ -86,15 +95,17 @@ def accounts() -> Generator[List[AccountRedis], None, None]:
     for acc in accs:
         acc.save()
     yield accs
-    for acc in accs:
-        acc.delete()
 
 
 @pytest.fixture
-def account(accounts: List[AccountRedis]) -> Generator[AccountRedis, None, None]:
+def account(
+    accounts: List[AccountRedis],
+) -> Generator[AccountRedis, None, None]:
     yield accounts[0]
 
 
 @pytest.fixture
-def other_account(accounts: List[AccountRedis]) -> Generator[AccountRedis, None, None]:
+def other_account(
+    accounts: List[AccountRedis],
+) -> Generator[AccountRedis, None, None]:
     yield accounts[-1]

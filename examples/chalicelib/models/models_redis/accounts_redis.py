@@ -1,6 +1,6 @@
 import datetime as dt
 
-from rom import DateTime, util
+from rom import DateTime, Float, util
 
 from agave.models.helpers import uuid_field
 from agave.repositories import BaseModel, String
@@ -16,8 +16,8 @@ class AccountRedis(BaseModel):
         index=True,
         keygen=util.IDENTITY,
     )
-    name = String(required=True)
-    user_id = String(required=True)
+    name = String(required=True, index=True, keygen=util.IDENTITY)
+    user_id = String(required=True, index=True, keygen=util.IDENTITY)
     secret = String()
     created_at = DateTime(default=dt.datetime.utcnow, index=True)
-    deactivated_at = DateTime(index=True, default=DEFAULT_MISSING_DATE)
+    deactivated_at = DateTime(default=DEFAULT_MISSING_DATE, index=True)
