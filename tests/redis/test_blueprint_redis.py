@@ -135,6 +135,7 @@ def test_query_user_id_filter_required(client: Client) -> None:
         item['user_id'] == 'US123456789' for item in resp.json_body['items']
     )
 
+
 def test_query_resource_with_invalid_params(client: Client) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.get(f'/account_redis?{urlencode(wrong_params)}')

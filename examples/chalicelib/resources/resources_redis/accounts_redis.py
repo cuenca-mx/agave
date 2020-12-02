@@ -3,7 +3,6 @@ from typing import Any, Dict, Tuple
 
 from agave.filters import generic_query_redis
 from agave.repositories import RedisRepository
-from examples.chalicelib.blueprints import AuthedRestApiBlueprint
 from examples.chalicelib.models.models_redis import AccountRedis as Model
 from examples.chalicelib.validators import (
     AccountQuery,

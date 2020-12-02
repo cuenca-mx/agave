@@ -1,6 +1,6 @@
 import datetime as dt
 
-from rom import DateTime, Float, util
+from rom import DateTime, util
 
 from agave.models.helpers import uuid_field
 from agave.repositories import BaseModel, String
