@@ -21,8 +21,6 @@ def redis_formatter(instance: Any) -> Dict:
 class AccountRedis:
     repository = RedisRepository(Model, generic_query_redis)
     query_validator = AccountQuery
-    #  it should be an instance so we can keep it compatible
-    #  with a function
     formatter = redis_formatter
 
     def create(self, request: AccountRequest) -> Tuple[Model, int]:
