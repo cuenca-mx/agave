@@ -1,13 +1,16 @@
-from typing import Any, Dict, Tuple, Type, Union
+from typing import Any, Tuple, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError
 from cuenca_validations.types import QueryParams
 
-from agave.repositories.query_result import QueryResult
-
 from ..exc import ModelDoesNotExist
-from .decorators import format_with, if_handler_exist_in
+from .decorators import (
+    configure,
+    copy_properties_from,
+    format_with,
+    if_handler_exist_in,
+)
 from .tools import (
     default_formatter,
     response,
@@ -48,64 +51,10 @@ class RestApiBlueprint(Blueprint):
             except AttributeError:
                 formatter = default_formatter
 
-            @self.get(path + '/{resource_id}')
-            @format_with(formatter)
-            def retrieve(resource_id: str) -> Tuple[Any, int]:
-                if not hasattr(resource, 'retrieve'):
-                    result = default_retrieve_handler(resource_id)
-                else:
-                    result = resource().retrieve(resource_id)
-                return response(result)
-
-            @self.get(path)
-            @format_with(formatter)
-            def query() -> Tuple[Any, int]:
-                query = self.current_request.query_params
-                if not hasattr(resource, 'query'):
-                    request = validate_request(resource.query_validator, query)
-                    result = default_query_handler(request)
-                else:
-                    params = transform_request(
-                        resource.query, 'query_params', query
-                    )
-                    result = resource().query(params)
-                return response(result)
-
-            @self.post(path)
-            @if_handler_exist_in(resource)
-            @format_with(formatter)
-            def create() -> Tuple[Any, int]:
-                request = transform_request(
-                    resource.create, 'request', self.current_request.json_body
-                )
-                result = resource().create(request)
-                return response(result, 201)
-
-            @self.patch(path + '/{resource_id}')
-            @if_handler_exist_in(resource)
-            @format_with(formatter)
-            def update(resource_id: str) -> Tuple[Any, int]:
-                request = transform_request(
-                    resource.create, 'request', self.current_request.json_body
-                )
-                model = get_model_or_raise_not_found(resource_id)
-                result = resource().update(model, request)
-                return response(result)
-
-            @self.delete(path + '/{resource_id}')
-            @if_handler_exist_in(resource)
-            @format_with(formatter)
-            def delete(resource_id: str) -> Tuple[Any, int]:
-                model = get_model_or_raise_not_found(resource_id)
-                result = resource().delete(model)
-                return response(result)
-
-            def default_retrieve_handler(resource_id: str) -> Any:
+            def default_retrieve_handler(_, resource_id: str) -> Any:
                 return get_model_or_raise_not_found(resource_id)
 
-            def default_query_handler(
-                query_params: QueryParams,
-            ) -> Union[Dict, QueryResult]:
+            def default_query_handler(query_params: QueryParams) -> Any:
                 delimiter = self.query_delimiter()
                 if query_params.count:
                     count = resource.repository.count(
@@ -135,5 +84,61 @@ class RestApiBlueprint(Blueprint):
                 except ModelDoesNotExist:
                     raise NotFoundError('Not valid id')
                 return model
+
+            @self.get(path + '/{resource_id}')
+            @format_with(formatter)
+            @configure(resource, retrieve=default_retrieve_handler)
+            @copy_properties_from(resource)
+            def retrieve(
+                resource_instance, resource_id: str
+            ) -> Tuple[Any, int]:
+                result = resource_instance.retrieve(resource_id)
+                return response(result)
+
+            @self.get(path)
+            @format_with(formatter)
+            def query() -> Tuple[Any, int]:
+                query = self.current_request.query_params
+                if not hasattr(resource, 'query'):
+                    request = validate_request(resource.query_validator, query)
+                    result = default_query_handler(request)
+                else:
+                    params = transform_request(
+                        resource.query, 'query_params', query
+                    )
+                    result = resource().query(params)
+                return response(result)
+
+            @self.post(path)
+            @if_handler_exist_in(resource)
+            @configure(resource)
+            @format_with(formatter)
+            def create(resource_instance) -> Tuple[Any, int]:
+                request = transform_request(
+                    resource.create, 'request', self.current_request.json_body
+                )
+                result = resource_instance.create(request)
+                return response(result, 201)
+
+            @self.patch(path + '/{resource_id}')
+            @if_handler_exist_in(resource)
+            @configure(resource)
+            @format_with(formatter)
+            def update(resource_instance, resource_id: str) -> Tuple[Any, int]:
+                request = transform_request(
+                    resource.create, 'request', self.current_request.json_body
+                )
+                model = get_model_or_raise_not_found(resource_id)
+                result = resource_instance.update(model, request)
+                return response(result)
+
+            @self.delete(path + '/{resource_id}')
+            @if_handler_exist_in(resource)
+            @configure(resource)
+            @format_with(formatter)
+            def delete(resource_instance, resource_id: str) -> Tuple[Any, int]:
+                model = get_model_or_raise_not_found(resource_id)
+                result = resource_instance.delete(model)
+                return response(result)
 
         return resource_class_wrapper

@@ -1,5 +1,5 @@
 import functools
-from typing import Any, Callable
+from typing import Any, Callable, Optional, Type
 
 from chalice import Response
 from chalice.app import MethodNotAllowedError
@@ -50,3 +50,44 @@ def format_with(formatter: Any):
         return wrapper
 
     return wrap_builder
+
+
+def configure(
+    resource: Type[Any],
+    retrieve: Optional[Callable] = None,
+    query: Optional[Callable] = None,
+):
+    if not hasattr(resource, 'retrieve') and retrieve:
+        resource.retrieve = retrieve
+        resource.retrieve.is_default = True  # type: ignore
+
+    if not hasattr(resource, 'query') and query:
+        resource.query = query
+        resource.query.is_default = True  # type: ignore
+
+    def wrap_builder(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            instance = resource()
+            return func(instance, *args, **kwargs)
+
+        return wrapper
+
+    return wrap_builder
+
+
+def copy_properties_from(resource: Type[Any]):
+    def wrapper(func: Callable):
+        try:
+            original_func = getattr(resource, func.__name__)
+        except AttributeError:
+            return func
+        try:
+            getattr(original_func, 'is_default')
+        except AttributeError:
+            for key, val in original_func.__dict__.items():
+                setattr(func, key, val)
+
+        return func
+
+    return wrapper
