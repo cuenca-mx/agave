@@ -28,6 +28,16 @@ def if_handler_exist_in(resource: Any) -> Callable:
 
 
 def format_with(formatter: Any):
+    """
+    Formats the `results` object with `formatter`.
+
+    `formatter` could be a function or Callable object. The default formatter
+    is a function that converts the results instance to Dict representation.
+
+
+    :param formatter: function or Callable object
+    :return function wrapper:
+    """
     def wrap_builder(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Response:
@@ -57,17 +67,28 @@ def configure(
     retrieve: Optional[Callable] = None,
     query: Optional[Callable] = None,
 ):
-    if not hasattr(resource, 'retrieve') and retrieve:
-        resource.retrieve = retrieve
-        resource.retrieve.is_default = True  # type: ignore
-    else:
-        resource.retrieve.is_default = False
+    """
+    Setup missing resource handlers and create an instance of `resource`
+    so we can avoid decorate every resource handler with @staticmethod
 
-    if not hasattr(resource, 'query') and query:
-        resource.query = query
-        resource.query.is_default = True  # type: ignore
-    else:
-        resource.query.is_default = False
+    :param resource: Class representing the resource definition
+    :param retrieve: Default retrieve handler
+    :param query: Default query handler
+    :return: wrapper function
+    """
+    if retrieve:
+        if not hasattr(resource, 'retrieve'):
+            resource.retrieve = retrieve
+            resource.retrieve.is_default = True  # type: ignore
+        else:
+            resource.retrieve.is_default = False
+
+    if query:
+        if not hasattr(resource, 'query'):
+            resource.query = query
+            resource.query.is_default = True  # type: ignore
+        else:
+            resource.query.is_default = False
 
     def wrap_builder(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -81,6 +102,13 @@ def configure(
 
 
 def copy_properties_from(resource: Type[Any]):
+    """
+    Copy every attached property from resource methods definition to the
+    real function handler.
+
+    :param resource: Class representing the resource definition
+    :return: wrapper function
+    """
     def wrapper(func: Callable):
         try:
             original_func = getattr(resource, func.__name__)

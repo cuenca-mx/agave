@@ -95,6 +95,7 @@ class RestApiBlueprint(Blueprint):
 
             @self.get(path)
             @configure(resource_class, query=default_query_handler)
+            @copy_properties_from(resource_class)
             @format_with(formatter)
             def query(resource) -> Tuple[Any, int]:
                 query_params = self.current_request.query_params

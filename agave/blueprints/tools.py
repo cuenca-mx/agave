@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Tuple, Type
 from chalice import BadRequestError
 from cuenca_validations.types import QueryParams
 from cuenca_validations.typing import DictStrAny
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 
 def get_params_annotations(method: Callable) -> Dict[str, Type]:
@@ -79,4 +79,13 @@ def response(result: Any, status_code: int = 200) -> Tuple[Any, int]:
 
 
 def default_formatter(instance: Any) -> Dict:
+    """
+    Transforms `instance` object in a dict.
+
+    It assumes that `instance` class hass `to_dict` method. But if your class
+    does not implement `to_dict` you can create a custom formatter function
+    or class so you can validate or implement specific formatting logic.
+    :param instance:
+    :return:
+    """
     return instance.to_dict()
