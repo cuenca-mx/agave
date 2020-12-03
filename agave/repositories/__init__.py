@@ -6,8 +6,8 @@ __all__ = [
     'RedisRepository',
 ]
 
-from .base_redis import BaseModel
+from agave.repositories.redis.base_redis import BaseModel
 from .base_repository import BaseRepository
-from .helpers_redis import String
+from agave.repositories.redis.helpers_redis import String
 from .mongodb_repository import MongoRepository
-from .redis_repository import RedisRepository
+from agave.repositories.redis.redis_repository import RedisRepository
