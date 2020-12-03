@@ -1,7 +1,11 @@
-from typing import Any, Callable, Dict
+from typing import Callable
+
+from cuenca_validations.types import QueryParams
+
 from agave.repositories.base_redis import BaseModel
-from .base_repository import BaseRepository
+
 from ..exc import ModelDoesNotExist
+from .base_repository import BaseRepository
 
 
 class RedisRepository(BaseRepository):
@@ -15,5 +19,5 @@ class RedisRepository(BaseRepository):
             raise ModelDoesNotExist
         return data
 
-    def count(self, filters: Dict[str, Any]) -> int:
+    def count(self, filters: QueryParams) -> int:
         return self.model.query.filter(**filters).count()
