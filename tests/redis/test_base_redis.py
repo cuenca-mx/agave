@@ -2,7 +2,8 @@ import pytest
 from rom import util
 
 from agave.models.helpers import uuid_field
-from agave.repositories import BaseModel, String
+from agave.collections.redis.base_redis import BaseModel
+from agave.collections.redis.helpers_redis import String
 
 
 class TestModel(BaseModel):
