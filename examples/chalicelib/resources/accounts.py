@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Dict, Tuple
 
 from agave.collections.mongo import MongoCollection
-from agave.filters import generic_query
+from agave.collections.mongo.filters import generic_query
 from examples.chalicelib.blueprints import AuthedRestApiBlueprint
 
 from ..models import Account as Model

@@ -1,5 +1,5 @@
 from agave.collections.mongo import MongoCollection
-from agave.filters import generic_query
+from agave.collections.mongo.filters import generic_query
 
 from ..models.transactions import Transaction as TransactionModel
 from ..validators import TransactionQuery
