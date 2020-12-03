@@ -2,18 +2,18 @@ from typing import Callable
 
 from cuenca_validations.types import QueryParams
 
+from agave.collections.base import BaseCollection
+from agave.collections.query_result import QueryResult
+from agave.collections.redis.base_redis import BaseModel
 from agave.exc import ModelDoesNotExist
-from agave.repositories.base_repository import BaseRepository
-from agave.repositories.query_result import QueryResult
-from agave.repositories.redis.base_redis import BaseModel
 
 
-class RedisRepository(BaseRepository):
+class RedisCollection(BaseCollection):
     def __init__(self, model: BaseModel, query_builder: Callable):
         self.model = model
         self.query_builder = query_builder
 
-    def get_by_id(self, resource_id: str, **delimiters):
+    def retrieve(self, resource_id: str, **delimiters):
         data = self.model.query.filter(id=resource_id, **delimiters).first()
         if not data:
             raise ModelDoesNotExist
