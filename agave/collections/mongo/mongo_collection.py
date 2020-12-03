@@ -4,17 +4,17 @@ from cuenca_validations.types import QueryParams
 from mongoengine import Document
 from mongoengine import DoesNotExist as DoesNotExist
 
-from ..exc import ModelDoesNotExist
-from .base_repository import BaseRepository
-from .query_result import QueryResult
+from agave.collections.base import BaseCollection
+from agave.collections.query_result import QueryResult
+from agave.exc import ModelDoesNotExist
 
 
-class MongoRepository(BaseRepository):
+class MongoCollection(BaseCollection):
     def __init__(self, model: Document, query_builder: Callable):
         self.model = model
         self.query_builder = query_builder
 
-    def get_by_id(self, resource_id: str, **delimiters):
+    def retrieve(self, resource_id: str, **delimiters):
         try:
             data = self.model.objects.get(id=resource_id, **delimiters)
         except DoesNotExist:

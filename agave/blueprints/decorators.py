@@ -4,7 +4,7 @@ from typing import Any, Callable, Optional, Type
 from chalice import Response
 from chalice.app import MethodNotAllowedError
 
-from ..repositories.query_result import QueryResult
+from ..collections import QueryResult
 
 
 def if_handler_exist_in(resource: Any) -> Callable:
@@ -38,6 +38,7 @@ def format_with(formatter: Any):
     :param formatter: function or Callable object
     :return function wrapper:
     """
+
     def wrap_builder(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Response:
@@ -109,6 +110,7 @@ def copy_properties_from(resource: Type[Any]):
     :param resource: Class representing the resource definition
     :return: wrapper function
     """
+
     def wrapper(func: Callable):
         try:
             original_func = getattr(resource, func.__name__)

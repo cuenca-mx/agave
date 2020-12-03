@@ -1,8 +1,8 @@
 import datetime as dt
 from typing import Dict, Tuple
 
+from agave.collections.mongo import MongoCollection
 from agave.filters import generic_query
-from agave.repositories import MongoRepository
 from examples.chalicelib.blueprints import AuthedRestApiBlueprint
 
 from ..models import Account as Model
@@ -24,7 +24,7 @@ class AccountFormatter:
 
 @app.resource('/accounts')
 class Account:
-    repository = MongoRepository(Model, generic_query)
+    collection = MongoCollection(Model, generic_query)
     query_validator = AccountQuery
     #  it should be an instance so we can keep it compatible
     #  with a function

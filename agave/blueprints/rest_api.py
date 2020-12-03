@@ -57,12 +57,12 @@ class RestApiBlueprint(Blueprint):
             def default_query_handler(_, query_params: QueryParams) -> Any:
                 delimiter = self.query_delimiter()
                 if query_params.count:
-                    count = resource_class.repository.count(
+                    count = resource_class.collection.count(
                         query_params, **delimiter
                     )
                     return dict(count=count)
 
-                query_result = resource_class.repository.all(
+                query_result = resource_class.collection.all(
                     query_params, **delimiter
                 )
                 if query_result.has_more and query_result.wants_more:
@@ -78,7 +78,7 @@ class RestApiBlueprint(Blueprint):
             def get_model_or_raise_not_found(resource_id: str) -> Any:
                 delimiters = self.query_delimiter()
                 try:
-                    model = resource_class.repository.get_by_id(
+                    model = resource_class.collection.retrieve(
                         resource_id, **delimiters
                     )
                 except ModelDoesNotExist:

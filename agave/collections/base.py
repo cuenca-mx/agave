@@ -3,12 +3,12 @@ from typing import Any
 
 from cuenca_validations.types import QueryParams
 
-from .query_result import QueryResult
+from agave.collections.query_result import QueryResult
 
 
-class BaseRepository(ABC):
+class BaseCollection(ABC):
     @abstractmethod
-    def get_by_id(self, resource_id: str, **delimiters) -> Any:
+    def retrieve(self, resource_id: str, **delimiters) -> Any:
         """
 
         :param resource_id:
