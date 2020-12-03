@@ -47,7 +47,7 @@ class MongoCollection(BaseCollection):
             has_more = items.limit(limit + 1).count() > limit
 
         return QueryResult(
-            items=list(items),
+            items=results,
             has_more=has_more,
             wants_more=wants_more,
             last_created_at=last.created_at,
