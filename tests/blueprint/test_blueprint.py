@@ -64,7 +64,9 @@ def test_create_resource_bad_request(client: Client, endpoints) -> None:
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_retrieve_resource(client: Client, account, endpoints, collection) -> None:
+def test_retrieve_resource(
+    client: Client, account, endpoints, collection
+) -> None:
     resp = client.http.get(f'{endpoints}/{account.id}')
     assert resp.status_code == 200
 
@@ -100,7 +102,9 @@ def test_retrieve_resource_not_found(client: Client, endpoints) -> None:
     ['mongo_account', 'redis_account'],
     indirect=True,
 )
-def test_update_resource_with_invalid_params(client: Client, endpoints) -> None:
+def test_update_resource_with_invalid_params(
+    client: Client, endpoints
+) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.patch(
         f'{endpoints}/NOT_EXISTS',
@@ -127,7 +131,9 @@ def test_update_resource_that_doesnt_exit(client: Client, endpoints) -> None:
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_update_resource(client: Client, account, endpoints, collection) -> None:
+def test_update_resource(
+    client: Client, account, endpoints, collection
+) -> None:
     resp = client.http.patch(
         f'{endpoints}/{account.id}',
         json=dict(name='Maria Felix'),
@@ -146,7 +152,9 @@ def test_update_resource(client: Client, account, endpoints, collection) -> None
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_delete_resource(client: Client, account, endpoints, collection) -> None:
+def test_delete_resource(
+    client: Client, account, endpoints, collection
+) -> None:
     resp = client.http.delete(f'{endpoints}/{account.id}')
     if isinstance(account, Account):
         account.reload()
@@ -211,7 +219,9 @@ def test_query_all_resource(client: Client, endpoints, collection) -> None:
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_query_user_id_filter_required(client: Client, endpoints, collection) -> None:
+def test_query_user_id_filter_required(
+    client: Client, endpoints, collection
+) -> None:
     query_params = dict(page_size=2)
     resp = client.http.get(f'{endpoints}?{urlencode(query_params)}')
     assert resp.status_code == 200

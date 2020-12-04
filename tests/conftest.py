@@ -8,7 +8,6 @@ from chalice.test import Client
 from redislite import Redis
 
 from examples.chalicelib.models import Account
-
 from examples.chalicelib.models.models_redis import AccountRedis
 
 from .helpers import accept_json
@@ -122,5 +121,7 @@ def account(accounts: List[collection]) -> Generator[collection, None, None]:
     ['mongo', 'redis'],
     indirect=True,
 )
-def other_account(accounts: List[collection]) -> Generator[collection, None, None]:
+def other_account(
+    accounts: List[collection],
+) -> Generator[collection, None, None]:
     yield accounts[-1]
