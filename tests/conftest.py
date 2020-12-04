@@ -2,15 +2,42 @@ import datetime as dt
 from typing import Generator, List
 
 import pytest
+import rom
+from _pytest.monkeypatch import MonkeyPatch
 from chalice.test import Client
+from redislite import Redis
 
 from examples.chalicelib.models import Account
 
+from examples.chalicelib.models.models_redis import AccountRedis
+
 from .helpers import accept_json
 
+collection_type = {
+    'mongo': Account,
+    'redis': AccountRedis,
+}
 
-@pytest.fixture()
-def client() -> Generator[Client, None, None]:
+
+@pytest.fixture
+def collection(request):
+    return collection_type[request.param]
+
+
+@pytest.fixture(scope='session')
+def monkeypatchsession(request):
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(scope='session')
+def client(monkeypatchsession) -> Generator[Client, None, None]:
+    # Usa un fake redis para no utilizar un servidor de Redis
+    redis_connection = Redis('/tmp/redis.db')
+    monkeypatchsession.setattr(
+        rom.util, 'get_connection', lambda: redis_connection
+    )
     from examples import app
 
     with Client(app) as client:
@@ -27,23 +54,35 @@ def client() -> Generator[Client, None, None]:
         yield client
 
 
+@pytest.fixture(autouse=True)
+def flush_redis() -> Generator[None, None, None]:
+    yield
+    redis_connection = Redis('/tmp/redis.db')
+    redis_connection.flushall()
+
+
 @pytest.fixture
-def accounts() -> Generator[List[Account], None, None]:
+@pytest.mark.parametrize(
+    'collection',
+    ['mongo', 'redis'],
+    indirect=True,
+)
+def accounts(collection) -> Generator[List[collection], None, None]:
     user_id = 'US123456789'
     accs = [
-        Account(
+        collection(
             name='Frida Kahlo',
             user_id=user_id,
             created_at=dt.datetime(2020, 1, 1),
             secret='I was born in Coyoacan, CDMX!',
         ),
-        Account(
+        collection(
             name='Sor Juana Inés',
             user_id=user_id,
             created_at=dt.datetime(2020, 2, 1),
             secret='I speak Latin very well',
         ),
-        Account(
+        collection(
             name='Leona Vicario',
             user_id=user_id,
             created_at=dt.datetime(2020, 3, 1),
@@ -52,7 +91,7 @@ def accounts() -> Generator[List[Account], None, None]:
                 'Leona Camila Vicario Fernández de San Salvador'
             ),
         ),
-        Account(
+        collection(
             name='Remedios Varo',
             user_id='US987654321',
             created_at=dt.datetime(2020, 4, 1),
@@ -68,10 +107,20 @@ def accounts() -> Generator[List[Account], None, None]:
 
 
 @pytest.fixture
-def account(accounts: List[Account]) -> Generator[Account, None, None]:
+@pytest.mark.parametrize(
+    'collection',
+    ['mongo', 'redis'],
+    indirect=True,
+)
+def account(accounts: List[collection]) -> Generator[collection, None, None]:
     yield accounts[0]
 
 
 @pytest.fixture
-def other_account(accounts: List[Account]) -> Generator[Account, None, None]:
+@pytest.mark.parametrize(
+    'collection',
+    ['mongo', 'redis'],
+    indirect=True,
+)
+def other_account(accounts: List[collection]) -> Generator[collection, None, None]:
     yield accounts[-1]

@@ -1,9 +1,9 @@
 import pytest
 from rom import util
 
-from agave.models.helpers import uuid_field
 from agave.collections.redis.base_redis import BaseModel
 from agave.collections.redis.helpers_redis import String
+from agave.models.helpers import uuid_field
 
 
 class TestModel(BaseModel):
