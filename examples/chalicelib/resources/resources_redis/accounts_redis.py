@@ -29,7 +29,7 @@ class AccountRedis:
         return account, 201
 
     def update(self, account: Model, request: AccountUpdateRequest) -> Model:
-        account.name = request.name
+        account.name = request.name  # type: ignore
         account.save()
         return account
 

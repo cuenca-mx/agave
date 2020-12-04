@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Type
 
 from cuenca_validations.types import QueryParams
 
@@ -9,7 +9,7 @@ from agave.exc import ModelDoesNotExist
 
 
 class RedisCollection(BaseCollection):
-    def __init__(self, model: BaseModel, query_builder: Callable):
+    def __init__(self, model: Type[BaseModel], query_builder: Callable):
         self.model = model
         self.query_builder = query_builder
 

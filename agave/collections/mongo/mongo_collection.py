@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Type
 
 from cuenca_validations.types import QueryParams
 from mongoengine import Document
@@ -10,7 +10,7 @@ from agave.exc import ModelDoesNotExist
 
 
 class MongoCollection(BaseCollection):
-    def __init__(self, model: Document, query_builder: Callable):
+    def __init__(self, model: Type[Document], query_builder: Callable):
         self.model = model
         self.query_builder = query_builder
 

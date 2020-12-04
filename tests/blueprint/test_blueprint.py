@@ -60,12 +60,12 @@ def test_create_resource_bad_request(client: Client, endpoints) -> None:
 
 
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
 def test_retrieve_resource(
-    client: Client, account, endpoints, collection
+    client: Client, account, endpoints, db_model
 ) -> None:
     resp = client.http.get(f'{endpoints}/{account.id}')
     assert resp.status_code == 200
@@ -76,12 +76,12 @@ def test_retrieve_resource(
     MagicMock(return_value=dict(user_id='US123456789')),
 )
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
 def test_retrieve_resource_user_id_filter_required(
-    client: Client, other_account, endpoints, collection
+    client: Client, other_account, endpoints, db_model
 ) -> None:
     resp = client.http.get(f'{endpoints}/{other_account.id}')
     assert resp.status_code == 404
@@ -127,13 +127,11 @@ def test_update_resource_that_doesnt_exit(client: Client, endpoints) -> None:
 
 
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_update_resource(
-    client: Client, account, endpoints, collection
-) -> None:
+def test_update_resource(client: Client, account, endpoints, db_model) -> None:
     resp = client.http.patch(
         f'{endpoints}/{account.id}',
         json=dict(name='Maria Felix'),
@@ -148,13 +146,11 @@ def test_update_resource(
 
 
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_delete_resource(
-    client: Client, account, endpoints, collection
-) -> None:
+def test_delete_resource(client: Client, account, endpoints, db_model) -> None:
     resp = client.http.delete(f'{endpoints}/{account.id}')
     if isinstance(account, Account):
         account.reload()
@@ -167,11 +163,11 @@ def test_delete_resource(
 
 @pytest.mark.usefixtures('accounts')
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_query_count_resource(client: Client, endpoints, collection) -> None:
+def test_query_count_resource(client: Client, endpoints, db_model) -> None:
     query_params = dict(count=1, name='Frida Kahlo')
     response = client.http.get(
         f'{endpoints}?{urlencode(query_params)}',
@@ -182,11 +178,11 @@ def test_query_count_resource(client: Client, endpoints, collection) -> None:
 
 @pytest.mark.usefixtures('accounts')
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_query_all_with_limit(client: Client, endpoints, collection) -> None:
+def test_query_all_with_limit(client: Client, endpoints, db_model) -> None:
     limit = 2
     query_params = dict(limit=limit)
     response = client.http.get(f'{endpoints}?{urlencode(query_params)}')
@@ -197,11 +193,11 @@ def test_query_all_with_limit(client: Client, endpoints, collection) -> None:
 
 @pytest.mark.usefixtures('accounts')
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
-def test_query_all_resource(client: Client, endpoints, collection) -> None:
+def test_query_all_resource(client: Client, endpoints, db_model) -> None:
     query_params = dict(page_size=2)
     resp = client.http.get(f'{endpoints}?{urlencode(query_params)}')
     assert resp.status_code == 200
@@ -215,12 +211,12 @@ def test_query_all_resource(client: Client, endpoints, collection) -> None:
 @pytest.mark.usefixtures('accounts')
 @patch(QUERY_DELIMITER, MagicMock(return_value=dict(user_id='US123456789')))
 @pytest.mark.parametrize(
-    'endpoints, collection',
+    'endpoints, db_model',
     [('mongo_account', 'mongo'), ('redis_account', 'redis')],
     indirect=True,
 )
 def test_query_user_id_filter_required(
-    client: Client, endpoints, collection
+    client: Client, endpoints, db_model
 ) -> None:
     query_params = dict(page_size=2)
     resp = client.http.get(f'{endpoints}?{urlencode(query_params)}')
