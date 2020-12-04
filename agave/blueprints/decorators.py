@@ -116,9 +116,8 @@ def copy_properties_from(resource: Type[Any]):
             original_func = getattr(resource, func.__name__)
         except AttributeError:
             return func
-        try:
-            getattr(original_func, 'is_default')
-        except AttributeError:
+
+        if not getattr(original_func, 'is_default', False):
             for key, val in original_func.__dict__.items():
                 setattr(func, key, val)
 
