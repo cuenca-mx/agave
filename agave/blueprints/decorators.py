@@ -77,19 +77,13 @@ def configure(
     :param query: Default query handler
     :return: wrapper function
     """
-    if retrieve:
-        if not hasattr(resource, 'retrieve'):
-            resource.retrieve = retrieve
-            resource.retrieve.is_default = True  # type: ignore
-        else:
-            resource.retrieve.is_default = False
+    if retrieve and not hasattr(resource, 'retrieve'):
+        resource.retrieve = retrieve
+        resource.retrieve.is_default = True  # type: ignore
 
-    if query:
-        if not hasattr(resource, 'query'):
-            resource.query = query
-            resource.query.is_default = True  # type: ignore
-        else:
-            resource.query.is_default = False
+    if query and not hasattr(resource, 'query'):
+        resource.query = query
+        resource.query.is_default = True  # type: ignore
 
     def wrap_builder(func: Callable) -> Callable:
         @functools.wraps(func)

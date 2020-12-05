@@ -115,6 +115,18 @@ def test_query_all_resource(client: Client) -> None:
     assert len(resp.json_body['items']) == 2
 
 
+def test_query_list_models(client: Client) -> None:
+    resp = client.http.get('/books')
+    assert resp.status_code == 200
+    assert resp.json_body == [
+        dict(
+            name='Twenty Thousand Leagues Under the Sea', author='Jules Verne'
+        ),
+        dict(name='Journey to the Center of the Earth', author='Jules Verne'),
+        dict(name='Around the World in Eighty Days', author='Jules Verne'),
+    ]
+
+
 @pytest.mark.usefixtures('accounts')
 @patch(QUERY_DELIMITER, MagicMock(return_value=dict(user_id='US123456789')))
 def test_query_user_id_filter_required(client: Client) -> None:

@@ -99,7 +99,7 @@ class RestApiBlueprint(Blueprint):
             @format_with(formatter)
             def query(resource) -> Tuple[Any, int]:
                 query_params = self.current_request.query_params
-                if resource.query.is_default:
+                if getattr(resource.query, 'is_default', False):
                     params = validate_request(
                         resource_class.query_validator, query_params
                     )

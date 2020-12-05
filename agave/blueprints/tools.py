@@ -33,6 +33,7 @@ def get_params_annotations(method: Callable) -> Dict[str, Type]:
 def validate_request(
     validator: Type[QueryParams], data: DictStrAny
 ) -> QueryParams:
+    data = data or {}
     try:
         request = validator(**data)
     except ValidationError as exc:
@@ -66,6 +67,7 @@ def transform_request(
 
      query_params = transform_request(MyResource.query, 'query_param', request)
     """
+    data = data or {}
     annotations = get_params_annotations(handler)
     validator = annotations[validator_name]
     return validate_request(validator, data)
@@ -82,7 +84,7 @@ def default_formatter(instance: Any) -> Dict:
     """
     Transforms `instance` object in a dict.
 
-    It assumes that `instance` class hass `to_dict` method. But if your class
+    It assumes that `instance` class has `to_dict` method. But if your class
     does not implement `to_dict` you can create a custom formatter function
     or class so you can validate or implement specific formatting logic.
     :param instance:
