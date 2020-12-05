@@ -1,7 +1,7 @@
 from rom import Float, util
 
-from agave.collections.redis.base_redis import BaseModel
-from agave.collections.redis.helpers_redis import String
+from agave.collections.redis.base_model import BaseModel
+from agave.collections.redis.strings import String
 from agave.models.helpers import uuid_field
 
 

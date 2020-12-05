@@ -8,7 +8,7 @@ from chalice.test import Client
 from redislite import Redis
 
 from examples.chalicelib.models import Account
-from examples.chalicelib.models.models_redis import AccountRedis
+from examples.chalicelib.models.redis import AccountRedis
 
 from .helpers import accept_json
 

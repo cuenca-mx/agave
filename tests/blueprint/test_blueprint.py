@@ -5,17 +5,20 @@ from chalice.test import Client
 from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account
-from examples.chalicelib.models.models_redis import AccountRedis
+from examples.chalicelib.models.redis import AccountRedis
 
 QUERY_DELIMITER = (
     'examples.chalicelib.blueprints.authed.AuthedBlueprint.query_delimiter'
 )
-
+DB_COLLECTION_TRANSACTIONS = (
+    'examples.chalicelib.resources.transactions.DB_COLLECTION_TRANSACTIONS'
+)
+DB_COLLECTION_ACCOUNTS = (
+    'examples.chalicelib.resources.accounts.DB_COLLECTION_ACCOUNTS'
+)
 endpoints_url = {
-    'mongo_account': '/accounts',
-    'mongo_transactions': '/transactions',
-    'redis_account': '/account_redis',
-    'redis_transactions': '/transactions_redis',
+    'accounts': '/accounts',
+    'transactions': '/transactions',
 }
 
 query_get = {
@@ -36,9 +39,10 @@ def query(request):
 
 @pytest.mark.parametrize(
     'endpoints, query',
-    [('mongo_account', 'mongo'), ('redis_account', 'redis')],
+    [('accounts', 'mongo'), ('accounts', 'redis')],
     indirect=True,
 )
+@patch(DB_COLLECTION_ACCOUNTS, MagicMock(return_value=['mongo', 'redis']))
 def test_create_resource(client: Client, endpoints, query) -> None:
     data = dict(name='Doroteo Arango')
     resp = client.http.post(endpoints, json=data)
@@ -247,9 +251,10 @@ def test_query_resource_with_invalid_params(client: Client, endpoints) -> None:
 
 @pytest.mark.parametrize(
     'endpoints',
-    ['mongo_transactions', 'redis_transactions'],
+    ['transactions'],
     indirect=True,
 )
+@patch(DB_COLLECTION_TRANSACTIONS, MagicMock(return_value=['mongo', 'redis']))
 def test_cannot_create_resource(client: Client, endpoints) -> None:
     response = client.http.post(endpoints, json=dict())
     assert response.status_code == 405
@@ -257,9 +262,10 @@ def test_cannot_create_resource(client: Client, endpoints) -> None:
 
 @pytest.mark.parametrize(
     'endpoints',
-    ['mongo_transactions', 'redis_transactions'],
+    ['transactions'],
     indirect=True,
 )
+@patch(DB_COLLECTION_TRANSACTIONS, MagicMock(return_value=['mongo', 'redis']))
 def test_cannot_update_resource(client: Client, endpoints) -> None:
     response = client.http.post(endpoints, json=dict())
     assert response.status_code == 405
@@ -267,9 +273,10 @@ def test_cannot_update_resource(client: Client, endpoints) -> None:
 
 @pytest.mark.parametrize(
     'endpoints',
-    ['mongo_transactions', 'redis_transactions'],
+    ['transactions'],
     indirect=True,
 )
+@patch(DB_COLLECTION_TRANSACTIONS, MagicMock(return_value=['mongo', 'redis']))
 def test_cannot_delete_resource(client: Client, endpoints) -> None:
     resp = client.http.delete(f'{endpoints}/TR1234')
     assert resp.status_code == 405

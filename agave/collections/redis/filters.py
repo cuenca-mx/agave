@@ -4,7 +4,7 @@ from typing import Any, Dict
 from cuenca_validations.types import QueryParams
 
 
-def generic_query_redis(query: QueryParams, **kwargs) -> Dict[str, Any]:
+def generic_query(query: QueryParams, **kwargs) -> Dict[str, Any]:
     filters: Dict[str, Any] = dict()
     if query.created_before or query.created_after:
         # Restamos o sumamos un microsegundo porque la comparación

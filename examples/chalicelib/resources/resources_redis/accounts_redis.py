@@ -2,8 +2,8 @@ import datetime as dt
 from typing import Any, Dict, Tuple
 
 from agave.collections.redis import RedisCollection
-from agave.collections.redis.filters_redis import generic_query_redis
-from examples.chalicelib.models.models_redis import AccountRedis as Model
+from agave.collections.redis.filters import generic_query
+from examples.chalicelib.models.redis import AccountRedis as Model
 from examples.chalicelib.validators import (
     AccountQuery,
     AccountRequest,
@@ -19,7 +19,7 @@ def redis_formatter(instance: Any) -> Dict:
 
 @app.resource('/account_redis')
 class AccountRedis:
-    collection = RedisCollection(Model, generic_query_redis)
+    collection = RedisCollection(Model, generic_query)
     query_validator = AccountQuery
     formatter = redis_formatter
 

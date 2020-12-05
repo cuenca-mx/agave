@@ -2,10 +2,11 @@ from typing import Callable, Type
 
 from cuenca_validations.types import QueryParams
 
-from agave.collections.base import BaseCollection
-from agave.collections.query_result import QueryResult
-from agave.collections.redis.base_redis import BaseModel
 from agave.exc import ModelDoesNotExist
+
+from ..base import BaseCollection
+from ..query_result import QueryResult
+from .base_model import BaseModel
 
 
 class RedisCollection(BaseCollection):

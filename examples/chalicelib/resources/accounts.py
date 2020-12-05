@@ -1,37 +1,47 @@
 import datetime as dt
-from typing import Dict, Tuple
+from typing import Any, Tuple, Union
 
-from agave.collections.mongo import MongoCollection
-from agave.collections.mongo.filters import generic_query
-from examples.chalicelib.blueprints import AuthedRestApiBlueprint
-
-from ..models import Account as Model
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
+from .formatter import AccountFormatter, redis_formatter
+from ..models import AccountRedis as RedisAccountModel
+from ..models import Account as MongoAccountModel
 
 
-class AccountFormatter:
-    def __init__(self, app: AuthedRestApiBlueprint):
-        self.app = app
 
-    def __call__(self, instance: Model) -> Dict:
-        data = instance.to_dict()
-        secret = data.get('secret')
-        if secret:
-            data['secret'] = secret[0:10] + ('*' * 10)
-        return data
+DB_COLLECTION_ACCOUNTS =
+collection: Any
+formatter: Any
+Model = Union[MongoAccountModel, RedisAccountModel]
+ModelAccount: Any
+breakpoint()
+if DB_COLLECTION_ACCOUNTS == 'mongo':
+    from agave.collections.mongo import MongoCollection
+    from agave.collections.mongo.filters import generic_query
+
+    collection = MongoCollection(MongoAccountModel, generic_query)
+    formatter = AccountFormatter(app)
+    ModelAccount = MongoAccountModel
+if DB_COLLECTION_ACCOUNTS == 'redis':
+    from agave.collections.redis import RedisCollection
+    from agave.collections.redis.filters import generic_query
+
+    collection = RedisCollection(RedisAccountModel, generic_query)
+    formatter = redis_formatter
+    ModelAccount = RedisAccountModel
 
 
 @app.resource('/accounts')
 class Account:
-    collection = MongoCollection(Model, generic_query)
+    collection = collection
     query_validator = AccountQuery
     #  it should be an instance so we can keep it compatible
     #  with a function
-    formatter = AccountFormatter(app)
+    formatter = formatter
 
     def create(self, request: AccountRequest) -> Tuple[Model, int]:
-        account = Model(name=request.name, user_id=app.current_user_id)
+        breakpoint()
+        account = ModelAccount(name=request.name, user_id=app.current_user_id)
         account.save()
         return account, 201
 
