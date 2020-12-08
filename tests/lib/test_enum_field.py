@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 from mongoengine import Document
@@ -11,11 +10,11 @@ class EnumType(Enum):
 
 
 class TestModel(Document):
-    enum = EnumField(EnumType)
+    enum_field = EnumField(EnumType)
     __test__ = False
 
 
 def test_prepare_query_value():
-    model = TestModel(enum=EnumType.member)
+    model = TestModel(enum_field=EnumType.member)
     model.save()
-    assert type(model.enum) is EnumType
+    assert type(model.enum_field) is EnumType

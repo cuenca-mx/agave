@@ -21,7 +21,7 @@ from mongoengine import (
 from .enum_field import EnumField
 
 
-def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
+def mongo_to_dict(obj, exclude_fields: list = []) -> dict:
     """
     from: https://gist.github.com/jason-w/4969476
     """
@@ -82,7 +82,7 @@ def list_field_to_dict(list_field: list) -> list:
             return_data.append(mongo_to_dict(item))
         elif isinstance(item, Enum):
             return_data.append(item.value)
-        elif isinstance(item, DBRef):
+        elif isinstance(item, DBRef):  # pragma: no cover
             return_data.append(f'/{item._DBRef__collection}/{item.id}')
         else:
             return_data.append(mongo_to_python_type(item, item))
@@ -99,7 +99,7 @@ def mongo_to_python_type(field, data):
         rv = data.isoformat()
     elif field_type is ComplexDateTimeField:
         rv = field.to_python(data).isoformat()
-    elif rv is FloatField:
+    elif rv is FloatField:  # pragma: no cover
         rv = float(data)
     elif field_type is IntField:
         rv = int(data)
