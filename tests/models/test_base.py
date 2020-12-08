@@ -6,7 +6,7 @@ from agave.models import BaseModel
 class TestModel(BaseModel, Document):
     id = StringField()
     secret_field = StringField()
-
+    __test__ = False
     _hidden = ['secret_field']
 
 

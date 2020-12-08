@@ -28,7 +28,7 @@ class EnumField(BaseField):
         return self.__get_value(value)
 
     def prepare_query_value(self, op, value: Enum) -> str:
-        return super(EnumField, self).prepare_query_value(
+        return super(EnumField, self).prepare_query_value(  # pragma: no cover
             op, self.__get_value(value)
         )
 
