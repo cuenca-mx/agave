@@ -23,8 +23,5 @@ def test_generic_query_merge_delimiters() -> None:
     params = QueryParams(count=True)
     query = generic_query(params, **dict(user_id='US123'))
     representation = repr(query)
-    breakpoint()
     assert 'count' not in representation
     assert 'user_id' in representation
-
-

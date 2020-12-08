@@ -1,4 +1,4 @@
-from typing import Any, Tuple, Type
+from typing import Any, Dict, Tuple, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError
@@ -32,7 +32,7 @@ class RestApiBlueprint(Blueprint):
     def delete(self, path: str, **kwargs):
         return self.route(path, methods=['DELETE'], **kwargs)
 
-    def query_delimiter(self, **__) -> Any:
+    def query_delimiter(self, **__) -> Dict:
         """
         Constraints query filters.
 
@@ -42,7 +42,7 @@ class RestApiBlueprint(Blueprint):
         :param __:
         :return:
         """
-        return {}  # pragma: no cover
+        return dict()  # pragma: no cover
 
     def resource(self, path: str):
         def resource_class_wrapper(resource_class: Type[Any]) -> None:
