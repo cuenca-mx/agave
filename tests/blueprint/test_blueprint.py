@@ -38,14 +38,13 @@ def query(request):
 
 
 @pytest.mark.parametrize(
-    'endpoints, query',
-    [('accounts', 'mongo'), ('accounts', 'redis')],
+    'query',
+    ['mongo', 'redis'],
     indirect=True,
 )
-@patch(DB_COLLECTION_ACCOUNTS, MagicMock(return_value=['mongo', 'redis']))
-def test_create_resource(client: Client, endpoints, query) -> None:
+def test_create_resource(client: Client, query) -> None:
     data = dict(name='Doroteo Arango')
-    resp = client.http.post(endpoints, json=data)
+    resp = client.http.post('/accounts', json=data)
     model = query(id=resp.json_body['id'])
     assert resp.status_code == 201
     assert model.to_dict() or model.dict() == resp.json_body

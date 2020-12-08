@@ -1,20 +1,18 @@
 import datetime as dt
 from typing import Any, Tuple, Union
 
+from ..models import Account as MongoAccountModel
+from ..models import AccountRedis as RedisAccountModel
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
 from .formatter import AccountFormatter, redis_formatter
-from ..models import AccountRedis as RedisAccountModel
-from ..models import Account as MongoAccountModel
 
-
-
-DB_COLLECTION_ACCOUNTS =
+DB_COLLECTION_ACCOUNTS = 'mongo'
 collection: Any
 formatter: Any
 Model = Union[MongoAccountModel, RedisAccountModel]
 ModelAccount: Any
-breakpoint()
+
 if DB_COLLECTION_ACCOUNTS == 'mongo':
     from agave.collections.mongo import MongoCollection
     from agave.collections.mongo.filters import generic_query
@@ -40,7 +38,6 @@ class Account:
     formatter = formatter
 
     def create(self, request: AccountRequest) -> Tuple[Model, int]:
-        breakpoint()
         account = ModelAccount(name=request.name, user_id=app.current_user_id)
         account.save()
         return account, 201

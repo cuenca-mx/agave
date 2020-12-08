@@ -1,5 +1,7 @@
 from typing import Any, Dict
+
 from examples.chalicelib.blueprints import AuthedRestApiBlueprint
+
 from ..models import Account as Model
 
 
