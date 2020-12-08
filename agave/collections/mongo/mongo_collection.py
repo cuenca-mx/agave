@@ -39,7 +39,6 @@ class MongoCollection(BaseCollection):
         )
 
         results = list(items)
-        last = results[-1]
         has_more = None
         wants_more = params.limit is None or params.limit > 0
         if wants_more:
@@ -50,5 +49,5 @@ class MongoCollection(BaseCollection):
             items=results,
             has_more=has_more,
             wants_more=wants_more,
-            last_created_at=last.created_at,
+            last_created_at=results[-1].created_at if results else None,
         )
