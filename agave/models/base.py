@@ -1,6 +1,6 @@
-from typing import ClassVar, Dict
+from typing import Callable, ClassVar
 
-from ..lib.mongoengine.model_helpers import mongo_to_dict
+from cuenca_validations.typing import DictStrAny
 
 
 class BaseModel:
@@ -10,14 +10,14 @@ class BaseModel:
     def __init__(self, *args, **values):
         return super().__init__(*args, **values)
 
-    def to_dict(self) -> Dict:
+    def _dict(self, dict_func: Callable) -> DictStrAny:
         private_fields = [f for f in dir(self) if f.startswith('_')]
         excluded = self._excluded + private_fields
-        mongo_dict: dict = mongo_to_dict(self, excluded)
+        d: dict = dict_func(self, excluded)
 
         for field in self._hidden:
-            mongo_dict[field] = '********'
-        return mongo_dict
+            d[field] = '********'
+        return d
 
     def __repr__(self) -> str:
         return str(self.to_dict())  # pragma: no cover
