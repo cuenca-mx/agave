@@ -178,27 +178,24 @@ class RestApiBlueprint(Blueprint):
                 # Set user_id request as query param
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
-                filters = cls.get_query_filter(query_params)
+                filterer = cls.get_query_filter(query_params)
                 if query_params.count:
-                    return _count(filters)
-                return _all(query_params, filters)
+                    return _count(filterer)
+                return _all(query_params, filterer)
 
-            def _count(filters: Q):
-                count = cls.model.objects.filter(filters).count()
+            def _count(query: QueryParams, filterer):
+                count = filterer(query)
                 return dict(count=count)
 
-            def _all(query: QueryParams, filters: Q):
+            def _all(query: QueryParams, filterer: Callable):
                 if query.limit:
                     limit = min(query.limit, query.page_size)
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items = (
-                    cls.model.objects.order_by("-created_at")
-                    .filter(filters)
-                    .limit(limit)
-                )
-                item_dicts = [i.to_dict() for i in items]
+                items = filterer(query, limit)
+
+                item_dicts = [i.dict() for i in items]
 
                 has_more: Optional[bool] = None
                 if wants_more := query.limit is None or query.limit > 0:
