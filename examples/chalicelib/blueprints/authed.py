@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable
+from typing import Callable, List, Optional
 
 from chalice import Blueprint
 
@@ -10,7 +10,7 @@ class AuthedBlueprint(Blueprint):
 
     """
 
-    def route(self, path: str, **kwargs):
+    def route(self, path: str, authorizations: Optional[List[str]] = None, **kwargs):
         """
         Builds route decorator with custom authentication.
         It is only a function wrapper for `Blueprint._register_handler` methods
