@@ -21,7 +21,7 @@ from mongoengine import (
 from .enum_field import EnumField
 
 
-def mongo_to_dict(obj, exclude_fields: list = []) -> dict:
+def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
     """
     from: https://gist.github.com/jason-w/4969476
     """
@@ -32,6 +32,9 @@ def mongo_to_dict(obj, exclude_fields: list = []) -> dict:
 
     if isinstance(obj, Document):
         return_data['id'] = str(obj.id)
+
+    if exclude_fields is None:
+        exclude_fields = []
 
     for field_name in obj._fields:
 

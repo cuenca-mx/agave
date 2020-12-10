@@ -63,11 +63,8 @@ def test_mongo_to_dict():
         embedded_list_field=[Embedded(name='')], lazzy_list_field=[reference]
     )
     model.save()
-
     model_dict = mongo_to_dict(model, exclude_fields=['str_field'])
-    import json
 
-    print(json.dumps(model_dict, indent=4))
     assert 'id' in model_dict
     assert 'date_time_field' in model_dict
     assert 'complex_date_time_field' in model_dict
