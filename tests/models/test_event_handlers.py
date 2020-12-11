@@ -8,7 +8,7 @@ from agave.lib.mongoengine.event_handlers import updated_at
 
 @updated_at.apply
 class TestModel(Document):
-    ...
+    __test__ = False
 
 
 @pytest.mark.freeze_time('2020-10-10')

@@ -21,14 +21,14 @@ class EnumField(BaseField):
     def __get_value(self, enum: Enum) -> str:
         return enum.value if hasattr(enum, 'value') else enum
 
-    def to_python(self, value: Enum) -> Enum:
+    def to_python(self, value: Enum) -> Enum:  # pragma: no cover
         return self.enum(super(EnumField, self).to_python(value))
 
     def to_mongo(self, value: Enum) -> str:
         return self.__get_value(value)
 
     def prepare_query_value(self, op, value: Enum) -> str:
-        return super(EnumField, self).prepare_query_value(
+        return super(EnumField, self).prepare_query_value(  # pragma: no cover
             op, self.__get_value(value)
         )
 

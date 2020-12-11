@@ -55,7 +55,7 @@ def test_update_resource_with_invalid_params(client: Client) -> None:
     assert response.status_code == 400
 
 
-def test_update_resource_that_doesnt_exit(client: Client) -> None:
+def test_update_resource_that_doesnt_exist(client: Client) -> None:
     resp = client.http.patch(
         '/accounts/5f9b4d0ff8d7255e3cc3c128',
         json=dict(name='Frida'),
