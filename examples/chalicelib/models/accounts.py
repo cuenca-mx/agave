@@ -1,10 +1,10 @@
-from mongoengine import DateTimeField, Document, StringField
+from mongoengine import DateTimeField, StringField
 
-from agave.models import BaseModel
+from agave.models.mongo import MongoModel
 from agave.models.helpers import uuid_field
 
 
-class Account(BaseModel, Document):
+class Account(MongoModel):
     id = StringField(primary_key=True, default=uuid_field('AC'))
     name = StringField(required=True)
     user_id = StringField(required=True)

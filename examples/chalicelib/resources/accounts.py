@@ -3,9 +3,10 @@ import datetime as dt
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist
 
-from agave.filters import generic_query
+from agave.filters import generic_query, generic_query_redis
 
-from ..models import Account as AccountModel
+# from ..models import Account as AccountModel
+from ..models.accounts_redis import AccountRedis as AccountModel
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
 
@@ -15,7 +16,7 @@ class Account:
     model = AccountModel
     query_validator = AccountQuery
     update_validator = AccountUpdateRequest
-    get_query_filter = generic_query
+    get_query_filter = generic_query_redis
 
     @staticmethod
     @app.validate(AccountRequest)
@@ -25,7 +26,7 @@ class Account:
             user_id=app.current_user_id,
         )
         account.save()
-        return Response(account.to_dict(), status_code=201)
+        return Response(account.dict(), status_code=201)
 
     @staticmethod
     def update(
@@ -33,7 +34,7 @@ class Account:
     ) -> Response:
         account.name = request.name
         account.save()
-        return Response(account.to_dict(), status_code=200)
+        return Response(account.dict(), status_code=200)
 
     @staticmethod
     def delete(id: str) -> Response:

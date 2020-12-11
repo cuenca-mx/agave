@@ -1,12 +1,14 @@
-from typing import Optional, Type
+from typing import Callable, Optional, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
-from mongoengine import DoesNotExist, Q
+from mongoengine import Q
 from pydantic import BaseModel, ValidationError
 
 from .decorators import copy_attributes
+
+from ..filters import get_by_id, get_by_id_and_user
 
 
 class RestApiBlueprint(Blueprint):
@@ -112,10 +114,10 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = cls.model.objects.get(id=id)
+                        model = get_by_id(cls, id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
-                    except DoesNotExist:
+                    except Exception:
                         raise NotFoundError('Not valid id')
                     else:
                         return cls.update(model, data)
@@ -141,13 +143,12 @@ class RestApiBlueprint(Blueprint):
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    id_query = Q(id=id)
+                    data = get_by_id(cls, id=id)
                     if self.user_id_filter_required():
-                        id_query = id_query & Q(user_id=self.current_user_id)
-                    data = cls.model.objects.get(id_query)
-                except DoesNotExist:
+                        data = get_by_id_and_user(cls, id=id)
+                except Exception:
                     raise NotFoundError('Not valid id')
-                return data.to_dict()
+                return data.dict()
 
             @self.get(path)
             @copy_attributes(cls)
@@ -178,10 +179,10 @@ class RestApiBlueprint(Blueprint):
                 # Set user_id request as query param
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
-                filterer = cls.get_query_filter(query_params)
+                filters = cls.get_query_filter(query_params)
                 if query_params.count:
-                    return _count(filterer)
-                return _all(query_params, filterer)
+                    return _count(filters)
+                return _all(query_params, filters)
 
             def _count(query: QueryParams, filterer):
                 count = filterer(query)

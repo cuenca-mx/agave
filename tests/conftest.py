@@ -2,11 +2,39 @@ import datetime as dt
 from typing import Generator, List
 
 import pytest
+import rom
+from _pytest.monkeypatch import MonkeyPatch
 from chalice.test import Client
+from redislite import Redis
 
-from examples.chalicelib.models import Account
+from examples.chalicelib.models.accounts_redis import AccountRedis as Account
 
+# from examples.chalicelib.models import Account
 from .helpers import accept_json
+
+
+@pytest.fixture(scope='session')
+def monkeypatchsession(request):
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(autouse=True)
+def setup_redis(monkeypatchsession) -> Generator[None, None, None]:
+    # Usa un fake redis para no utilizar un servidor de Redis
+    redis_connection = Redis('/tmp/redis.db')
+    monkeypatchsession.setattr(
+        rom.util, 'get_connection', lambda: redis_connection
+    )
+    yield
+
+
+@pytest.fixture(autouse=True)
+def flush_redis() -> Generator[None, None, None]:
+    yield
+    redis_connection = Redis('/tmp/redis.db')
+    redis_connection.flushall()
 
 
 @pytest.fixture()

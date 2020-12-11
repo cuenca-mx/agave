@@ -7,6 +7,7 @@ except ImportError:
     ...
 else:
     from .mongo import MongoModel
+
     __all__.append('MongoModel')
 
 
@@ -16,4 +17,5 @@ except ImportError:
     ...
 else:
     from .redis import RedisModel
+
     __all__.append('RedisModel')
