@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Type
+from typing import Optional, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -65,6 +65,7 @@ class RestApiBlueprint(Blueprint):
             def get_query_filter(): ...
         This implementation create the following endpoints
         POST /my_resource
+        PATCH /my_resource
         DELETE /my_resource/id
         GET /my_resource/id
         GET /my_resource
@@ -76,41 +77,58 @@ class RestApiBlueprint(Blueprint):
             :return:
             """
 
-            """
-            POST /resource
+            """ POST /resource
             Create a chalice endpoint using the method "create"
             If the method receive body params decorate it with @validate
+            """
+            if hasattr(cls, 'create'):
+                route = self.post(path)
+                route(cls.create)
 
-            DELETE /resource/{id}
+            """ DELETE /resource/{id}
             Use "delete" method (if exists) to create the chalice endpoint
+            """
+            if hasattr(cls, 'delete'):
+                route = self.delete(path + '/{id}')
+                route(cls.delete)
 
-            PATCH /resource/{id}
+            """ PATCH /resource/{id}
             Enable PATCH method if Resource.update method exist. It validates
             body data using `Resource.update_validator` but update logic is
             completely your responsibility.
-
-            GET /resource/{id}
-            :param id: Object Id
-            :return: Model object
-            If exists "retrieve" method return the result of that, else
-            use "id" param to retrieve the object of type "model" defined
-            in the decorated class.
-
             """
+            if hasattr(cls, 'update'):
+                route = self.patch(path + '/{id}')
 
-            def _update(id: str):
-                params = self.current_request.json_body or dict()
-                try:
-                    data = cls.update_validator(**params)
-                    model = cls.model.objects.get(id=id)
-                except ValidationError as e:
-                    return Response(e.json(), status_code=400)
-                except DoesNotExist:
-                    raise NotFoundError('Not valid id')
-                else:
-                    return cls.update(model, data)
+                def _update(id: str):
+                    params = self.current_request.json_body or dict()
+                    try:
+                        data = cls.update_validator(**params)
+                        model = cls.model.objects.get(id=id)
+                    except ValidationError as e:
+                        return Response(e.json(), status_code=400)
+                    except DoesNotExist:
+                        raise NotFoundError('Not valid id')
+                    else:
+                        return cls.update(model, data)
 
-            def _retrieve(id: str):
+                route(_update)
+
+            @self.get(path + '/{id}')
+            def retrieve(id: str):
+                """GET /resource/{id}
+                :param id: Object Id
+                :return: Model object
+                If exists "retrieve" method return the result of that, else
+                use "id" param to retrieve the object of type "model" defined
+                in the decorated class.
+                The most of times this implementation is enough and is not
+                necessary define a custom "retrieve" method
+                """
+                if hasattr(cls, 'retrieve'):
+                    # at the moment, there are no resources with a custom
+                    # retrieve method
+                    return cls.retrieve(id)  # pragma: no cover
                 try:
                     id_query = Q(id=id)
                     if self.user_id_filter_required():
@@ -120,7 +138,8 @@ class RestApiBlueprint(Blueprint):
                     raise NotFoundError('Not valid id')
                 return data.to_dict()
 
-            def _query():
+            @self.get(path)
+            def query():
                 """GET /resource
                 Method for queries in resource. Use "query_validator" type
                 defined in decorated class to validate the params.
@@ -141,10 +160,9 @@ class RestApiBlueprint(Blueprint):
                     query_params = cls.query_validator(**params)
                 except ValidationError as e:
                     return Response(e.json(), status_code=400)
-
+                # Set user_id request as query param
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
-
                 filters = cls.get_query_filter(query_params)
                 if query_params.count:
                     return _count(filters)
@@ -181,63 +199,6 @@ class RestApiBlueprint(Blueprint):
                         params.pop('user_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)
-
-            def _register_route(
-                path: str,
-                method_name: str,
-                route: Callable,
-                default_function: Optional[Callable] = None,
-            ):
-                try:
-                    method = getattr(cls, method_name)
-                except AttributeError:
-                    method = default_function
-                else:
-                    # If you neeed to use the default_function in the method
-                    if default_function:  # pragma: no cover
-                        setattr(
-                            cls, default_function.__name__, default_function
-                        )
-
-                if not method:
-                    return
-
-                route = route(path)
-                route(method)
-
-            routes = [
-                dict(
-                    path=path,
-                    route=self.post,
-                    method_name='create',
-                ),
-                dict(
-                    path=path + '/{id}',
-                    route=self.delete,
-                    method_name='delete',
-                ),
-                dict(
-                    path=path + '/{id}',
-                    route=self.patch,
-                    method_name='',  # Es llamado en la función default
-                    default_function=_update,
-                ),
-                dict(
-                    path=path + '/{id}',
-                    route=self.get,
-                    method_name='retrieve',
-                    default_function=_retrieve,
-                ),
-                dict(
-                    path=path,
-                    route=self.get,
-                    method_name='query',
-                    default_function=_query,
-                ),
-            ]
-
-            for route in routes:
-                _register_route(**route)
 
             return cls
 
