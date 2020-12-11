@@ -33,6 +33,11 @@ def test_retrieve_resource(client: Client, account: Account) -> None:
     assert resp.json_body == account.to_dict()
 
 
+# def test_retrieve_resource_books(client: Client) -> None:
+#     resp = client.http.get(f'/books/B123')
+#     assert resp.status_code == 200
+
+
 @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_retrieve_resource_user_id_filter_required(
     client: Client, other_account: Account

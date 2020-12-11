@@ -29,11 +29,24 @@ class Account:
 
     @staticmethod
     def update(
-        account: AccountModel, request: AccountUpdateRequest
+            account: AccountModel, request: AccountUpdateRequest
     ) -> Response:
         account.name = request.name
         account.save()
         return Response(account.to_dict(), status_code=200)
+
+    # @staticmethod
+    # def _update_model(
+    #     account: AccountModel, request: AccountUpdateRequest
+    # ) -> Response:
+    #     account.name = request.name
+    #     account.save()
+    #     return account
+    #
+    # @staticmethod
+    # def update(id: str) -> Response:
+    #     account = Account._update(id)  # type: ignore
+    #     return Response(account.to_dict(), status_code=200)
 
     @staticmethod
     def delete(id: str) -> Response:

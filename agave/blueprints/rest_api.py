@@ -195,7 +195,7 @@ class RestApiBlueprint(Blueprint):
                     method = default_function
                 else:
                     # If you neeed to use the default_function in the method
-                    if default_function:
+                    if default_function:  # pragma: no cover
                         setattr(
                             cls, default_function.__name__, default_function
                         )
