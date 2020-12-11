@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Type
+from typing import Callable, Optional, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -22,7 +22,7 @@ class RestApiBlueprint(Blueprint):
 
     @property
     def current_user_id(self):
-        return self.current_request.user_id
+        return getattr(self.current_request, 'user_id', None)
 
     def user_id_filter_required(self):
         """
@@ -186,7 +186,6 @@ class RestApiBlueprint(Blueprint):
                 path: str,
                 method_name: str,
                 route: Callable,
-                default_authorizations: List[str],
                 default_function: Optional[Callable] = None,
             ):
                 try:
@@ -203,12 +202,7 @@ class RestApiBlueprint(Blueprint):
                 if not method:
                     return
 
-                try:
-                    authorizations = getattr(method, 'authorizations')
-                except AttributeError:
-                    authorizations = default_authorizations
-
-                route = route(path, authorizations=authorizations)
+                route = route(path)
                 route(method)
 
             routes = [
@@ -216,33 +210,28 @@ class RestApiBlueprint(Blueprint):
                     path=path,
                     route=self.post,
                     method_name='create',
-                    default_authorizations=['.create'],
                 ),
                 dict(
                     path=path + '/{id}',
                     route=self.delete,
                     method_name='delete',
-                    default_authorizations=['.delete'],
                 ),
                 dict(
                     path=path + '/{id}',
                     route=self.patch,
                     method_name='',  # Es llamado en la función default
-                    default_authorizations=['.update'],
                     default_function=_update,
                 ),
                 dict(
                     path=path + '/{id}',
                     route=self.get,
                     method_name='retrieve',
-                    default_authorizations=['.read'],
                     default_function=_retrieve,
                 ),
                 dict(
                     path=path,
                     route=self.get,
                     method_name='query',
-                    default_authorizations=['.read'],
                     default_function=_query,
                 ),
             ]
