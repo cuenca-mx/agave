@@ -1,14 +1,13 @@
-from typing import Callable, Optional, Type
+from typing import Any, Optional, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
-from mongoengine import Q
 from pydantic import BaseModel, ValidationError
 
 from .decorators import copy_attributes
 
-from ..filters import get_by_id, get_by_id_and_user
+from ..filters import filter_count, filter_limit, get
 
 
 class RestApiBlueprint(Blueprint):
@@ -114,7 +113,7 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = get_by_id(cls, id=id)
+                        model = get(cls, id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
                     except Exception:
@@ -143,9 +142,9 @@ class RestApiBlueprint(Blueprint):
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    data = get_by_id(cls, id=id)
+                    data = get(cls, id=id)
                     if self.user_id_filter_required():
-                        data = get_by_id_and_user(cls, id=id)
+                        data = get(cls, id=id, user_id=self.current_user_id)
                 except Exception:
                     raise NotFoundError('Not valid id')
                 return data.dict()
@@ -184,24 +183,23 @@ class RestApiBlueprint(Blueprint):
                     return _count(filters)
                 return _all(query_params, filters)
 
-            def _count(query: QueryParams, filterer):
-                count = filterer(query)
+            def _count(filters: Any):
+                count = filter_count(cls, filters)
                 return dict(count=count)
 
-            def _all(query: QueryParams, filterer: Callable):
+            def _all(query: QueryParams, filters: Any):
                 if query.limit:
                     limit = min(query.limit, query.page_size)
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items = filterer(query, limit)
-
+                items, items_limit = filter_limit(cls, filters, limit)
                 item_dicts = [i.dict() for i in items]
 
                 has_more: Optional[bool] = None
                 if wants_more := query.limit is None or query.limit > 0:
                     # only perform this query if it's necessary
-                    has_more = items.limit(limit + 1).count() > limit
+                    has_more = items_limit
 
                 next_page_uri: Optional[str] = None
                 if wants_more and has_more:

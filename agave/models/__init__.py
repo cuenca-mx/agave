@@ -1,6 +1,5 @@
 __all__ = []
 
-
 try:
     import mongoengine
 except ImportError:

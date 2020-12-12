@@ -1,4 +1,4 @@
-from agave.filters import generic_query
+from agave.filters import generic_mongo_query
 
 from ..models.transactions import Transaction as TransactionModel
 from ..validators import TransactionQuery
@@ -9,4 +9,4 @@ from .base import app
 class Transaction:
     model = TransactionModel
     query_validator = TransactionQuery
-    get_query_filter = generic_query
+    get_query_filter = generic_mongo_query

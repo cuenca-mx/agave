@@ -7,9 +7,8 @@ from _pytest.monkeypatch import MonkeyPatch
 from chalice.test import Client
 from redislite import Redis
 
-from examples.chalicelib.models.accounts_redis import AccountRedis as Account
+from examples.chalicelib.models import Account
 
-# from examples.chalicelib.models import Account
 from .helpers import accept_json
 
 

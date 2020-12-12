@@ -3,7 +3,7 @@ import uuid
 from base64 import urlsafe_b64encode
 from typing import Any
 
-from rom import Column, Model, PrimaryKey
+from rom import Column
 
 
 def uuid_field(prefix: str = ''):
@@ -39,7 +39,6 @@ def sanitize_item(item: Any) -> Any:
 
 
 def redis_to_dit(obj, exclude_fields: list = None) -> dict:
-    o_id = PrimaryKey()
     excluded = ['o_id']
     response = {
         key: sanitize_item(value)
