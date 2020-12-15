@@ -18,7 +18,7 @@ def test_create_resource(client: Client) -> None:
     resp = client.http.post('/accounts', json=data)
     model = Account.objects.get(id=resp.json_body['id'])
     assert resp.status_code == 201
-    assert model.to_dict() == resp.json_body
+    assert model.dict() == resp.json_body
     model.delete()
 
 

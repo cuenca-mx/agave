@@ -210,7 +210,7 @@ class RestApiBlueprint(Blueprint):
                         params.pop('user_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
                 return dict(
-                    items=[i.dict() for i in items],
+                    items=[i.dict() for i in items],  # type: ignore
                     next_page_uri=next_page_uri,
                 )
 

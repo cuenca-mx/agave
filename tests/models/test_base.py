@@ -1,9 +1,9 @@
 from mongoengine import Document, StringField
 
-from agave.models import BaseModel
+from agave.models.mongo import MongoModel
 
 
-class TestModel(BaseModel, Document):
+class TestModel(MongoModel, Document):
     id = StringField()
     secret_field = StringField()
     __test__ = False
@@ -12,6 +12,6 @@ class TestModel(BaseModel, Document):
 
 def test_hide_field():
     model = TestModel(id='12345', secret_field='secret')
-    model_dict = model.to_dict()
+    model_dict = model.dict()
     assert model_dict['secret_field'] == '********'
     assert model_dict['id'] == '12345'
