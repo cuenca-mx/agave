@@ -3,9 +3,10 @@ import datetime as dt
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist
 
-from agave.filters import generic_mongo_query
+from agave.filters import generic_mongo_query, generic_redis_query
 
 from ..models import Account as AccountModel
+# from ..models.accounts_redis import AccountRedis as AccountModel
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
 

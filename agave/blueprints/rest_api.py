@@ -194,7 +194,7 @@ class RestApiBlueprint(Blueprint):
                 else:
                     limit = query.page_size
                 items, items_limit = filter_limit(cls, filters, limit)
-                item_dicts = [i.dict() for i in items]
+                items = list(items)
 
                 has_more: Optional[bool] = None
                 if wants_more := query.limit is None or query.limit > 0:
@@ -203,13 +203,16 @@ class RestApiBlueprint(Blueprint):
 
                 next_page_uri: Optional[str] = None
                 if wants_more and has_more:
-                    query.created_before = item_dicts[-1]['created_at']
+                    query.created_before = items[-1].created_at.isoformat()
                     path = self.current_request.context['resourcePath']
                     params = query.dict()
                     if self.user_id_filter_required():
                         params.pop('user_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
-                return dict(items=item_dicts, next_page_uri=next_page_uri)
+                return dict(
+                    items=[i.dict() for i in items],
+                    next_page_uri=next_page_uri,
+                )
 
             return cls
 

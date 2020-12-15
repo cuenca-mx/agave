@@ -1,9 +1,33 @@
 from cuenca_validations.typing import DictStrAny
-from rom import Model, PrimaryKey
-
-from agave.models.helpers import redis_to_dit
+from cuenca_validations.validators import sanitize_item
+from rom import Column, Model, PrimaryKey
 
 from .base import BaseModel
+
+
+class String(Column):
+    """
+    No utilizo la clase String de rom porque todo lo maneja en bytes
+    codificado en latin-1.
+    """
+
+    _allowed = str
+
+    def _to_redis(self, value):
+        return value.encode('utf-8')
+
+    def _from_redis(self, value):
+        return value.decode('utf-8')
+
+
+def redis_to_dit(obj, exclude_fields: list = None) -> dict:
+    excluded = ['o_id']
+    response = {
+        key: sanitize_item(value)
+        for key, value in obj._data.items()
+        if key not in excluded
+    }
+    return response
 
 
 class RedisModel(BaseModel, Model):

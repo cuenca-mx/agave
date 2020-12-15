@@ -2,8 +2,8 @@ import datetime as dt
 
 from rom import DateTime, util
 
-from agave.models.redis import RedisModel
-from agave.models.helpers import uuid_field, String
+from agave.models.redis import RedisModel, String
+from agave.models.helpers import uuid_field
 
 DEFAULT_MISSING_DATE = dt.datetime.utcfromtimestamp(0)
 
