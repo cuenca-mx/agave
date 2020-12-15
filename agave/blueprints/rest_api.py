@@ -6,6 +6,8 @@ from cuenca_validations.types import QueryParams
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
+from .decorators import copy_attributes
+
 
 class RestApiBlueprint(Blueprint):
     def get(self, path: str, **kwargs):
@@ -105,7 +107,8 @@ class RestApiBlueprint(Blueprint):
             if hasattr(cls, 'update'):
                 route = self.patch(path + '/{id}')
 
-                def _update(id: str):
+                @copy_attributes(cls)
+                def update(id: str):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
@@ -117,9 +120,10 @@ class RestApiBlueprint(Blueprint):
                     else:
                         return cls.update(model, data)
 
-                route(_update)
+                route(update)
 
             @self.get(path + '/{id}')
+            @copy_attributes(cls)
             def retrieve(id: str):
                 """GET /resource/{id}
                 :param id: Object Id
@@ -146,6 +150,7 @@ class RestApiBlueprint(Blueprint):
                 return data.to_dict()
 
             @self.get(path)
+            @copy_attributes(cls)
             def query():
                 """GET /resource
                 Method for queries in resource. Use "query_validator" type
