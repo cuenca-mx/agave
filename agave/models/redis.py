@@ -5,6 +5,7 @@ from cuenca_validations.validators import sanitize_item
 from rom import Column, Model, PrimaryKey
 
 from .base import BaseModel
+from ..exc import ModelDoesNotExist
 
 
 class String(Column):
@@ -49,7 +50,7 @@ class RedisModel(BaseModel, Model):
         else:
             id_obj = self.model.get_by(id=id)
         if not id_obj:
-            raise
+            raise ModelDoesNotExist
         return id_obj
 
     def count(self, filters: Any) -> Dict[str, Any]:

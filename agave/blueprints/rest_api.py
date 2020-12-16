@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
 from pydantic import BaseModel, ValidationError
+from ..exc import ModelDoesNotExist
 
 from .decorators import copy_attributes
 
@@ -114,7 +115,7 @@ class RestApiBlueprint(Blueprint):
                         model = cls.model.retrieve(cls, id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
-                    except Exception:
+                    except ModelDoesNotExist:
                         raise NotFoundError('Not valid id')
                     else:
                         return cls.update(model, data)
@@ -145,7 +146,7 @@ class RestApiBlueprint(Blueprint):
                         data = cls.model.retrieve(
                             cls, id=id, user_id=self.current_user_id
                         )
-                except Exception:
+                except ModelDoesNotExist:
                     raise NotFoundError('Not valid id')
                 return data.dict()
 

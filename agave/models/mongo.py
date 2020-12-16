@@ -5,6 +5,7 @@ from mongoengine import Document, DoesNotExist, Q
 
 from ..lib.mongoengine.model_helpers import mongo_to_dict
 from .base import BaseModel
+from ..exc import ModelDoesNotExist
 
 
 class MongoModel(BaseModel, Document):
@@ -20,7 +21,7 @@ class MongoModel(BaseModel, Document):
                 id_query = id_query & Q(user_id=user_id)
             id_obj = self.model.objects.get(id_query)
         except DoesNotExist:
-            raise
+            raise ModelDoesNotExist
         return id_obj
 
     def count(self, filters: Any) -> Dict[str, Any]:
