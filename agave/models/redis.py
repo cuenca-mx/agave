@@ -57,7 +57,7 @@ class RedisModel(BaseModel, Model):
         count = self.model.query.filter(**filters).count()
         return count
 
-    def filter_limit(self, filters: Any, limit: int) -> Tuple[any, bool]:
+    def filter_limit(self, filters: Any, limit: int) -> Tuple[Any, bool]:
         items = (
             self.model.query.filter(**filters)
             .order_by('-created_at')

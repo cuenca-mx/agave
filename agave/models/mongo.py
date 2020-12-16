@@ -28,7 +28,7 @@ class MongoModel(BaseModel, Document):
         count = self.model.objects.filter(filters).count()
         return count
 
-    def filter_limit(self, filters: Any, limit: int) -> Tuple[any, bool]:
+    def filter_limit(self, filters: Any, limit: int) -> Tuple[Any, bool]:
         items = (
             self.model.objects.order_by("-created_at")
             .filter(filters)

@@ -18,7 +18,9 @@ USER_ID_FILTER_REQUIRED = (
 def test_create_resource(client: Client) -> None:
     data = dict(name='Doroteo Arango')
     resp = client.http.post('/accounts', json=data)
-    model = Account.retrieve(AccountResource, id=resp.json_body['id'])
+    model = Account.retrieve(
+        AccountResource, id=resp.json_body['id']  # type: ignore
+    )
     assert resp.status_code == 201
     assert model.dict() == resp.json_body
     model.delete()

@@ -20,4 +20,4 @@ class BaseModel:
         return d
 
     def __repr__(self) -> str:
-        return str(self.dict())  # pragma: no cover
+        return str(self.dict())  # type: ignore # pragma: no cover

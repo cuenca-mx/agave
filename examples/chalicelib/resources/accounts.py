@@ -38,7 +38,7 @@ class Account:
     def delete(id: str) -> Response:
         account = None
         try:
-            account = AccountModel.retrieve(Account, id=id)
+            account = AccountModel.retrieve(Account, id=id)  # type: ignore
         except DoesNotExist:
             raise NotFoundError('Not valid id')
         except Exception:
