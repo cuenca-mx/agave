@@ -39,7 +39,7 @@ class RedisModel(BaseModel, Model):
     def dict(self) -> DictStrAny:
         return self._dict(redis_to_dit)
 
-    def get_id(self, id: str, user_id: Optional[str] = None):
+    def retrieve(self, id: str, user_id: Optional[str] = None):
 
         if user_id:
             id_obj = self.model.query.filter(
@@ -52,7 +52,7 @@ class RedisModel(BaseModel, Model):
             raise
         return id_obj
 
-    def filter_count(self, filters: Any) -> Dict[str, Any]:
+    def count(self, filters: Any) -> Dict[str, Any]:
         count = self.model.query.filter(**filters).count()
         return count
 

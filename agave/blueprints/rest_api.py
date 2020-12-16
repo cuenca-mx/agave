@@ -111,7 +111,7 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = cls.model.get_id(cls, id=id)
+                        model = cls.model.retrieve(cls, id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
                     except Exception:
@@ -140,9 +140,9 @@ class RestApiBlueprint(Blueprint):
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    data = cls.model.get_id(cls, id=id)
+                    data = cls.model.retrieve(cls, id=id)
                     if self.user_id_filter_required():
-                        data = cls.model.get_id(
+                        data = cls.model.retrieve(
                             cls, id=id, user_id=self.current_user_id
                         )
                 except Exception:
@@ -184,7 +184,7 @@ class RestApiBlueprint(Blueprint):
                 return _all(query_params, filters)
 
             def _count(filters: Any):
-                count = cls.model.filter_count(cls, filters)
+                count = cls.model.count(cls, filters)
                 return dict(count=count)
 
             def _all(query: QueryParams, filters: Any):

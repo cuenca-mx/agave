@@ -1,12 +1,10 @@
 import datetime as dt
-
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist
 
-from agave.filters import generic_mongo_query, generic_redis_query
+from agave.filters import generic_mongo_query
 
 from ..models import Account as AccountModel
-# from ..models.accounts_redis import AccountRedis as AccountModel
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
 
@@ -38,11 +36,14 @@ class Account:
 
     @staticmethod
     def delete(id: str) -> Response:
+        account = None
         try:
-            account = AccountModel.objects.get(id=id)
+            account = AccountModel.retrieve(Account, id=id)
         except DoesNotExist:
             raise NotFoundError('Not valid id')
-
+        except Exception:
+            if not account:
+                raise NotFoundError('Not valid id')
         account.deactivated_at = dt.datetime.utcnow().replace(microsecond=0)
         account.save()
         return Response(account.dict(), status_code=200)

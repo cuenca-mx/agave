@@ -6,6 +6,8 @@ from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account
 
+from examples.chalicelib.models.accounts_redis import AccountRedis
+from examples.chalicelib.resources.accounts import Account as AccountResource
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -16,7 +18,7 @@ USER_ID_FILTER_REQUIRED = (
 def test_create_resource(client: Client) -> None:
     data = dict(name='Doroteo Arango')
     resp = client.http.post('/accounts', json=data)
-    model = Account.objects.get(id=resp.json_body['id'])
+    model = Account.retrieve(AccountResource, id=resp.json_body['id'])
     assert resp.status_code == 201
     assert model.dict() == resp.json_body
     model.delete()
@@ -69,7 +71,10 @@ def test_update_resource(client: Client, account: Account) -> None:
         f'/accounts/{account.id}',
         json=dict(name='Maria Felix'),
     )
-    account.reload()
+    if issubclass(Account, AccountRedis):
+        account.update()
+    else:
+        account.reload()
     assert resp.json_body['name'] == 'Maria Felix'
     assert account.name == 'Maria Felix'
     assert resp.status_code == 200
@@ -77,7 +82,10 @@ def test_update_resource(client: Client, account: Account) -> None:
 
 def test_delete_resource(client: Client, account: Account) -> None:
     resp = client.http.delete(f'/accounts/{account.id}')
-    account.reload()
+    if issubclass(Account, AccountRedis):
+        account.update()
+    else:
+        account.reload()
     assert resp.status_code == 200
     assert resp.json_body['deactivated_at'] is not None
     assert account.deactivated_at is not None

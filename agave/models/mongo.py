@@ -13,7 +13,7 @@ class MongoModel(BaseModel, Document):
     def dict(self) -> DictStrAny:
         return self._dict(mongo_to_dict)
 
-    def get_id(self, id: str, user_id: Optional[str] = None):
+    def retrieve(self, id: str, user_id: Optional[str] = None):
         try:
             id_query = Q(id=id)
             if user_id:
@@ -23,7 +23,7 @@ class MongoModel(BaseModel, Document):
             raise
         return id_obj
 
-    def filter_count(self, filters: Any) -> Dict[str, Any]:
+    def count(self, filters: Any) -> Dict[str, Any]:
         count = self.model.objects.filter(filters).count()
         return count
 

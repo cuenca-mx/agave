@@ -11,8 +11,6 @@ from examples.chalicelib.models import Account
 
 from .helpers import accept_json
 
-# from examples.chalicelib.models.accounts_redis import AccountRedis as Account
-
 
 @pytest.fixture(scope='session')
 def monkeypatchsession(request):
