@@ -7,8 +7,6 @@ from pydantic import BaseModel, ValidationError
 
 from .decorators import copy_attributes
 
-from ..filters import filter_count, filter_limit, get
-
 
 class RestApiBlueprint(Blueprint):
     def get(self, path: str, **kwargs):
@@ -113,7 +111,7 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = get(cls, id=id)
+                        model = cls.model.get_id(cls, id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
                     except Exception:
@@ -142,9 +140,11 @@ class RestApiBlueprint(Blueprint):
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    data = get(cls, id=id)
+                    data = cls.model.get_id(cls, id=id)
                     if self.user_id_filter_required():
-                        data = get(cls, id=id, user_id=self.current_user_id)
+                        data = cls.model.get_id(
+                            cls, id=id, user_id=self.current_user_id
+                        )
                 except Exception:
                     raise NotFoundError('Not valid id')
                 return data.dict()
@@ -184,7 +184,7 @@ class RestApiBlueprint(Blueprint):
                 return _all(query_params, filters)
 
             def _count(filters: Any):
-                count = filter_count(cls, filters)
+                count = cls.model.filter_count(cls, filters)
                 return dict(count=count)
 
             def _all(query: QueryParams, filters: Any):
@@ -193,7 +193,9 @@ class RestApiBlueprint(Blueprint):
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items, items_limit = filter_limit(cls, filters, limit)
+                items, items_limit = cls.model.filter_limit(
+                    cls, filters, limit
+                )
                 items = list(items)
 
                 has_more: Optional[bool] = None

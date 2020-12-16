@@ -1,8 +1,8 @@
 import datetime as dt
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict
 
 from cuenca_validations.types import QueryParams
-from mongoengine import DoesNotExist, Q
+from mongoengine import Q
 
 
 def exclude_fields(query: QueryParams) -> Dict[str, Any]:
@@ -54,50 +54,3 @@ def generic_redis_query(query: QueryParams, **kwargs) -> Dict[str, Any]:
         filters = fields
         return filters
     return filters
-
-
-def get(cls, id: str, user_id: Optional[str] = None):
-    try:
-        id_query = Q(id=id)
-        if user_id:
-            id_query = id_query & Q(user_id=user_id)
-        id_obj = cls.model.objects.get(id_query)
-    except DoesNotExist:
-        raise
-    except Exception:
-        if user_id:
-            id_obj = cls.model.query.filter(
-                id=id,
-                user_id=user_id,
-            ).first()
-        else:
-            id_obj = cls.model.get_by(id=id)
-        if not id_obj:
-            raise
-    return id_obj
-
-
-def filter_count(cls, filters: Any) -> Dict[str, Any]:
-    try:
-        count = cls.model.objects.filter(filters).count()
-    except Exception:
-        count = cls.model.query.filter(**filters).count()
-    return count
-
-
-def filter_limit(cls, filters: Any, limit: int) -> Tuple[any, bool]:
-    try:
-        items = (
-            cls.model.objects.order_by("-created_at")
-            .filter(filters)
-            .limit(limit)
-        )
-        has_more = items.limit(limit + 1).count() > limit
-    except Exception:
-        items = (
-            cls.model.query.filter(**filters)
-            .order_by('-created_at')
-            .limit(0, limit)
-        )
-        has_more = items.limit(0, limit + 1).count() > limit
-    return items, has_more
