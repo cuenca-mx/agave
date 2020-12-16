@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional, Tuple
 from cuenca_validations.typing import DictStrAny
 from mongoengine import Document, DoesNotExist, Q
 
+from ..exc import ModelDoesNotExist
 from ..lib.mongoengine.model_helpers import mongo_to_dict
 from .base import BaseModel
-from ..exc import ModelDoesNotExist
 
 
 class MongoModel(BaseModel, Document):

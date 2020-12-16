@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
 from pydantic import BaseModel, ValidationError
+
 from ..exc import ModelDoesNotExist
 
 from .decorators import copy_attributes

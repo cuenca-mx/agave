@@ -4,8 +4,8 @@ from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
 from rom import Column, Model, PrimaryKey
 
-from .base import BaseModel
 from ..exc import ModelDoesNotExist
+from .base import BaseModel
 
 
 class String(Column):
