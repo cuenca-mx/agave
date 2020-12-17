@@ -26,7 +26,7 @@ class MongoModel(BaseModel, Document):
         return id_obj
 
     @classmethod
-    def count(cls, filters: Any) -> Dict[str, Any]:
+    def count(cls, filters: Any) -> int:
         count = cls.objects.filter(filters).count()
         return count
 

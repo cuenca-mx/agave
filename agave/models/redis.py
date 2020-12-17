@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
@@ -54,7 +54,7 @@ class RedisModel(BaseModel, Model):
         return id_obj
 
     @classmethod
-    def count(cls, filters: Any) -> Dict[str, Any]:
+    def count(cls, filters: Any) -> int:
         count = cls.query.filter(**filters).count()
         return count
 
