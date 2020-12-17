@@ -1,2 +1,2 @@
-class ModelDoesNotExist(Exception):
+class ObjectDoesNotExist(Exception):
     '''object does not exist'''

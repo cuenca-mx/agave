@@ -5,7 +5,7 @@ from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
 from pydantic import BaseModel, ValidationError
 
-from ..exc import ModelDoesNotExist
+from ..exc import ObjectDoesNotExist
 
 from .decorators import copy_attributes
 
@@ -113,10 +113,10 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = cls.model.retrieve(cls, id=id)
+                        model = cls.model.retrieve(id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
-                    except ModelDoesNotExist:
+                    except ObjectDoesNotExist:
                         raise NotFoundError('Not valid id')
                     else:
                         return cls.update(model, data)
@@ -142,12 +142,12 @@ class RestApiBlueprint(Blueprint):
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    data = cls.model.retrieve(cls, id=id)
+                    data = cls.model.retrieve(id=id)
                     if self.user_id_filter_required():
                         data = cls.model.retrieve(
-                            cls, id=id, user_id=self.current_user_id
+                            id=id, user_id=self.current_user_id
                         )
-                except ModelDoesNotExist:
+                except ObjectDoesNotExist:
                     raise NotFoundError('Not valid id')
                 return data.dict()
 
@@ -186,7 +186,7 @@ class RestApiBlueprint(Blueprint):
                 return _all(query_params, filters)
 
             def _count(filters: Any):
-                count = cls.model.count(cls, filters)
+                count = cls.model.count(filters)
                 return dict(count=count)
 
             def _all(query: QueryParams, filters: Any):
@@ -195,9 +195,7 @@ class RestApiBlueprint(Blueprint):
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items, items_limit = cls.model.filter_limit(
-                    cls, filters, limit
-                )
+                items, items_limit = cls.model.filter_limit(filters, limit)
                 items = list(items)
 
                 has_more: Optional[bool] = None

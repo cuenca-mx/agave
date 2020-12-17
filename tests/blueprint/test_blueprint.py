@@ -7,7 +7,6 @@ from mock import MagicMock, patch
 from examples.chalicelib.models import Account
 
 from examples.chalicelib.models.accounts_redis import AccountRedis
-from examples.chalicelib.resources.accounts import Account as AccountResource
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -18,9 +17,7 @@ USER_ID_FILTER_REQUIRED = (
 def test_create_resource(client: Client) -> None:
     data = dict(name='Doroteo Arango')
     resp = client.http.post('/accounts', json=data)
-    model = Account.retrieve(
-        AccountResource, id=resp.json_body['id']  # type: ignore
-    )
+    model = Account.retrieve(id=resp.json_body['id'])  # type: ignore
     assert resp.status_code == 201
     assert model.dict() == resp.json_body
     model.delete()
