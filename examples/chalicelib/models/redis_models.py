@@ -8,7 +8,7 @@ from agave.models.helpers import uuid_field
 DEFAULT_MISSING_DATE = dt.datetime.utcfromtimestamp(0)
 
 
-class AccountRedis(RedisModel):
+class Account(RedisModel):
     id = String(
         default=uuid_field('US'),
         required=True,

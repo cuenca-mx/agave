@@ -6,8 +6,9 @@ except ImportError:
     ...
 else:
     from .mongo import MongoModel  # noqa
+    from .mongo.filters import generic_mongo_query  # noqa
 
-    __all__.append('MongoModel')
+    __all__.extend(['MongoModel', 'generic_mongo_query'])
 
 
 try:
