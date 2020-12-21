@@ -4,9 +4,8 @@ import pytest
 from chalice.test import Client
 from mock import MagicMock, patch
 
-from examples.chalicelib.models import Account
+from examples.chalicelib.models.mongo_models import Account
 
-from examples.chalicelib.models.accounts_redis import AccountRedis
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -70,10 +69,8 @@ def test_update_resource(client: Client, account: Account) -> None:
         f'/accounts/{account.id}',
         json=dict(name='Maria Felix'),
     )
-    if issubclass(Account, AccountRedis):
-        account.update()
-    else:
-        account.reload()
+
+    account.reload()
     assert resp.json_body['name'] == 'Maria Felix'
     assert account.name == 'Maria Felix'
     assert resp.status_code == 200
@@ -81,10 +78,7 @@ def test_update_resource(client: Client, account: Account) -> None:
 
 def test_delete_resource(client: Client, account: Account) -> None:
     resp = client.http.delete(f'/accounts/{account.id}')
-    if issubclass(Account, AccountRedis):
-        account.update()
-    else:
-        account.reload()
+    account.reload()
     assert resp.status_code == 200
     assert resp.json_body['deactivated_at'] is not None
     assert account.deactivated_at is not None

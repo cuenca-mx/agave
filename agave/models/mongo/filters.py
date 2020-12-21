@@ -1,7 +1,7 @@
 from cuenca_validations.types import QueryParams
 from mongoengine import Q
 
-from ..filters import exclude_fields
+from ...filters import exclude_fields
 
 
 def generic_mongo_query(query: QueryParams) -> Q:
