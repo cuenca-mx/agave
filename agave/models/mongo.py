@@ -36,4 +36,5 @@ class MongoModel(BaseModel, Document):
             cls.objects.order_by("-created_at").filter(filters).limit(limit)
         )
         has_more = items.limit(limit + 1).count() > limit
+        items = list(items)
         return items, has_more
