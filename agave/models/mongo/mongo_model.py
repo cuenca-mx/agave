@@ -17,10 +17,10 @@ class MongoModel(BaseModel, Document):
     @classmethod
     def retrieve(cls, id: str, user_id: Optional[str] = None):
         try:
-            id_query = Q(id=id)
+            query = Q(id=id)
             if user_id:
-                id_query = id_query & Q(user_id=user_id)
-            id_obj = cls.objects.get(id_query)
+                query = query & Q(user_id=user_id)
+            id_obj = cls.objects.get(query)
         except DoesNotExist:
             raise ObjectDoesNotExist
         return id_obj

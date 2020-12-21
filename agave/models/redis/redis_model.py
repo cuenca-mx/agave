@@ -42,16 +42,13 @@ class RedisModel(BaseModel, Model):
 
     @classmethod
     def retrieve(cls, id: str, user_id: Optional[str] = None):
+        params = dict(id=id)
         if user_id:
-            id_obj = cls.query.filter(
-                id=id,
-                user_id=user_id,
-            ).first()
-        else:
-            id_obj = cls.get_by(id=id)
-        if not id_obj:
+            params['user_id'] = user_id
+        obj = cls.query.filter(**params).first()
+        if not obj:
             raise ObjectDoesNotExist
-        return id_obj
+        return obj
 
     @classmethod
     def count(cls, filters: Any) -> int:
