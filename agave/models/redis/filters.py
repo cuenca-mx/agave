@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from cuenca_validations.types import QueryParams
 
-from agave.filters import exclude_fields
+from ..filters import exclude_fields
 
 
 def generic_redis_query(query: QueryParams, **kwargs) -> Dict[str, Any]:

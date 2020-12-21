@@ -4,7 +4,7 @@ from cuenca_validations.types import QueryParams
 
 
 def exclude_fields(query: QueryParams) -> Dict[str, Any]:
-    exclude_fields = {
+    excluded_fields = {
         'created_before',
         'created_after',
         'active',
@@ -12,7 +12,7 @@ def exclude_fields(query: QueryParams) -> Dict[str, Any]:
         'page_size',
         'key',
     }
-    fields = query.dict(exclude=exclude_fields)
+    fields = query.dict(exclude=excluded_fields)
     if 'count' in fields:
         del fields['count']
     return fields

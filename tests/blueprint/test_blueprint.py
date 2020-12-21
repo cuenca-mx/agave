@@ -124,21 +124,17 @@ def test_query_all_resource(client: Client) -> None:
 
 @pytest.mark.usefixtures('accounts')
 @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
-def test_query_user_id_filter_required(client: Client) -> None:
+def test_query_user_id_filter_required(client: Client, user_id: str) -> None:
     query_params = dict(page_size=2)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     assert len(resp.json_body['items']) == 2
-    assert all(
-        item['user_id'] == 'US123456789' for item in resp.json_body['items']
-    )
+    assert all(item['user_id'] == user_id for item in resp.json_body['items'])
 
     resp = client.http.get(resp.json_body['next_page_uri'])
     assert resp.status_code == 200
     assert len(resp.json_body['items']) == 1
-    assert all(
-        item['user_id'] == 'US123456789' for item in resp.json_body['items']
-    )
+    assert all(item['user_id'] == user_id for item in resp.json_body['items'])
 
 
 def test_query_resource_with_invalid_params(client: Client) -> None:
