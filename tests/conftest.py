@@ -7,9 +7,9 @@ from _pytest.monkeypatch import MonkeyPatch
 from chalice.test import Client
 from redislite import Redis
 
-from .helpers import accept_json
-
 from examples.chalicelib.models import Account
+
+from .helpers import accept_json
 
 
 @pytest.fixture(scope='session')
