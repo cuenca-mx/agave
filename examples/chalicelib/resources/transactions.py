@@ -1,5 +1,4 @@
-from agave.filters import generic_mongo_query
-
+from agave.models.mongo.filters import generic_mongo_query
 from ..models.transactions import Transaction as TransactionModel
 from ..validators import TransactionQuery
 from .base import app

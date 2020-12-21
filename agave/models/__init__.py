@@ -15,6 +15,7 @@ try:
 except ImportError:
     ...
 else:
+
     from .redis import RedisModel  # noqa
 
     __all__.append('RedisModel')

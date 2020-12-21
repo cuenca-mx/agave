@@ -2,7 +2,7 @@ import datetime as dt
 
 from cuenca_validations.types import QueryParams
 
-from agave.filters import generic_mongo_query
+from agave.models.mongo.filters import generic_mongo_query
 
 
 def test_generic_query_before():

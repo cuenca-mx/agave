@@ -4,8 +4,8 @@ from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
 from rom import Column, Model, PrimaryKey
 
-from ..exc import ObjectDoesNotExist
-from .base import BaseModel
+from agave.exc import ObjectDoesNotExist
+from agave.models.base import BaseModel
 
 
 class String(Column):

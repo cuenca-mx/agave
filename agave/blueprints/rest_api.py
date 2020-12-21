@@ -142,11 +142,10 @@ class RestApiBlueprint(Blueprint):
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    data = cls.model.retrieve(id=id)
+                    user_id: Optional[bool] = None
                     if self.user_id_filter_required():
-                        data = cls.model.retrieve(
-                            id=id, user_id=self.current_user_id
-                        )
+                        user_id = self.current_user_id
+                    data = cls.model.retrieve(id, user_id)
                 except ObjectDoesNotExist:
                     raise NotFoundError('Not valid id')
                 return data.dict()
