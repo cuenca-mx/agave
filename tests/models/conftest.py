@@ -6,7 +6,10 @@ import pytest
 from agave.models import mongo, redis
 from examples.chalicelib.models import mongo_models, redis_models
 
+from ..models.test_base import TestModel, TestModelRedis
+
 DbModel = Union[mongo.MongoModel, redis.RedisModel]
+ModelBase = Union[TestModel, TestModelRedis]
 
 
 def pytest_generate_tests(metafunc):
@@ -21,6 +24,14 @@ def pytest_generate_tests(metafunc):
 @pytest.fixture
 def db_model(request) -> Type[DbModel]:
     return request.param
+
+
+@pytest.fixture
+def model_base(request) -> Type[ModelBase]:
+    if request.param == 'mongo':
+        return TestModel
+    else:
+        return TestModelRedis
 
 
 @pytest.fixture

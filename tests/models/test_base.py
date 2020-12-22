@@ -1,6 +1,9 @@
 from mongoengine import Document, StringField
+from rom import util
 
+from agave.models.helpers import uuid_field
 from agave.models.mongo import MongoModel
+from agave.models.redis import RedisModel, String
 
 
 class TestModel(MongoModel, Document):
@@ -10,8 +13,14 @@ class TestModel(MongoModel, Document):
     _hidden = ['secret_field']
 
 
-def test_hide_field():
-    model = TestModel(id='12345', secret_field='secret')
-    model_dict = model.dict()
-    assert model_dict['secret_field'] == '********'
-    assert model_dict['id'] == '12345'
+class TestModelRedis(RedisModel):
+    id = String(
+        default=uuid_field('US'),
+        required=True,
+        unique=True,
+        index=True,
+        keygen=util.IDENTITY,
+    )
+    secret_field = String(required=True, index=True, keygen=util.IDENTITY)
+
+    _hidden = ['secret_field']

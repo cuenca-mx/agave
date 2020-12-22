@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from cuenca_validations.typing import DictStrAny
 from mongoengine import Document, DoesNotExist, Q
@@ -31,10 +31,13 @@ class MongoModel(BaseModel, Document):
         return count
 
     @classmethod
-    def filter_limit(cls, filters: Any, limit: int) -> Tuple[Any, bool]:
+    def filter_limit(cls, filters: Any, limit: int):
         items = (
             cls.objects.order_by("-created_at").filter(filters).limit(limit)
         )
+        return items
+
+    @classmethod
+    def has_more(cls, items: Any, limit: int):
         has_more = items.limit(limit + 1).count() > limit
-        items = list(items)
-        return items, has_more
+        return has_more
