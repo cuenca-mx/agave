@@ -6,7 +6,6 @@ from cuenca_validations.types import QueryParams
 from pydantic import BaseModel, ValidationError
 
 from ..exc import ObjectDoesNotExist
-
 from .decorators import copy_attributes
 
 

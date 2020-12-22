@@ -6,7 +6,6 @@ from mock import MagicMock, patch
 
 from examples.chalicelib.models.mongo_models import Account
 
-
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
     'AuthedBlueprint.user_id_filter_required'
