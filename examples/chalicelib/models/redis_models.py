@@ -18,6 +18,8 @@ class Account(RedisModel):
     )
     name = String(required=True, index=True, keygen=util.IDENTITY)
     user_id = String(required=True, index=True, keygen=util.IDENTITY)
-    secret = String()
     created_at = DateTime(default=dt.datetime.utcnow, index=True)
     deactivated_at = DateTime(default=DEFAULT_MISSING_DATE, index=True)
+    secret_field = String(index=True, keygen=util.IDENTITY)
+    __test__ = False
+    _hidden = ['secret_field']

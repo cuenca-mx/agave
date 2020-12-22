@@ -8,10 +8,7 @@ from agave.models.mongo.filters import generic_mongo_query
 from agave.models.redis.filters import generic_redis_query
 from examples.chalicelib.validators import AccountQuery
 
-from ..models.test_base import TestModel, TestModelRedis
-
 DbModel = Union[mongo.MongoModel, redis.RedisModel]
-ModelBase = Union[TestModel, TestModelRedis]
 
 
 def test_retrieve(db_model: Type[DbModel], account: DbModel) -> None:
@@ -79,13 +76,10 @@ def test_query_all_resource(db_model: Type[DbModel]):
     assert has_more is True
 
 
-@pytest.mark.parametrize(
-    'model_base',
-    ['mongo', 'redis'],
-    indirect=True,
-)
-def test_hide_field_redis(model_base: Type[ModelBase]):
-    model = model_base(id='12345', secret_field='secret')
+def test_hide_field_redis(db_model: Type[DbModel]):
+    model = db_model(
+        id='12345', secret_field='secret', name='frida', user_id='w72638'
+    )
     model_dict = model.dict()
     assert model_dict['secret_field'] == '********'
     assert model_dict['id'] == '12345'

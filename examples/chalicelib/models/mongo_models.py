@@ -10,6 +10,9 @@ class Account(MongoModel):
     user_id = StringField(required=True)
     created_at = DateTimeField()
     deactivated_at = DateTimeField()
+    secret_field = StringField()
+    __test__ = False
+    _hidden = ['secret_field']
 
 
 class Transaction(MongoModel):
