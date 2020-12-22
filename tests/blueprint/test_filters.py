@@ -20,7 +20,7 @@ def test_generic_query_after():
     assert "user" not in repr(query)
 
 
-def test_generic_query_before_redis():
+def test_generic_query_redis():
     params = QueryParams(created_before=dt.datetime.utcnow().isoformat())
     query = generic_redis_query(params)
     assert "created_at" in repr(query)
