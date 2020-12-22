@@ -2,7 +2,7 @@ __all__ = []
 
 try:
     import mongoengine  # noqa
-except ImportError:
+except ImportError:  # pragma: no cover
     ...
 else:
     from .mongo import MongoModel  # noqa
@@ -13,7 +13,7 @@ else:
 
 try:
     import rom  # noqa
-except ImportError:
+except ImportError:  # pragma: no cover
     ...
 else:
 
