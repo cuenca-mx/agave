@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Optional
 
 from cuenca_validations.typing import DictStrAny
 from mongoengine import Document, DoesNotExist, Q

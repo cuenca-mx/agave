@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
