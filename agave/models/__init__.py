@@ -18,5 +18,6 @@ except ImportError:  # pragma: no cover
 else:
 
     from .redis import RedisModel  # noqa
+    from .redis.filters import generic_redis_query  # noqa
 
-    __all__.append('RedisModel')
+    __all__.extend(['RedisModel', 'generic_redis_query'])
