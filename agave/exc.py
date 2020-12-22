@@ -1,2 +1,2 @@
-class ObjectDoesNotExist(Exception):
+class DoesNotExist(Exception):
     '''object does not exist'''

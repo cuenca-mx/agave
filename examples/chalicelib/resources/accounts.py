@@ -6,7 +6,7 @@ from agave.models.mongo.filters import generic_mongo_query
 from ..models.mongo_models import Account as AccountModel
 from ..validators import AccountQuery, AccountRequest, AccountUpdateRequest
 from .base import app
-from agave.exc import ObjectDoesNotExist
+from agave.exc import DoesNotExist
 
 
 @app.resource('/accounts')
@@ -41,7 +41,7 @@ class Account:
             account = AccountModel.retrieve(id=id)  # type: ignore
         except DoesNotExist:
             raise NotFoundError('Not valid id')
-        except ObjectDoesNotExist:
+        except Exception:
             if not account:
                 raise NotFoundError('Not valid id')
         account.deactivated_at = dt.datetime.utcnow().replace(microsecond=0)

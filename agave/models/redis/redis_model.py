@@ -4,7 +4,7 @@ from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
 from rom import Column, Model, PrimaryKey
 
-from agave.exc import ObjectDoesNotExist
+from agave.exc import DoesNotExist
 from agave.models.base import BaseModel
 
 
@@ -41,13 +41,13 @@ class RedisModel(BaseModel, Model):
         return self._dict(redis_to_dit)
 
     @classmethod
-    def retrieve(cls, id: str, user_id: Optional[str] = None):
+    def retrieve(cls, id: str, *, user_id: Optional[str] = None):
         params = dict(id=id)
         if user_id:
             params['user_id'] = user_id
         obj = cls.query.filter(**params).first()
         if not obj:
-            raise ObjectDoesNotExist
+            raise DoesNotExist
         return obj
 
     @classmethod
@@ -56,7 +56,7 @@ class RedisModel(BaseModel, Model):
         return count
 
     @classmethod
-    def filter_limit(cls, filters: Dict, limit: int):
+    def all(cls, filters: Dict, *, limit: int):
         items = (
             cls.query.filter(**filters).order_by('-created_at').limit(0, limit)
         )

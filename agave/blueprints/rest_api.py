@@ -5,7 +5,7 @@ from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
 from pydantic import BaseModel, ValidationError
 
-from ..exc import ObjectDoesNotExist
+from ..exc import DoesNotExist
 from .decorators import copy_attributes
 
 
@@ -115,7 +115,7 @@ class RestApiBlueprint(Blueprint):
                         model = cls.model.retrieve(id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
-                    except ObjectDoesNotExist:
+                    except DoesNotExist:
                         raise NotFoundError('Not valid id')
                     else:
                         return cls.update(model, data)
@@ -144,8 +144,8 @@ class RestApiBlueprint(Blueprint):
                     user_id: Optional[bool] = None
                     if self.user_id_filter_required():
                         user_id = self.current_user_id
-                    data = cls.model.retrieve(id, user_id)
-                except ObjectDoesNotExist:
+                    data = cls.model.retrieve(id, user_id=user_id)
+                except DoesNotExist:
                     raise NotFoundError('Not valid id')
                 return data.dict()
 
@@ -193,7 +193,7 @@ class RestApiBlueprint(Blueprint):
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items_model = cls.model.filter_limit(filters, limit)
+                items_model = cls.model.all(filters, limit=limit)
                 items = list(items_model)
 
                 has_more: Optional[bool] = None

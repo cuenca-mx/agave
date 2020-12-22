@@ -26,7 +26,7 @@ def generic_redis_query(query: QueryParams, **kwargs) -> Dict[str, Any]:
         filters['created_at'] = (created_at_gt, created_at_lt)
     fields = exclude_fields(query)
     fields = {**fields, **kwargs}
-    if len(filters) == 0:
+    if not filters:
         filters = fields
         return filters
     return filters
