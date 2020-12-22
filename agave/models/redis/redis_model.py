@@ -51,7 +51,7 @@ class RedisModel(BaseModel, Model):
         return obj
 
     @classmethod
-    def count(cls, filters: Any) -> int:
+    def count(cls, filters: Dict) -> int:
         count = cls.query.filter(**filters).count()
         return count
 
@@ -63,6 +63,6 @@ class RedisModel(BaseModel, Model):
         return items
 
     @classmethod
-    def has_more(cls, items: Any, limit: int):
+    def has_more(cls, items, limit: int):
         has_more = items.limit(0, limit + 1).count() > limit
         return has_more

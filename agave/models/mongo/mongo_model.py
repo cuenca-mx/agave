@@ -26,18 +26,18 @@ class MongoModel(BaseModel, Document):
         return id_obj
 
     @classmethod
-    def count(cls, filters) -> int:
+    def count(cls, filters: Q) -> int:
         count = cls.objects.filter(filters).count()
         return count
 
     @classmethod
-    def all(cls, filters, *, limit: int):
+    def all(cls, filters: Q, *, limit: int):
         items = (
             cls.objects.order_by("-created_at").filter(filters).limit(limit)
         )
         return items
 
     @classmethod
-    def has_more(cls, items: Any, limit: int):
+    def has_more(cls, items: Q, limit: int):
         has_more = items.limit(limit + 1).count() > limit
         return has_more
