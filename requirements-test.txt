@@ -8,3 +8,4 @@ mypy==0.790
 pytest-chalice==0.0.*
 mongomock==3.21.*
 mock==4.0.3
+redislite==5.0.*
