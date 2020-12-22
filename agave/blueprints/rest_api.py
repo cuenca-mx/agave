@@ -147,6 +147,21 @@ class RestApiBlueprint(Blueprint):
                     data = cls.model.objects.get(id_query)
                 except DoesNotExist:
                     raise NotFoundError('Not valid id')
+
+                if hasattr(cls, 'get_file'):
+                    file, mimetype = cls.get_file(data)
+                    extention = mimetype.split('/')[1]
+                    filename = f'{cls.model._class_name}.{extention}'
+                    return Response(
+                        body=file.read(),
+                        headers={
+                            'Content-Type': mimetype,
+                            'Content-Disposition': (
+                                'attachment; ' f'filename={filename}'
+                            ),
+                        },
+                        status_code=200,
+                    )
                 return data.to_dict()
 
             @self.get(path)

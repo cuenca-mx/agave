@@ -4,7 +4,7 @@ import pytest
 from chalice.test import Client
 from mock import MagicMock, patch
 
-from examples.chalicelib.models import Account
+from examples.chalicelib.models import Account, File
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -152,3 +152,10 @@ def test_cannot_update_resource(client: Client) -> None:
 def test_cannot_delete_resource(client: Client) -> None:
     resp = client.http.delete('/transactions/TR1234')
     assert resp.status_code == 405
+
+
+def test_download_resource(client: Client, file: File) -> None:
+    mimetype = 'application/pdf'
+    resp = client.http.get(f'/files/{file.id}', headers={'Accept': mimetype})
+    assert resp.status_code == 200
+    assert resp.headers.get('Content-Type') == mimetype

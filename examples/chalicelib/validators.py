@@ -20,3 +20,6 @@ class AccountRequest(BaseModel):
 
 class AccountUpdateRequest(BaseModel):
     name: str
+
+class FileQuery(QueryParams):
+    user_id: Optional[str] = None
