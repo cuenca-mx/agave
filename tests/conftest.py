@@ -4,7 +4,7 @@ from typing import Generator, List
 import pytest
 from chalice.test import Client
 
-from examples.chalicelib.models import Account
+from examples.chalicelib.models import Account, File
 
 from .helpers import accept_json
 
@@ -68,3 +68,25 @@ def account(accounts: List[Account]) -> Generator[Account, None, None]:
 @pytest.fixture
 def other_account(accounts: List[Account]) -> Generator[Account, None, None]:
     yield accounts[-1]
+
+
+@pytest.fixture
+def files() -> Generator[List[File], None, None]:
+    user_id = 'US123456789'
+    accs = [
+        File(
+            name='Frida Kahlo',
+            user_id=user_id,
+        ),
+    ]
+
+    for acc in accs:
+        acc.save()
+    yield accs
+    for acc in accs:
+        acc.delete()
+
+
+@pytest.fixture
+def file(files: List[File]) -> Generator[File, None, None]:
+    yield files[0]
