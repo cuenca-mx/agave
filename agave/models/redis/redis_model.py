@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
@@ -25,7 +25,7 @@ class String(Column):
         return value.decode('utf-8')
 
 
-def redis_to_dit(obj, exclude_fields: list = None) -> dict:
+def redis_to_dit(obj, exclude_fields: List[Dict[str, Any]]) -> dict:
     response = {
         key: sanitize_item(value)
         for key, value in obj._data.items()
