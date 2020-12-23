@@ -28,5 +28,4 @@ def generic_redis_query(query: QueryParams, **kwargs) -> Dict[str, Any]:
     fields = {**fields, **kwargs}
     if not filters:
         filters = fields
-        return filters
     return filters
