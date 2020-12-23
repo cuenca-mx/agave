@@ -1,4 +1,4 @@
-from typing import Any, Optional, Type
+from typing import Optional, Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -183,11 +183,11 @@ class RestApiBlueprint(Blueprint):
                     return _count(filters)
                 return _all(query_params, filters)
 
-            def _count(filters: Any):
+            def _count(filters):
                 count = cls.model.count(filters)
                 return dict(count=count)
 
-            def _all(query: QueryParams, filters: Any):
+            def _all(query: QueryParams, filters):
                 if query.limit:
                     limit = min(query.limit, query.page_size)
                     query.limit = max(0, query.limit - limit)  # type: ignore
