@@ -7,6 +7,8 @@ from rom import Column, Model, PrimaryKey
 from agave.exc import DoesNotExist
 from agave.models.base import BaseModel
 
+EXCLUDED = ['o_id']
+
 
 class String(Column):
     """
@@ -24,11 +26,10 @@ class String(Column):
 
 
 def redis_to_dit(obj, exclude_fields: list = None) -> dict:
-    excluded = ['o_id']
     response = {
         key: sanitize_item(value)
         for key, value in obj._data.items()
-        if key not in excluded
+        if key not in EXCLUDED
     }
     return response
 
