@@ -193,13 +193,11 @@ class RestApiBlueprint(Blueprint):
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items_model = cls.model.all(filters, limit=limit)
-                items = list(items_model)
+                items, has_more = cls.model.all(filters, limit=limit)
 
-                has_more: Optional[bool] = None
                 if wants_more := query.limit is None or query.limit > 0:
                     # only perform this query if it's necessary
-                    has_more = cls.model.has_more(items_model, limit)
+                    has_more = has_more
 
                 next_page_uri: Optional[str] = None
                 if wants_more and has_more:

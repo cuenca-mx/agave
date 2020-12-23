@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
@@ -56,13 +56,10 @@ class RedisModel(BaseModel, Model):
         return count
 
     @classmethod
-    def all(cls, filters: Dict, *, limit: int):
+    def all(cls, filters: Dict, *, limit: int) -> Tuple[list, bool]:
         items = (
             cls.query.filter(**filters).order_by('-created_at').limit(0, limit)
         )
-        return items
-
-    @classmethod
-    def has_more(cls, items, limit: int):
         has_more = items.limit(0, limit + 1).count() > limit
-        return has_more
+        items = list(items)
+        return items, has_more

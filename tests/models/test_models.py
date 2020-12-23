@@ -58,7 +58,6 @@ def test_query_all_with_limit(db_model: Type[DbModel]):
     else:
         filters = generic_redis_query(query_params)
     items = db_model.all(filters, limit=limit)
-    items = list(items)
     assert len(items) == 2
 
 
@@ -71,8 +70,7 @@ def test_query_all_resource(db_model: Type[DbModel]):
         filters = generic_mongo_query(query_params)
     else:
         filters = generic_redis_query(query_params)
-    items = db_model.all(filters, limit=limit)
-    has_more = db_model.has_more(items, limit)
+    items, has_more = db_model.all(filters, limit=limit)
     assert has_more is True
 
 
