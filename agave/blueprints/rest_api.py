@@ -112,9 +112,10 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = cls.model.retrieve(id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
+                    try:
+                        model = cls.model.retrieve(id=id)
                     except DoesNotExist:
                         raise NotFoundError('Not valid id')
                     else:
@@ -136,14 +137,14 @@ class RestApiBlueprint(Blueprint):
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
+                user_id: Optional[bool] = None
+                if self.user_id_filter_required():
+                    user_id = self.current_user_id
                 if hasattr(cls, 'retrieve'):
                     # at the moment, there are no resources with a custom
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
                 try:
-                    user_id: Optional[bool] = None
-                    if self.user_id_filter_required():
-                        user_id = self.current_user_id
                     data = cls.model.retrieve(id, user_id=user_id)
                 except DoesNotExist:
                     raise NotFoundError('Not valid id')
