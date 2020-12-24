@@ -26,9 +26,12 @@ setup(
         'chalice>=1.16.0,<1.21.7',
         'cuenca-validations>=0.4,<0.7',
         'blinker>=1.4,<1.5',
-        'mongoengine>=0.20.0,<0.23.0',
         'dnspython>=2.0.0,<2.1.0',
         'dataclasses>=0.6;python_version<"3.7"',
+    ],
+    extras_require=[
+        'mongoengine>=0.20.0,<0.23.0',
+        'rom<=1.0.0'
     ],
     classifiers=[
         'Programming Language :: Python :: 3.8',
