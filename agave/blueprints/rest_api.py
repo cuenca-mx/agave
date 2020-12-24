@@ -194,13 +194,13 @@ class RestApiBlueprint(Blueprint):
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items, has_more = cls.model.all(filters, limit=limit)
 
-                if wants_more := query.limit is None or query.limit > 0:
-                    # only perform this query if it's necessary
-                    has_more = has_more
+                wants_more = query.limit is None or query.limit > 0
+                items, has_more = cls.model.all(
+                    filters, limit=limit, wants_more=wants_more
+                )
 
-                next_page_uri: Optional[str] = None
+                next_page_uri = None
                 if wants_more and has_more:
                     query.created_before = items[-1].created_at.isoformat()
                     path = self.current_request.context['resourcePath']

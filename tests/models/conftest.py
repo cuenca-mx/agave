@@ -4,18 +4,8 @@ from typing import Generator, List, Type, Union
 import pytest
 
 from agave.models import mongo, redis
-from examples.chalicelib.models import mongo_models, redis_models
 
 DbModel = Union[mongo.MongoModel, redis.RedisModel]
-
-
-def pytest_generate_tests(metafunc):
-    if "db_model" in metafunc.fixturenames:
-        metafunc.parametrize(
-            'db_model',
-            [mongo_models.Account, redis_models.Account],
-            indirect=['db_model'],
-        )
 
 
 @pytest.fixture

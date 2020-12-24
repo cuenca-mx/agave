@@ -1,13 +1,13 @@
 import datetime as dt
-from typing import Any, Dict
 
 from cuenca_validations.types import QueryParams
+from cuenca_validations.typing import DictStrAny
 
 from ...filters import exclude_fields
 
 
-def generic_redis_query(query: QueryParams, **kwargs) -> Dict[str, Any]:
-    filters: Dict[str, Any] = dict()
+def generic_redis_query(query: QueryParams, **kwargs) -> DictStrAny:
+    filters = dict()
     if query.created_before or query.created_after:
         # Restamos o sumamos un microsegundo porque la comparación
         # aquí es inclusiva

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from cuenca_validations.typing import DictStrAny
 from cuenca_validations.validators import sanitize_item
@@ -25,7 +25,7 @@ class String(Column):
         return value.decode('utf-8')
 
 
-def redis_to_dit(obj, exclude_fields: List[Dict[str, Any]]) -> dict:
+def redis_to_dict(obj) -> DictStrAny:
     response = {
         key: sanitize_item(value)
         for key, value in obj._data.items()
@@ -39,10 +39,12 @@ class RedisModel(BaseModel, Model):
     o_id = PrimaryKey()  # Para que podamos usar `id` en los modelos
 
     def dict(self) -> DictStrAny:
-        return self._dict(redis_to_dit)
+        return self._dict(redis_to_dict)
 
     @classmethod
-    def retrieve(cls, id: str, *, user_id: Optional[str] = None):
+    def retrieve(
+        cls, id: str, *, user_id: Optional[str] = None
+    ) -> 'RedisModel':
         params = dict(id=id)
         if user_id:
             params['user_id'] = user_id
@@ -53,14 +55,18 @@ class RedisModel(BaseModel, Model):
 
     @classmethod
     def count(cls, filters: Dict) -> int:
-        count = cls.query.filter(**filters).count()
-        return count
+        return cls.query.filter(**filters).count()
 
     @classmethod
-    def all(cls, filters: Dict, *, limit: int) -> Tuple[list, bool]:
+    def all(
+        cls, filters: Dict, *, limit: int, wants_more: bool
+    ) -> Tuple[List['RedisModel'], bool]:
         items = (
             cls.query.filter(**filters).order_by('-created_at').limit(0, limit)
         )
-        has_more = items.limit(0, limit + 1).count() > limit
-        items = list(items)
-        return items, has_more
+
+        has_more = False
+        if wants_more:
+            has_more = items.limit(0, limit + 1).count() > limit
+
+        return list(items), has_more
