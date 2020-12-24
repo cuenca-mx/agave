@@ -13,11 +13,11 @@ class BaseModel:
     def _dict(self, dict_func: Callable) -> DictStrAny:
         private_fields = [f for f in dir(self) if f.startswith('_')]
         excluded = self._excluded + private_fields
-        response = dict_func(self, excluded)
+        model_dict = dict_func(self, excluded)
 
         for field in self._hidden:
-            response[field] = '********'
-        return response
+            model_dict[field] = '********'
+        return model_dict
 
     def __repr__(self) -> str:
         return str(self.dict())  # type: ignore # pragma: no cover

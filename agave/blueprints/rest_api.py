@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -137,13 +137,14 @@ class RestApiBlueprint(Blueprint):
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
-                user_id: Optional[bool] = None
-                if self.user_id_filter_required():
-                    user_id = self.current_user_id
                 if hasattr(cls, 'retrieve'):
                     # at the moment, there are no resources with a custom
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
+
+                user_id = None
+                if self.user_id_filter_required():
+                    user_id = self.current_user_id
                 try:
                     data = cls.model.retrieve(id, user_id=user_id)
                 except DoesNotExist:
