@@ -1,3 +1,4 @@
+import datetime as dt
 from typing import Callable, List, Type, Union
 
 import pytest
@@ -113,10 +114,21 @@ def test_query_all_resource(
 
 
 @pytest.mark.parametrize('db_model', models, indirect=['db_model'])
-def test_hide_field_redis(db_model: Type[DbModel]) -> None:
-    model = db_model(
-        id='12345', secret_field='secret', name='frida', user_id='w72638'
+def test_to_dict(db_model: Type[DbModel]) -> None:
+    now = dt.datetime.utcnow()
+    expected = dict(
+        id='12345',
+        name='frida',
+        user_id='w72638',
+        secret_field='********',
     )
+    model = db_model(
+        id='12345',
+        name='frida',
+        user_id='w72638',
+        secret_field='secret',
+        created_at=now,
+    )
+    model.save()
     model_dict = model.dict()
-    assert model_dict['secret_field'] == '********'
-    assert model_dict['id'] == '12345'
+    assert all(model_dict[key] == val for key, val in expected.items())

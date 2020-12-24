@@ -23,3 +23,4 @@ class Account(RedisModel):
     secret_field = String(index=True, keygen=util.IDENTITY)
 
     _hidden = ['secret_field']
+    _excluded = ['deactivated_at']

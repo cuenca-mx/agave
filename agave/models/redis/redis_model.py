@@ -25,11 +25,12 @@ class String(Column):
         return value.decode('utf-8')
 
 
-def redis_to_dict(obj) -> DictStrAny:
+def redis_to_dict(obj, exclude_fields: List[str]) -> DictStrAny:
+    excluded = EXCLUDED + exclude_fields
     response = {
         key: sanitize_item(value)
         for key, value in obj._data.items()
-        if key not in EXCLUDED
+        if key not in excluded
     }
     return response
 
