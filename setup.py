@@ -29,10 +29,10 @@ setup(
         'dnspython>=2.0.0,<2.1.0',
         'dataclasses>=0.6;python_version<"3.7"',
     ],
-    extras_require=[
-        'mongoengine>=0.20.0,<0.23.0',
-        'rom<=1.0.0'
-    ],
+    extras_require={
+        'mongoengine': 'mongoengine>=0.20.0,<0.23.0',
+        'rom': 'rom>=1.0.0,<1.1.0',
+    },
     classifiers=[
         'Programming Language :: Python :: 3.8',
         'License :: OSI Approved :: MIT License',
