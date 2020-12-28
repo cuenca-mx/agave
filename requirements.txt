@@ -3,3 +3,4 @@ chalice==1.21.7
 mongoengine==0.22.1
 cuenca-validations==0.6.8
 dnspython==2.0.0
+rom==1.0.0

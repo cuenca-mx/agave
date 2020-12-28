@@ -2,11 +2,48 @@ import datetime as dt
 from typing import Generator, List
 
 import pytest
+import rom
+from _pytest.monkeypatch import MonkeyPatch
 from chalice.test import Client
+from redislite import Redis
 
-from examples.chalicelib.models import Account
+from examples.chalicelib.models.mongo_models import Account
 
 from .helpers import accept_json
+
+
+@pytest.fixture
+def user_id() -> str:
+    return 'US123456789'
+
+
+@pytest.fixture
+def another_user_id() -> str:
+    return 'US987654321'
+
+
+@pytest.fixture(scope='session')
+def monkeypatchsession(request):
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(autouse=True)
+def setup_redis(monkeypatchsession) -> Generator[None, None, None]:
+    # Usa un fake redis para no utilizar un servidor de Redis
+    redis_connection = Redis('/tmp/redis.db')
+    monkeypatchsession.setattr(
+        rom.util, 'get_connection', lambda: redis_connection
+    )
+    yield
+
+
+@pytest.fixture(autouse=True)
+def flush_redis() -> Generator[None, None, None]:
+    yield
+    redis_connection = Redis('/tmp/redis.db')
+    redis_connection.flushall()
 
 
 @pytest.fixture()
@@ -28,7 +65,9 @@ def client() -> Generator[Client, None, None]:
 
 
 @pytest.fixture
-def accounts() -> Generator[List[Account], None, None]:
+def accounts(
+    user_id: str, another_user_id: str
+) -> Generator[List[Account], None, None]:
     user_id = 'US123456789'
     accs = [
         Account(
@@ -48,7 +87,7 @@ def accounts() -> Generator[List[Account], None, None]:
         ),
         Account(
             name='Remedios Varo',
-            user_id='US987654321',
+            user_id=another_user_id,
             created_at=dt.datetime(2020, 4, 1),
         ),
     ]

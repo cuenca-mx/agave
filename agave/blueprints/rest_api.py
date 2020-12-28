@@ -1,11 +1,11 @@
-from typing import Optional, Type
+from typing import Type
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
-from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
+from ..exc import DoesNotExist
 from .decorators import copy_attributes
 
 
@@ -112,9 +112,10 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = cls.model.objects.get(id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
+                    try:
+                        model = cls.model.retrieve(id=id)
                     except DoesNotExist:
                         raise NotFoundError('Not valid id')
                     else:
@@ -140,14 +141,15 @@ class RestApiBlueprint(Blueprint):
                     # at the moment, there are no resources with a custom
                     # retrieve method
                     return cls.retrieve(id)  # pragma: no cover
+
+                user_id = None
+                if self.user_id_filter_required():
+                    user_id = self.current_user_id
                 try:
-                    id_query = Q(id=id)
-                    if self.user_id_filter_required():
-                        id_query = id_query & Q(user_id=self.current_user_id)
-                    data = cls.model.objects.get(id_query)
+                    data = cls.model.retrieve(id, user_id=user_id)
                 except DoesNotExist:
                     raise NotFoundError('Not valid id')
-                return data.to_dict()
+                return data.dict()
 
             @self.get(path)
             @copy_attributes(cls)
@@ -183,37 +185,34 @@ class RestApiBlueprint(Blueprint):
                     return _count(filters)
                 return _all(query_params, filters)
 
-            def _count(filters: Q):
-                count = cls.model.objects.filter(filters).count()
+            def _count(filters):
+                count = cls.model.count(filters)
                 return dict(count=count)
 
-            def _all(query: QueryParams, filters: Q):
+            def _all(query: QueryParams, filters):
                 if query.limit:
                     limit = min(query.limit, query.page_size)
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
-                items = (
-                    cls.model.objects.order_by("-created_at")
-                    .filter(filters)
-                    .limit(limit)
+
+                wants_more = query.limit is None or query.limit > 0
+                items, has_more = cls.model.all(
+                    filters, limit=limit, wants_more=wants_more
                 )
-                item_dicts = [i.to_dict() for i in items]
 
-                has_more: Optional[bool] = None
-                if wants_more := query.limit is None or query.limit > 0:
-                    # only perform this query if it's necessary
-                    has_more = items.limit(limit + 1).count() > limit
-
-                next_page_uri: Optional[str] = None
+                next_page_uri = None
                 if wants_more and has_more:
-                    query.created_before = item_dicts[-1]['created_at']
+                    query.created_before = items[-1].created_at.isoformat()
                     path = self.current_request.context['resourcePath']
                     params = query.dict()
                     if self.user_id_filter_required():
                         params.pop('user_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
-                return dict(items=item_dicts, next_page_uri=next_page_uri)
+                return dict(
+                    items=[i.dict() for i in items],  # type: ignore
+                    next_page_uri=next_page_uri,
+                )
 
             return cls
 
