@@ -1,3 +1,4 @@
+import mimetypes
 from typing import Optional, Type
 from urllib.parse import urlencode
 
@@ -148,10 +149,12 @@ class RestApiBlueprint(Blueprint):
                 except DoesNotExist:
                     raise NotFoundError('Not valid id')
 
-                if hasattr(cls, 'get_file'):
-                    file, mimetype = cls.get_file(data)
-                    extention = mimetype.split('/')[1]
-                    filename = f'{cls.model._class_name}.{extention}'
+                # This is the case in which the return is not an application/$
+                # but can be some type of file such as image, xml, zip or pdf
+                if hasattr(cls, 'download'):
+                    file, mimetype = cls.download(data)
+                    extension = mimetypes.guess_extension(mimetype)
+                    filename = f'{cls.model._class_name}.{extension}'
                     return Response(
                         body=file.read(),
                         headers={

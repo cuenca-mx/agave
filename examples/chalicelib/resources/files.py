@@ -19,6 +19,6 @@ class File:
     get_query_filter = generic_query
 
     @classmethod
-    def get_file(cls, data: FileModel) -> Tuple[BytesIO, str]:
+    def download(cls, data: FileModel) -> Tuple[BytesIO, str]:
         mimetype = app.current_request.headers.get('accept')
         return BytesIO(bytes('Hello', 'utf-8')), mimetype
