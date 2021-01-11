@@ -188,6 +188,8 @@ class RestApiBlueprint(Blueprint):
                     next_page = <url_for_next_items>
                 }
                 """
+                if hasattr(cls, 'query'):
+                    return cls.query()  # pragma: no cover
                 params = self.current_request.query_params or dict()
                 try:
                     query_params = cls.query_validator(**params)
