@@ -149,7 +149,7 @@ class RestApiBlueprint(Blueprint):
                 except DoesNotExist:
                     raise NotFoundError('Not valid id')
 
-                # This is the case in which the return is not an application/$
+                # This case is when the return is not an application/$
                 # but can be some type of file such as image, xml, zip or pdf
                 if hasattr(cls, 'download'):
                     file, mimetype = cls.download(data)
