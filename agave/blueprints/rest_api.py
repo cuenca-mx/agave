@@ -188,8 +188,6 @@ class RestApiBlueprint(Blueprint):
                     next_page = <url_for_next_items>
                 }
                 """
-                if hasattr(cls, 'query'):
-                    return cls.query()  # pragma: no cover
                 params = self.current_request.query_params or dict()
                 try:
                     query_params = cls.query_validator(**params)
@@ -199,6 +197,9 @@ class RestApiBlueprint(Blueprint):
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
+                if hasattr(cls, 'query'):
+                    items = _all(query_params, filters)
+                    return cls.query(items)  # pragma: no cover
                 if query_params.count:
                     return _count(filters)
                 return _all(query_params, filters)
