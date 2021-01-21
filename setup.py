@@ -27,7 +27,7 @@ setup(
         'cuenca-validations>=0.7,<0.8',
         'blinker>=1.4,<1.5',
         'mongoengine>=0.20.0,<0.23.0',
-        'dnspython>=2.0.0,<2.1.0',
+        'dnspython>=2.0.0,<2.2.0',
         'dataclasses>=0.6;python_version<"3.7"',
     ],
     classifiers=[
