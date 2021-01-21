@@ -152,7 +152,8 @@ class RestApiBlueprint(Blueprint):
                 # This case is when the return is not an application/$
                 # but can be some type of file such as image, xml, zip or pdf
                 if hasattr(cls, 'download'):
-                    file, mimetype = cls.download(data)
+                    file = cls.download(data)
+                    mimetype = self.current_request.headers.get('accept')
                     extension = mimetypes.guess_extension(mimetype)
                     filename = f'{cls.model._class_name}.{extension}'
                     return Response(
