@@ -1,7 +1,6 @@
 import datetime as dt
 from io import BytesIO
 
-from typing import Tuple
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist
 
@@ -19,5 +18,5 @@ class File:
     get_query_filter = generic_query
 
     @classmethod
-    def download(cls, data: FileModel) -> Tuple[BytesIO, str]:
+    def download(cls, data: FileModel) -> BytesIO:
         return BytesIO(bytes('Hello', 'utf-8'))
