@@ -1,3 +1,4 @@
+import mimetypes
 from typing import Optional, Type
 from urllib.parse import urlencode
 
@@ -147,6 +148,24 @@ class RestApiBlueprint(Blueprint):
                     data = cls.model.objects.get(id_query)
                 except DoesNotExist:
                     raise NotFoundError('Not valid id')
+
+                # This case is when the return is not an application/$
+                # but can be some type of file such as image, xml, zip or pdf
+                if hasattr(cls, 'download'):
+                    file = cls.download(data)
+                    mimetype = self.current_request.headers.get('accept')
+                    extension = mimetypes.guess_extension(mimetype)
+                    filename = f'{cls.model._class_name}.{extension}'
+                    return Response(
+                        body=file.read(),
+                        headers={
+                            'Content-Type': mimetype,
+                            'Content-Disposition': (
+                                'attachment; ' f'filename={filename}'
+                            ),
+                        },
+                        status_code=200,
+                    )
                 return data.to_dict()
 
             @self.get(path)
@@ -179,6 +198,10 @@ class RestApiBlueprint(Blueprint):
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
+                if hasattr(cls, 'query'):
+                    return cls.query(
+                        _all(query_params, filters)
+                    )  # pragma: no cover)
                 if query_params.count:
                     return _count(filters)
                 return _all(query_params, filters)
