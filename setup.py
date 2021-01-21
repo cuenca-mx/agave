@@ -23,7 +23,7 @@ setup(
     package_data=dict(cuenca_validations=['py.typed']),
     python_requires='>=3.8',
     install_requires=[
-        'chalice>=1.16.0,<1.21.8',
+        'chalice>=1.16.0,<1.21.10',
         'cuenca-validations>=0.7,<0.8',
         'blinker>=1.4,<1.5',
         'mongoengine>=0.20.0,<0.23.0',
