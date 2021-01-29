@@ -1,5 +1,5 @@
 blinker==1.4
-chalice==1.21.7
+chalice==1.22.0
 mongoengine==0.22.1
 cuenca-validations==0.7.2
 dnspython==2.1.0
