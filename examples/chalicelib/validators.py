@@ -21,5 +21,10 @@ class AccountRequest(BaseModel):
 class AccountUpdateRequest(BaseModel):
     name: str
 
+
 class FileQuery(QueryParams):
     user_id: Optional[str] = None
+
+
+class CardQuery(QueryParams):
+    number: Optional[str] = None
