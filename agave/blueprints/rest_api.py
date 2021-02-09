@@ -199,11 +199,13 @@ class RestApiBlueprint(Blueprint):
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
-                if hasattr(cls, 'query'):
-                    return cls.query(_all(query_params, filters))
                 if query_params.count:
-                    return _count(filters)
-                return _all(query_params, filters)
+                    result = _count(filters)
+                elif hasattr(cls, 'query'):
+                    result = cls.query(_all(query_params, filters))
+                else:
+                    result = _all(query_params, filters)
+                return result
 
             def _count(filters: Q):
                 count = cls.model.objects.filter(filters).count()
