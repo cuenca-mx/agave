@@ -113,8 +113,8 @@ def mongo_to_python_type(field, data, field_name: str = ''):
     elif field_name == 'funding_instrument':
         mapper = {
             'BA': '/accounts/',
-            'CA': '/cards/', 
-            'SP': '/service_providers/'
+            'CA': '/cards/',
+            'SP': '/service_providers/',
         }
         return f'{mapper[data[:2]]}{data}'
     else:

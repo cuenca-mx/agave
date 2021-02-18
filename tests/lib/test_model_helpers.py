@@ -1,6 +1,5 @@
 from datetime import datetime as dt
 from enum import Enum
-from bson import SON, DBRef
 
 from mongoengine import (
     BooleanField,
@@ -34,6 +33,7 @@ class EnumType(Enum):
 class Embedded(EmbeddedDocument):
     name = StringField()
 
+
 class TestModel(Document):
     str_field = StringField()
     int_field = IntField(default=1)
@@ -63,7 +63,7 @@ def test_mongo_to_dict():
     model = TestModel(
         embedded_list_field=[Embedded(name='')],
         lazzy_list_field=[reference],
-        funding_instrument='CAXXXX'
+        funding_instrument='CAXXXX',
     )
     model.save()
     model_dict = mongo_to_dict(model, exclude_fields=['str_field'])
