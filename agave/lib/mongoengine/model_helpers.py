@@ -37,13 +37,13 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
         exclude_fields = []
 
     for field_name in obj._fields:
-
         if field_name in exclude_fields:
             continue
 
         if field_name == 'id':
             continue
         data = obj._data[field_name]
+
         if isinstance(obj._fields[field_name], ListField):
             field_name = (
                 f'{field_name}_uris'
@@ -71,7 +71,7 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
             )
         else:
             return_data[field_name] = mongo_to_python_type(
-                obj._fields[field_name], data
+                obj._fields[field_name], data, field_name
             )
 
     return return_data
@@ -93,7 +93,7 @@ def list_field_to_dict(list_field: list) -> list:
     return return_data
 
 
-def mongo_to_python_type(field, data):
+def mongo_to_python_type(field, data, field_name: str = ''):
     rv = None
     field_type = type(field)
     if data is None:
@@ -110,6 +110,13 @@ def mongo_to_python_type(field, data):
         rv = bool(data)
     elif field_type is DecimalField:
         rv = data
+    elif field_name == 'funding_instrument':
+        mapper = {
+            'BA': '/accounts/',
+            'CA': '/cards/', 
+            'SP': '/service_providers/'
+        }
+        return f'{mapper[data[:2]]}{data}'
     else:
         rv = str(data)
 

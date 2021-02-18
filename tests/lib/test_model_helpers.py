@@ -1,5 +1,6 @@
 from datetime import datetime as dt
 from enum import Enum
+from bson import SON, DBRef
 
 from mongoengine import (
     BooleanField,
@@ -33,7 +34,6 @@ class EnumType(Enum):
 class Embedded(EmbeddedDocument):
     name = StringField()
 
-
 class TestModel(Document):
     str_field = StringField()
     int_field = IntField(default=1)
@@ -51,6 +51,7 @@ class TestModel(Document):
     lazzy_field = LazyReferenceField(Reference)
     lazzy_list_field = ListField(LazyReferenceField(Reference))
     generic_lazzy_field = GenericLazyReferenceField()
+    funding_instrument = StringField()
 
     __test__ = False
 
@@ -60,7 +61,9 @@ def test_mongo_to_dict():
     reference = Reference()
     reference.save()
     model = TestModel(
-        embedded_list_field=[Embedded(name='')], lazzy_list_field=[reference]
+        embedded_list_field=[Embedded(name='')],
+        lazzy_list_field=[reference],
+        funding_instrument='CAXXXX'
     )
     model.save()
     model_dict = mongo_to_dict(model, exclude_fields=['str_field'])
@@ -80,4 +83,5 @@ def test_mongo_to_dict():
     assert model_dict['embedded_field'] == {}
     assert model_dict['lazzy_field_uri'] is None
     assert model_dict['generic_lazzy_field_uri'] is None
+    assert model_dict['funding_instrument'] == '/cards/CAXXXX'
     assert model_dict['lazzy_list_field_uris'] == ["Reference object"]
