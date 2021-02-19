@@ -116,7 +116,7 @@ def mongo_to_python_type(field, data, field_name: str = ''):
             'CA': '/cards/',
             'SP': '/service_providers/',
         }
-        return f'{mapper[data[:2]]}{data}'
+        return f'{mapper[data[:2]]}{data}_uri'
     else:
         rv = str(data)
 
