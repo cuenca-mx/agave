@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 from enum import Enum
 
+import pytest
 from mongoengine import (
     BooleanField,
     ComplexDateTimeField,
@@ -17,8 +18,12 @@ from mongoengine import (
     ListField,
     StringField,
 )
+from mongoengine.errors import ValidationError
 
 from agave.lib.mongoengine.enum_field import EnumField
+from agave.lib.mongoengine.funding_instrument_field import (
+    FundingInstrumentField,
+)
 from agave.lib.mongoengine.model_helpers import mongo_to_dict
 
 
@@ -51,7 +56,7 @@ class TestModel(Document):
     lazzy_field = LazyReferenceField(Reference)
     lazzy_list_field = ListField(LazyReferenceField(Reference))
     generic_lazzy_field = GenericLazyReferenceField()
-    funding_instrument = StringField()
+    funding_instrument_field = FundingInstrumentField()
 
     __test__ = False
 
@@ -63,10 +68,13 @@ def test_mongo_to_dict():
     model = TestModel(
         embedded_list_field=[Embedded(name='')],
         lazzy_list_field=[reference],
-        funding_instrument='CAXXXX',
+        funding_instrument_field='CAXXXX',
     )
     model.save()
     model_dict = mongo_to_dict(model, exclude_fields=['str_field'])
+
+    with pytest.raises(ValidationError):
+        TestModel(funding_instrument_field='XXXXXX').save()
 
     assert 'id' in model_dict
     assert 'date_time_field' in model_dict
@@ -83,5 +91,5 @@ def test_mongo_to_dict():
     assert model_dict['embedded_field'] == {}
     assert model_dict['lazzy_field_uri'] is None
     assert model_dict['generic_lazzy_field_uri'] is None
-    assert model_dict['funding_instrument_uri'] == '/cards/CAXXXX'
+    assert model_dict['funding_instrument_field_uri'] == '/cards/CAXXXX'
     assert model_dict['lazzy_list_field_uris'] == ["Reference object"]

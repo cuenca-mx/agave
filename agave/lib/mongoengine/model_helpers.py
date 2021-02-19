@@ -19,6 +19,7 @@ from mongoengine import (
 )
 
 from .enum_field import EnumField
+from .funding_instrument_field import FundingInstrumentField
 
 
 def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
@@ -69,13 +70,8 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
                 if data
                 else None
             )
-        elif field_name == 'funding_instrument':
-            mapper = {
-                'BA': '/accounts/',
-                'CA': '/cards/',
-                'SP': '/service_providers/',
-            }
-            return_data[f'{field_name}_uri'] = f'{mapper[data[:2]]}{data}'
+        elif isinstance(obj._fields[field_name], FundingInstrumentField):
+            return_data[f'{field_name}_uri'] = data.uri
         else:
             return_data[field_name] = mongo_to_python_type(
                 obj._fields[field_name], data
