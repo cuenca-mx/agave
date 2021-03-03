@@ -4,7 +4,7 @@ from typing import Generator, List
 import pytest
 from chalice.test import Client
 
-from examples.chalicelib.models import Account, File
+from examples.chalicelib.models import Account, Card, File
 
 from .helpers import accept_json
 
@@ -90,3 +90,41 @@ def files() -> Generator[List[File], None, None]:
 @pytest.fixture
 def file(files: List[File]) -> Generator[File, None, None]:
     yield files[0]
+
+
+@pytest.fixture
+def cards() -> Generator[List[Card], None, None]:
+    user_id = 'US123456789'
+    cards = [
+        Card(
+            number='5434000000000001',
+            user_id=user_id,
+            created_at=dt.datetime(2020, 1, 1),
+        ),
+        Card(
+            number='5434000000000002',
+            user_id=user_id,
+            created_at=dt.datetime(2020, 2, 1),
+        ),
+        Card(
+            number='5434000000000003',
+            user_id=user_id,
+            created_at=dt.datetime(2020, 3, 1),
+        ),
+        Card(
+            number='5434000000000004',
+            user_id='US987654321',
+            created_at=dt.datetime(2020, 4, 1),
+        ),
+    ]
+
+    for card in cards:
+        card.save()
+    yield cards
+    for card in cards:
+        card.delete()
+
+
+@pytest.fixture
+def card(cards: List[Card]) -> Generator[Card, None, None]:
+    yield cards[0]

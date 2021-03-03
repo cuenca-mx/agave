@@ -4,7 +4,7 @@ import pytest
 from chalice.test import Client
 from mock import MagicMock, patch
 
-from examples.chalicelib.models import Account, File
+from examples.chalicelib.models import Account, Card, File
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -53,6 +53,12 @@ def test_update_resource_with_invalid_params(client: Client) -> None:
         json=wrong_params,
     )
     assert response.status_code == 400
+
+
+def test_retrieve_custom_method(client: Client, card: Card) -> None:
+    resp = client.http.get(f'/cards/{card.id}')
+    assert resp.status_code == 200
+    assert resp.json_body['number'] == '*' * 16
 
 
 def test_update_resource_that_doesnt_exist(client: Client) -> None:
@@ -137,6 +143,20 @@ def test_query_resource_with_invalid_params(client: Client) -> None:
     wrong_params = dict(wrong_param='wrong_value')
     response = client.http.get(f'/accounts?{urlencode(wrong_params)}')
     assert response.status_code == 400
+
+
+@pytest.mark.usefixtures('cards')
+def test_query_custom_method(client: Client) -> None:
+    query_params = dict(page_size=2)
+    resp = client.http.get(f'/cards?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 2
+    assert all(card['number'] == '*' * 16 for card in resp.json_body['items'])
+
+    resp = client.http.get(resp.json_body['next_page_uri'])
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == 2
+    assert all(card['number'] == '*' * 16 for card in resp.json_body['items'])
 
 
 def test_cannot_create_resource(client: Client) -> None:

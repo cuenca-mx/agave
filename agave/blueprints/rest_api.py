@@ -137,10 +137,6 @@ class RestApiBlueprint(Blueprint):
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
-                if hasattr(cls, 'retrieve'):
-                    # at the moment, there are no resources with a custom
-                    # retrieve method
-                    return cls.retrieve(id)  # pragma: no cover
                 try:
                     id_query = Q(id=id)
                     if self.user_id_filter_required():
@@ -156,7 +152,7 @@ class RestApiBlueprint(Blueprint):
                     mimetype = self.current_request.headers.get('accept')
                     extension = mimetypes.guess_extension(mimetype)
                     filename = f'{cls.model._class_name}.{extension}'
-                    return Response(
+                    result = Response(
                         body=file.read(),
                         headers={
                             'Content-Type': mimetype,
@@ -166,7 +162,12 @@ class RestApiBlueprint(Blueprint):
                         },
                         status_code=200,
                     )
-                return data.to_dict()
+                elif hasattr(cls, 'retrieve'):
+                    result = cls.retrieve(data)
+                else:
+                    result = data.to_dict()
+
+                return result
 
             @self.get(path)
             @copy_attributes(cls)
@@ -198,13 +199,13 @@ class RestApiBlueprint(Blueprint):
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
-                if hasattr(cls, 'query'):
-                    return cls.query(
-                        _all(query_params, filters)
-                    )  # pragma: no cover)
                 if query_params.count:
-                    return _count(filters)
-                return _all(query_params, filters)
+                    result = _count(filters)
+                elif hasattr(cls, 'query'):
+                    result = cls.query(_all(query_params, filters))
+                else:
+                    result = _all(query_params, filters)
+                return result
 
             def _count(filters: Q):
                 count = cls.model.objects.filter(filters).count()
