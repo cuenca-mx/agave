@@ -26,7 +26,7 @@ setup(
         'chalice>=1.16.0,<1.22.2',
         'cuenca-validations>=0.7,<0.9',
         'blinker>=1.4,<1.5',
-        'mongoengine>=0.20.0,<0.23.0',
+        'mongoengine>=0.20.0,<0.24.0',
         'dnspython>=2.0.0,<2.2.0',
     ],
     classifiers=[
