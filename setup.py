@@ -20,7 +20,7 @@ setup(
     url='https://github.com/cuenca-mx/agave',
     packages=find_packages(),
     include_package_data=True,
-    package_data=dict(cuenca_validations=['py.typed']),
+    package_data=dict(agave=['py.typed']),
     python_requires='>=3.8',
     install_requires=[
         'chalice>=1.16.0,<1.22.2',
@@ -28,7 +28,6 @@ setup(
         'blinker>=1.4,<1.5',
         'mongoengine>=0.20.0,<0.23.0',
         'dnspython>=2.0.0,<2.2.0',
-        'dataclasses>=0.6;python_version<"3.7"',
     ],
     classifiers=[
         'Programming Language :: Python :: 3.8',
