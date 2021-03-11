@@ -21,12 +21,12 @@ from mongoengine import (
     ListField,
     StringField,
 )
-
+from agave.models.base import BaseModel
 from agave.lib.mongoengine.enum_field import EnumField
 from agave.lib.mongoengine.model_helpers import mongo_to_dict
 
 
-class Reference(Document):
+class Reference(Document, BaseModel):
     meta: ClassVar = {
         'collection': 'references',
     }
@@ -36,11 +36,11 @@ class EnumType(Enum):
     member = 'name'
 
 
-class Embedded(EmbeddedDocument):
+class Embedded(EmbeddedDocument, BaseModel):
     name = StringField()
 
 
-class TestModel(Document):
+class TestModel(Document, BaseModel):
     str_field = StringField()
     int_field = IntField(default=1)
     float_field = FloatField(default=1.1)

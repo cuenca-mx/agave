@@ -69,7 +69,7 @@ def mongo_to_dict(
                 )
             else:
                 return_data[field_name] = (
-                    mongo_to_dict(data.fetch()) if data else None
+                    data.fetch().to_dict(url_reference) if data else None
                 )
         elif isinstance(obj._fields[field_name], GenericLazyReferenceField):
             if url_reference:
@@ -80,7 +80,7 @@ def mongo_to_dict(
                 )
             else:
                 return_data[field_name] = (
-                    mongo_to_dict(data.fetch()) if data else None
+                    data.fetch().to_dict(url_reference) if data else None
                 )
         else:
             return_data[field_name] = mongo_to_python_type(
@@ -102,7 +102,7 @@ def list_field_to_dict(list_field: list, url_reference: bool = True) -> list:
             if url_reference:
                 return_data.append(f'/{item._DBRef__collection}/{item.id}')
             else:
-                return_data.append(mongo_to_dict(item.fetch()))
+                return_data.append(item.fetch().to_dict(url_reference))
         else:
             return_data.append(mongo_to_python_type(item, item))
 
