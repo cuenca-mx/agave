@@ -10,10 +10,10 @@ class BaseModel:
     def __init__(self, *args, **values):
         return super().__init__(*args, **values)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self, url_reference: bool = True) -> Dict:
         private_fields = [f for f in dir(self) if f.startswith('_')]
         excluded = self._excluded + private_fields
-        mongo_dict: dict = mongo_to_dict(self, excluded)
+        mongo_dict: dict = mongo_to_dict(self, excluded, url_reference)
 
         for field in self._hidden:
             mongo_dict[field] = '********'

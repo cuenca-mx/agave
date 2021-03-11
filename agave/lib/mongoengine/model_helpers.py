@@ -21,7 +21,9 @@ from mongoengine import (
 from .enum_field import EnumField
 
 
-def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
+def mongo_to_dict(
+    obj, exclude_fields: list = None, url_reference: bool = True
+) -> dict:
     """
     from: https://gist.github.com/jason-w/4969476
     """
@@ -50,9 +52,10 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
                 if isinstance(
                     obj._fields[field_name].field, LazyReferenceField
                 )
+                and url_reference
                 else field_name
             )
-            return_data[field_name] = list_field_to_dict(data)
+            return_data[field_name] = list_field_to_dict(data, url_reference)
         elif isinstance(obj._fields[field_name], EmbeddedDocumentField):
             return_data[field_name] = mongo_to_dict(data, [])
         elif isinstance(obj._fields[field_name], DictField):
@@ -60,15 +63,25 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
         elif isinstance(obj._fields[field_name], EnumField):
             return_data[field_name] = data.value if data else None
         elif isinstance(obj._fields[field_name], LazyReferenceField):
-            return_data[f'{field_name}_uri'] = (
-                f'/{data._DBRef__collection}/{data.id}' if data else None
-            )
+            if url_reference:
+                return_data[f'{field_name}_uri'] = (
+                    f'/{data._DBRef__collection}/{data.id}' if data else None
+                )
+            else:
+                return_data[field_name] = (
+                    mongo_to_dict(data.fetch()) if data else None
+                )
         elif isinstance(obj._fields[field_name], GenericLazyReferenceField):
-            return_data[f'{field_name}_uri'] = (
-                f'/{data["_ref"]._DBRef__collection}/{data["_ref"].id}'
-                if data
-                else None
-            )
+            if url_reference:
+                return_data[f'{field_name}_uri'] = (
+                    f'/{data["_ref"]._DBRef__collection}/{data["_ref"].id}'
+                    if data
+                    else None
+                )
+            else:
+                return_data[field_name] = (
+                    mongo_to_dict(data.fetch()) if data else None
+                )
         else:
             return_data[field_name] = mongo_to_python_type(
                 obj._fields[field_name], data
@@ -77,7 +90,7 @@ def mongo_to_dict(obj, exclude_fields: list = None) -> dict:
     return return_data
 
 
-def list_field_to_dict(list_field: list) -> list:
+def list_field_to_dict(list_field: list, url_reference: bool = True) -> list:
     return_data = []
 
     for item in list_field:
@@ -85,8 +98,11 @@ def list_field_to_dict(list_field: list) -> list:
             return_data.append(mongo_to_dict(item))
         elif isinstance(item, Enum):
             return_data.append(item.value)
-        elif isinstance(item, DBRef):  # pragma: no cover
-            return_data.append(f'/{item._DBRef__collection}/{item.id}')
+        elif isinstance(item, DBRef):
+            if url_reference:
+                return_data.append(f'/{item._DBRef__collection}/{item.id}')
+            else:
+                return_data.append(mongo_to_dict(item.fetch()))
         else:
             return_data.append(mongo_to_python_type(item, item))
 

@@ -1,6 +1,10 @@
+import re
 from datetime import datetime as dt
+from decimal import Decimal
 from enum import Enum
+from typing import ClassVar
 
+import pytest
 from mongoengine import (
     BooleanField,
     ComplexDateTimeField,
@@ -23,7 +27,9 @@ from agave.lib.mongoengine.model_helpers import mongo_to_dict
 
 
 class Reference(Document):
-    pass
+    meta: ClassVar = {
+        'collection': 'references',
+    }
 
 
 class EnumType(Enum):
@@ -55,14 +61,22 @@ class TestModel(Document):
     __test__ = False
 
 
-def test_mongo_to_dict():
-    assert not mongo_to_dict(None)
+@pytest.fixture
+def model():
     reference = Reference()
     reference.save()
     model = TestModel(
-        embedded_list_field=[Embedded(name='')], lazzy_list_field=[reference]
+        embedded_list_field=[Embedded(name='')],
+        lazzy_field=reference,
+        lazzy_list_field=[reference],
     )
     model.save()
+    model.reload()
+    return model
+
+
+def test_mongo_to_dict(model):
+    assert not mongo_to_dict(None)
     model_dict = mongo_to_dict(model, exclude_fields=['str_field'])
 
     assert 'id' in model_dict
@@ -70,7 +84,7 @@ def test_mongo_to_dict():
     assert 'complex_date_time_field' in model_dict
     assert model_dict['int_field'] == 1
     assert model_dict['float_field'] == '1.1'
-    assert model_dict['decimal_field'] == 1.2
+    assert model_dict['decimal_field'] == Decimal('1.2')
     assert model_dict['dict_field']['one'] == 1
     assert model_dict['enum_field'] == 'name'
     assert model_dict['boolean_field'] is True
@@ -78,6 +92,24 @@ def test_mongo_to_dict():
     assert model_dict['enum_list_field'] == ['name']
     assert model_dict['embedded_list_field'] == [{'name': ''}]
     assert model_dict['embedded_field'] == {}
-    assert model_dict['lazzy_field_uri'] is None
+    reference_reg = re.compile(r'\/references\/.{24}')
+    assert reference_reg.match(model_dict['lazzy_field_uri'])
+    assert len(model_dict['lazzy_list_field_uris']) == 1
+    assert all(
+        reference_reg.match(field)
+        for field in model_dict['lazzy_list_field_uris']
+    )
     assert model_dict['generic_lazzy_field_uri'] is None
-    assert model_dict['lazzy_list_field_uris'] == ["Reference object"]
+
+
+def test_mongo_to_dict_not_url_reference(model):
+    model_dict = mongo_to_dict(
+        model, exclude_fields=['str_field'], url_reference=False
+    )
+
+    assert 'lazzy_field_uri' not in model_dict
+    assert model_dict['lazzy_field']
+    assert model_dict['lazzy_field']['id']
+    assert 'lazzy_list_field_uris' not in model_dict
+    assert isinstance(model_dict['lazzy_list_field'], list)
+    assert model_dict['lazzy_list_field'][0]['id']
