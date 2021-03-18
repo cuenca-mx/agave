@@ -7,7 +7,9 @@ from agave.models.helpers import uuid_field_generic
 def test_uuid_field_generic():
     generic_asc = uuid_field_generic(
         'AC',
-        **dict(account_number='123456789', bank_code='90464', user_id='US01'),
+        account_number='123456789',
+        bank_code='90464',
+        user_id='US01',
     )
 
     uuid5 = uuid.uuid5(uuid.NAMESPACE_OID, '12345678990464US01')
@@ -15,7 +17,9 @@ def test_uuid_field_generic():
 
     generic_desc = uuid_field_generic(
         'AC',
-        **dict(user_id='US01', bank_code='90464', account_number='123456789'),
+        user_id='US01',
+        bank_code='90464',
+        account_number='123456789',
     )
 
     assert generic_asc == generic_desc
