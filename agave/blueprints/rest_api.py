@@ -166,6 +166,7 @@ class RestApiBlueprint(Blueprint):
                     result = cls.retrieve(data)
                 else:
                     result = data.to_dict()
+
                 return result
 
             @self.get(path)
