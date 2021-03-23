@@ -220,12 +220,14 @@ class RestApiBlueprint(Blueprint):
                     query.limit = max(0, query.limit - limit)  # type: ignore
                 else:
                     limit = query.page_size
+                start = time.time()
                 items = (
                     cls.model.objects.order_by("-created_at")
                     .filter(filters)
                     .limit(limit)
                 )
                 item_dicts = [i.to_dict() for i in items]
+                print(f'_all: {time.time() - start}')
 
                 has_more: Optional[bool] = None
                 if wants_more := query.limit is None or query.limit > 0:
