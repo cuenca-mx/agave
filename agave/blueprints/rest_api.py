@@ -1,7 +1,7 @@
 import mimetypes
 from typing import Optional, Type
 from urllib.parse import urlencode
-
+import time
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
 from mongoengine import DoesNotExist, Q
@@ -137,6 +137,7 @@ class RestApiBlueprint(Blueprint):
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
+                start = time.time()
                 try:
                     id_query = Q(id=id)
                     if self.user_id_filter_required():
@@ -166,7 +167,7 @@ class RestApiBlueprint(Blueprint):
                     result = cls.retrieve(data)
                 else:
                     result = data.to_dict()
-
+                print(f'retrieve: {time.time() - start}')
                 return result
 
             @self.get(path)
@@ -190,6 +191,7 @@ class RestApiBlueprint(Blueprint):
                     next_page = <url_for_next_items>
                 }
                 """
+                start = time.time()
                 params = self.current_request.query_params or dict()
                 try:
                     query_params = cls.query_validator(**params)
@@ -205,6 +207,7 @@ class RestApiBlueprint(Blueprint):
                     result = cls.query(_all(query_params, filters))
                 else:
                     result = _all(query_params, filters)
+                print(f'query: {time.time() - start}')
                 return result
 
             def _count(filters: Q):
