@@ -1,6 +1,7 @@
 import mimetypes
 from typing import Optional, Type
 from urllib.parse import urlencode
+
 from chalice import Blueprint, NotFoundError, Response
 from cuenca_validations.types import QueryParams
 from mongoengine import DoesNotExist, Q
