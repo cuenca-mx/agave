@@ -101,16 +101,3 @@ def test_mongo_to_dict(model):
         for field in model_dict['lazzy_list_field_uris']
     )
     assert model_dict['generic_lazzy_field_uri'] is None
-
-
-def test_mongo_to_dict_not_url_reference(model):
-    model_dict = mongo_to_dict(
-        model, exclude_fields=['str_field'], url_reference=False
-    )
-
-    assert 'lazzy_field_uri' not in model_dict
-    assert model_dict['lazzy_field']
-    assert model_dict['lazzy_field']['id']
-    assert 'lazzy_list_field_uris' not in model_dict
-    assert isinstance(model_dict['lazzy_list_field'], list)
-    assert model_dict['lazzy_list_field'][0]['id']
