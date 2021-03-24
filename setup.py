@@ -24,7 +24,7 @@ setup(
     python_requires='>=3.8',
     install_requires=[
         'chalice>=1.16.0,<1.22.2',
-        'cuenca-validations>=0.8.0,<0.10.0',
+        'cuenca-validations>=0.9.0,<0.10.0',
         'blinker>=1.4,<1.5',
         'mongoengine>=0.20.0,<0.23.0',
         'dnspython>=2.0.0,<2.2.0',
