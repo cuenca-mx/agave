@@ -23,12 +23,16 @@ setup(
     package_data=dict(agave=['py.typed']),
     python_requires='>=3.8',
     install_requires=[
-        'chalice>=1.16.0,<1.22.2',
         'cuenca-validations>=0.9.0,<0.10.0',
         'blinker>=1.4,<1.5',
-        'mongoengine>=0.20.0,<0.23.0',
-        'dnspython>=2.0.0,<2.2.0',
     ],
+    extras_require={
+        'chalice': [
+            'chalice>=1.16.0,<1.22.2',
+            'mongoengine>=0.20.0,<0.23.0',
+            'dnspython>=2.0.0,<2.2.0',
+        ]
+    },
     classifiers=[
         'Programming Language :: Python :: 3.8',
         'License :: OSI Approved :: MIT License',
