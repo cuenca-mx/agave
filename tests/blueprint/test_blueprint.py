@@ -1,3 +1,4 @@
+import datetime as dt
 from urllib.parse import urlencode
 
 import pytest
@@ -88,6 +89,11 @@ def test_delete_resource(client: Client, account: Account) -> None:
     assert account.deactivated_at is not None
 
 
+def test_delete_resource_not_exists(client: Client) -> None:
+    resp = client.http.delete('/accounts/1234')
+    assert resp.status_code == 404
+
+
 @pytest.mark.usefixtures('accounts')
 def test_query_count_resource(client: Client) -> None:
     query_params = dict(count=1, name='Frida Kahlo')
@@ -118,6 +124,32 @@ def test_query_all_resource(client: Client) -> None:
     resp = client.http.get(resp.json_body['next_page_uri'])
     assert resp.status_code == 200
     assert len(resp.json_body['items']) == 2
+
+
+def test_query_all_filter_active(client: Client, account: Account) -> None:
+    query_params = dict(active=True)
+    # Query active items
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    items = resp.json_body['items']
+    assert len(items) == 4
+    assert all(item['deactivated_at'] is None for item in items)
+
+    # Deactivate Item
+    account.deactivated_at = dt.datetime.utcnow()
+    account.save()
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    items = resp.json_body['items']
+    assert len(items) == 3
+
+    # Query deactivated items
+    query_params = dict(active=False)
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    items = resp.json_body['items']
+    assert len(items) == 1
+    assert items[0]['deactivated_at'] is not None
 
 
 @pytest.mark.usefixtures('accounts')

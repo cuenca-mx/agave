@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class AccountQuery(QueryParams):
     name: Optional[str] = None
     user_id: Optional[str] = None
-    is_active: Optional[bool] = None
+    active: Optional[bool] = None
 
 
 class TransactionQuery(QueryParams):
