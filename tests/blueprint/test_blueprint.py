@@ -127,13 +127,24 @@ def test_query_all_resource(client: Client) -> None:
 
 
 def test_query_all_filter_active(client: Client, account: Account) -> None:
-    query_params = dict(active=False)
+    query_params = dict(active=True)
+    # Query active items
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     items = resp.json_body['items']
-    assert len(items) == 0
+    assert len(items) == 4
+    assert all(item['deactivated_at'] is None for item in items)
+
+    # Deactivate Item
     account.deactivated_at = dt.datetime.utcnow()
     account.save()
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+    assert resp.status_code == 200
+    items = resp.json_body['items']
+    assert len(items) == 3
+
+    # Query deactivated items
+    query_params = dict(active=False)
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     items = resp.json_body['items']
