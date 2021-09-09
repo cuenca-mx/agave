@@ -95,8 +95,8 @@ class RestApiBlueprint(Blueprint):
 
             """ DELETE /resource/{id}
             Use "delete" method (if exists) to create the chalice endpoint
-            This method only validate if exists the object and retrieve it. 
-            The logic to delete / deactivate is completely your responsibility.   
+            This method only validate if exists the object and retrieve it.
+            The logic to delete / deactivate is completely your responsibility.
             """
             if hasattr(cls, 'delete'):
                 route = self.delete(path + '/{id}')
