@@ -95,10 +95,22 @@ class RestApiBlueprint(Blueprint):
 
             """ DELETE /resource/{id}
             Use "delete" method (if exists) to create the chalice endpoint
+            This method only validate if exists the object and retrieve it. 
+            The logic to delete / deactivate is completely your responsibility.   
             """
             if hasattr(cls, 'delete'):
                 route = self.delete(path + '/{id}')
-                route(cls.delete)
+
+                @copy_attributes(cls)
+                def delete(id: str):
+                    try:
+                        model = cls.model.objects.get(id=id)
+                    except DoesNotExist:
+                        raise NotFoundError('Not valid id')
+                    else:
+                        return cls.delete(model)
+
+                route(delete)
 
             """ PATCH /resource/{id}
             Enable PATCH method if Resource.update method exist. It validates
@@ -199,6 +211,13 @@ class RestApiBlueprint(Blueprint):
                 if self.user_id_filter_required():
                     query_params.user_id = self.current_user_id
                 filters = cls.get_query_filter(query_params)
+                if (
+                    hasattr(query_params, 'active')
+                    and query_params.active is not None
+                ):
+                    filters &= Q(
+                        deactivated_at__exists=not query_params.active
+                    )
                 if query_params.count:
                     result = _count(filters)
                 elif hasattr(cls, 'query'):

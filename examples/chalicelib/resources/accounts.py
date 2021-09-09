@@ -36,12 +36,7 @@ class Account:
         return Response(account.to_dict(), status_code=200)
 
     @staticmethod
-    def delete(id: str) -> Response:
-        try:
-            account = AccountModel.objects.get(id=id)
-        except DoesNotExist:
-            raise NotFoundError('Not valid id')
-
+    def delete(account: AccountModel) -> Response:
         account.deactivated_at = dt.datetime.utcnow().replace(microsecond=0)
         account.save()
         return Response(account.to_dict(), status_code=200)
