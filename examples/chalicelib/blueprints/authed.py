@@ -31,7 +31,7 @@ class AuthedBlueprint(Blueprint):
                 self.current_request.user_id = 'US123456789'
                 return user_handler(*args, **kwargs)
 
-            self._register_handler(
+            self._register_handler(  # type: ignore
                 'route',
                 user_handler.__name__,
                 authed_handler,

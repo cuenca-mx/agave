@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Optional, Type
+from typing import Optional, Type, cast
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -161,7 +161,9 @@ class RestApiBlueprint(Blueprint):
                 # but can be some type of file such as image, xml, zip or pdf
                 if hasattr(cls, 'download'):
                     file = cls.download(data)
-                    mimetype = self.current_request.headers.get('accept')
+                    mimetype = cast(
+                        str, self.current_request.headers.get('accept')
+                    )
                     extension = mimetypes.guess_extension(mimetype)
                     filename = f'{cls.model._class_name}.{extension}'
                     result = Response(
