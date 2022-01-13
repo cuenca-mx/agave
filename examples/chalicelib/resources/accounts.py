@@ -23,6 +23,7 @@ class Account:
         account = AccountModel(
             name=request.name,
             user_id=app.current_user_id,
+            platform_id=app.current_platform_id,
         )
         account.save()
         return Response(account.to_dict(), status_code=201)
