@@ -35,7 +35,6 @@ def client() -> Generator[Client, None, None]:
 
 @pytest.fixture
 def accounts() -> Generator[List[Account], None, None]:
-    user_id = 'US123456789'
     accs = [
         Account(
             name='Frida Kahlo',

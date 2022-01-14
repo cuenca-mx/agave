@@ -139,15 +139,20 @@ def test_query_all_with_limit(client: Client) -> None:
 
 
 @pytest.mark.usefixtures('accounts')
-def test_query_all_resource(client: Client) -> None:
-    query_params = dict(page_size=2)
-    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-    assert resp.status_code == 200
-    assert len(resp.json_body['items']) == 2
+def test_query_all_resource(client: Client, accounts: List[Account]) -> None:
+    accounts = list(reversed(accounts))
 
-    resp = client.http.get(resp.json_body['next_page_uri'])
-    assert resp.status_code == 200
-    assert len(resp.json_body['items']) == 2
+    items = []
+    page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+
+    while page_uri:
+        resp = client.http.get(page_uri)
+        assert resp.status_code == 200
+        items.extend(resp.json_body['items'])
+        page_uri = resp.json_body['next_page_uri']
+
+    assert len(items) == len(accounts)
+    assert all(a.to_dict() == b for a, b in zip(accounts, items))
 
 
 def test_query_all_filter_active(
@@ -178,23 +183,17 @@ def test_query_all_filter_active(
     assert items[0]['deactivated_at'] is not None
 
 
-# @pytest.mark.usefixtures('accounts')
-# @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
-# def test_query_user_id_filter_required(client: Client) -> None:
-#     query_params = dict(page_size=2)
-#     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-#     assert resp.status_code == 200
-#     assert len(resp.json_body['items']) == 2
-#     assert all(
-#         item['user_id'] == 'US123456789' for item in resp.json_body['items']
-#     )
-#
-#     resp = client.http.get(resp.json_body['next_page_uri'])
-#     assert resp.status_code == 200
-#     assert len(resp.json_body['items']) == 1
-#     assert all(
-#         item['user_id'] == 'US123456789' for item in resp.json_body['items']
-#     )
+def test_query_all_created_after(
+    client: Client, accounts: List[Account]
+) -> None:
+    created_at = dt.datetime(2020, 2, 1)
+    expected_length = len([a for a in accounts if a.created_at > created_at])
+
+    query_params = dict(created_after=created_at.isoformat())
+    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+
+    assert resp.status_code == 200
+    assert len(resp.json_body['items']) == expected_length
 
 
 @patch(PLATFORM_ID_FILTER_REQUIRED, MagicMock(return_value=True))
