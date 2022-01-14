@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Optional, Type, cast, Any
+from typing import Any, Optional, Type, cast
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -49,9 +49,7 @@ class RestApiBlueprint(Blueprint):
             'this method should be override'
         )  # pragma: no cover
 
-    def retrieve_object(
-        self, resource_class: Any, resource_id: str
-    ) -> Any:
+    def retrieve_object(self, resource_class: Any, resource_id: str) -> Any:
         resource_id = (
             self.current_user_id if resource_id == 'me' else resource_id
         )
@@ -179,21 +177,6 @@ class RestApiBlueprint(Blueprint):
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
-                # try:
-                #     query = Q(id=id)
-                #
-                #     if self.platform_id_filter_required() and hasattr(
-                #         cls.model, 'platform_id'
-                #     ):
-                #         query = query & Q(platform_id=self.current_platform_id)
-                #
-                #     if self.user_id_filter_required() and hasattr(
-                #         cls.model, 'user_id'
-                #     ):
-                #         query = query & Q(user_id=self.current_user_id)
-                #     data = cls.model.objects.get(query)
-                # except DoesNotExist:
-                #     raise NotFoundError('Not valid id')
                 obj = self.retrieve_object(cls, id)
 
                 # This case is when the return is not an application/$
