@@ -1,10 +1,12 @@
 import datetime as dt
-from typing import Generator, List
+import functools
+from typing import Generator, List, Callable
 
 import pytest
 from chalice.test import Client
+from mongoengine import Document
 
-from examples.chalicelib.models import Account, Card, File
+from examples.chalicelib.models import Account, Card, File, User, Biller
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
@@ -13,6 +15,24 @@ from examples.config import (
 )
 
 from .helpers import accept_json
+
+
+FuncDecorator = Callable[..., Generator]
+
+
+def collection_fixture(model: Document) -> Callable[..., FuncDecorator]:
+    def collection_decorator(func: Callable) -> FuncDecorator:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Generator[List, None, None]:
+            items = func(*args, **kwargs)
+            for item in items:
+                item.save()
+            yield items
+            model.objects.delete()
+
+        return wrapper
+
+    return collection_decorator
 
 
 @pytest.fixture()
@@ -34,8 +54,9 @@ def client() -> Generator[Client, None, None]:
 
 
 @pytest.fixture
-def accounts() -> Generator[List[Account], None, None]:
-    accs = [
+@collection_fixture(Account)
+def accounts() -> List[Account]:
+    return [
         Account(
             name='Frida Kahlo',
             user_id=TEST_DEFAULT_USER_ID,
@@ -74,12 +95,6 @@ def accounts() -> Generator[List[Account], None, None]:
         ),
     ]
 
-    for acc in accs:
-        acc.save()
-    yield accs
-    for acc in accs:
-        acc.delete()
-
 
 @pytest.fixture
 def account(accounts: List[Account]) -> Generator[Account, None, None]:
@@ -92,19 +107,14 @@ def other_account(accounts: List[Account]) -> Generator[Account, None, None]:
 
 
 @pytest.fixture
-def files() -> Generator[List[File], None, None]:
-    accs = [
+@collection_fixture(File)
+def files() -> List[File]:
+    return [
         File(
             name='Frida Kahlo',
             user_id=TEST_DEFAULT_USER_ID,
         ),
     ]
-
-    for acc in accs:
-        acc.save()
-    yield accs
-    for acc in accs:
-        acc.delete()
 
 
 @pytest.fixture
@@ -113,8 +123,9 @@ def file(files: List[File]) -> Generator[File, None, None]:
 
 
 @pytest.fixture
-def cards() -> Generator[List[Card], None, None]:
-    cards = [
+@collection_fixture(Card)
+def cards() -> List[Card]:
+    return [
         Card(
             number='5434000000000001',
             user_id=TEST_DEFAULT_USER_ID,
@@ -137,13 +148,25 @@ def cards() -> Generator[List[Card], None, None]:
         ),
     ]
 
-    for card in cards:
-        card.save()
-    yield cards
-    for card in cards:
-        card.delete()
-
 
 @pytest.fixture
 def card(cards: List[Card]) -> Generator[Card, None, None]:
     yield cards[0]
+
+
+@pytest.fixture
+@collection_fixture(User)
+def users() -> List[User]:
+    return [
+        User(name='User1', platform_id=TEST_DEFAULT_PLATFORM_ID),
+        User(name='User2', platform_id=TEST_SECOND_PLATFORM_ID),
+    ]
+
+
+@pytest.fixture
+@collection_fixture(Biller)
+def billers() -> List[Biller]:
+    return [
+        Biller(name='Telcel'),
+        Biller(name='ATT'),
+    ]

@@ -15,6 +15,14 @@ class TransactionQuery(QueryParams):
     user_id: Optional[str] = None
 
 
+class BillerQuery(QueryParams):
+    name: str
+
+
+class UserQuery(QueryParams):
+    platform_id: str
+
+
 class AccountRequest(BaseModel):
     name: str
 

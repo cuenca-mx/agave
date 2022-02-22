@@ -7,7 +7,11 @@ from chalice.test import Client
 from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account, Card, File
-from examples.config import TEST_DEFAULT_PLATFORM_ID, TEST_DEFAULT_USER_ID
+from examples.config import (
+    TEST_DEFAULT_PLATFORM_ID,
+    TEST_DEFAULT_USER_ID,
+    TEST_SECOND_PLATFORM_ID,
+)
 
 PLATFORM_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -281,3 +285,28 @@ def test_download_resource(client: Client, file: File) -> None:
     resp = client.http.get(f'/files/{file.id}', headers={'Accept': mimetype})
     assert resp.status_code == 200
     assert resp.headers.get('Content-Type') == mimetype
+
+
+@pytest.mark.usefixtures('users')
+def test_filter_no_user_id_query(client: Client) -> None:
+    resp = client.http.get(f'/users?platform_id={TEST_DEFAULT_PLATFORM_ID}')
+    resp_json = resp.json_body
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1
+    user1 = resp_json['items'][0]
+    resp = client.http.get(f'/users?platform_id={TEST_SECOND_PLATFORM_ID}')
+    resp_json = resp.json_body
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1
+    user2 = resp_json['items'][0]
+    assert user1['id'] != user2['id']
+
+
+@pytest.mark.usefixtures('billers')
+def test_filter_no_user_id_and_no_platform_id_query(
+    client: Client,
+) -> None:
+    resp = client.http.get('/billers?name=ATT')
+    resp_json = resp.json_body
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1

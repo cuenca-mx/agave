@@ -1,7 +1,6 @@
 import datetime as dt
 
-from chalice import NotFoundError, Response
-from mongoengine import DoesNotExist
+from chalice import Response
 
 from agave.filters import generic_query
 
