@@ -1,12 +1,12 @@
 import datetime as dt
 import functools
-from typing import Generator, List, Callable
+from typing import Callable, Generator, List
 
 import pytest
 from chalice.test import Client
 from mongoengine import Document
 
-from examples.chalicelib.models import Account, Card, File, User, Biller
+from examples.chalicelib.models import Account, Biller, Card, File, User
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
@@ -15,7 +15,6 @@ from examples.config import (
 )
 
 from .helpers import accept_json
-
 
 FuncDecorator = Callable[..., Generator]
 
