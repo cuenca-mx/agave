@@ -232,10 +232,7 @@ class RestApiBlueprint(Blueprint):
                 except ValidationError as e:
                     return Response(e.json(), status_code=400)
 
-                if self.platform_id_filter_required():
-                    query_params.platform_id = self.current_platform_id
-
-                if self.user_id_filter_required() and hasattr(
+                if self.platform_id_filter_required() and hasattr(
                     cls.model, 'platform_id'
                 ):
                     query_params.platform_id = self.current_platform_id
