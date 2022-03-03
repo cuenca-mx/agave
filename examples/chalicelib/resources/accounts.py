@@ -1,7 +1,6 @@
 import datetime as dt
 
-from chalice import NotFoundError, Response
-from mongoengine import DoesNotExist
+from chalice import Response
 
 from agave.filters import generic_query
 
@@ -23,6 +22,7 @@ class Account:
         account = AccountModel(
             name=request.name,
             user_id=app.current_user_id,
+            platform_id=app.current_platform_id,
         )
         account.save()
         return Response(account.to_dict(), status_code=201)

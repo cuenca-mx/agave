@@ -7,11 +7,20 @@ from pydantic import BaseModel
 class AccountQuery(QueryParams):
     name: Optional[str] = None
     user_id: Optional[str] = None
+    platform_id: Optional[str] = None
     active: Optional[bool] = None
 
 
 class TransactionQuery(QueryParams):
     user_id: Optional[str] = None
+
+
+class BillerQuery(QueryParams):
+    name: str
+
+
+class UserQuery(QueryParams):
+    platform_id: str
 
 
 class AccountRequest(BaseModel):

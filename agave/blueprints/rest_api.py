@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Optional, Type, cast
+from typing import Any, Optional, Type, cast
 from urllib.parse import urlencode
 
 from chalice import Blueprint, NotFoundError, Response
@@ -27,6 +27,10 @@ class RestApiBlueprint(Blueprint):
     def current_user_id(self):
         return self.current_request.user_id
 
+    @property
+    def current_platform_id(self):
+        return self.current_request.platform_id
+
     def user_id_filter_required(self):
         """
         This method is required to be implemented with your own business logic.
@@ -35,6 +39,36 @@ class RestApiBlueprint(Blueprint):
         raise NotImplementedError(
             'this method should be override'
         )  # pragma: no cover
+
+    def platform_id_filter_required(self):
+        """
+        This method is required to be implemented with your own business logic.
+        You are responsible of determining when `user_id` filter is required.
+        """
+        raise NotImplementedError(
+            'this method should be override'
+        )  # pragma: no cover
+
+    def retrieve_object(self, resource_class: Any, resource_id: str) -> Any:
+        resource_id = (
+            self.current_user_id if resource_id == 'me' else resource_id
+        )
+        query = Q(id=resource_id)
+        if self.platform_id_filter_required() and hasattr(
+            resource_class.model, 'platform_id'
+        ):
+            query = query & Q(platform_id=self.current_platform_id)
+
+        if self.user_id_filter_required() and hasattr(
+            resource_class.model, 'user_id'
+        ):
+            query = query & Q(user_id=self.current_user_id)
+
+        try:
+            data = resource_class.model.objects.get(query)
+        except DoesNotExist:
+            raise NotFoundError('Not valid id')
+        return data
 
     def validate(self, validation_type: Type[BaseModel]):
         """This decorator validate the request body using a custom pydantyc model
@@ -103,12 +137,8 @@ class RestApiBlueprint(Blueprint):
 
                 @copy_attributes(cls)
                 def delete(id: str):
-                    try:
-                        model = cls.model.objects.get(id=id)
-                    except DoesNotExist:
-                        raise NotFoundError('Not valid id')
-                    else:
-                        return cls.delete(model)
+                    model = self.retrieve_object(cls, id)
+                    return cls.delete(model)
 
                 route(delete)
 
@@ -125,13 +155,11 @@ class RestApiBlueprint(Blueprint):
                     params = self.current_request.json_body or dict()
                     try:
                         data = cls.update_validator(**params)
-                        model = cls.model.objects.get(id=id)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
-                    except DoesNotExist:
-                        raise NotFoundError('Not valid id')
-                    else:
-                        return cls.update(model, data)
+
+                    model = self.retrieve_object(cls, id)
+                    return cls.update(model, data)
 
                 route(update)
 
@@ -149,18 +177,12 @@ class RestApiBlueprint(Blueprint):
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
-                try:
-                    id_query = Q(id=id)
-                    if self.user_id_filter_required():
-                        id_query = id_query & Q(user_id=self.current_user_id)
-                    data = cls.model.objects.get(id_query)
-                except DoesNotExist:
-                    raise NotFoundError('Not valid id')
+                obj = self.retrieve_object(cls, id)
 
                 # This case is when the return is not an application/$
                 # but can be some type of file such as image, xml, zip or pdf
                 if hasattr(cls, 'download'):
-                    file = cls.download(data)
+                    file = cls.download(obj)
                     mimetype = cast(
                         str, self.current_request.headers.get('accept')
                     )
@@ -177,9 +199,9 @@ class RestApiBlueprint(Blueprint):
                         status_code=200,
                     )
                 elif hasattr(cls, 'retrieve'):
-                    result = cls.retrieve(data)
+                    result = cls.retrieve(obj)
                 else:
-                    result = data.to_dict()
+                    result = obj.to_dict()
 
                 return result
 
@@ -209,9 +231,17 @@ class RestApiBlueprint(Blueprint):
                     query_params = cls.query_validator(**params)
                 except ValidationError as e:
                     return Response(e.json(), status_code=400)
-                # Set user_id request as query param
-                if self.user_id_filter_required():
+
+                if self.platform_id_filter_required() and hasattr(
+                    cls.model, 'platform_id'
+                ):
+                    query_params.platform_id = self.current_platform_id
+
+                if self.user_id_filter_required() and hasattr(
+                    cls.model, 'user_id'
+                ):
                     query_params.user_id = self.current_user_id
+
                 filters = cls.get_query_filter(query_params)
                 if (
                     hasattr(query_params, 'active')
@@ -257,6 +287,8 @@ class RestApiBlueprint(Blueprint):
                     params = query.dict()
                     if self.user_id_filter_required():
                         params.pop('user_id')
+                    if self.platform_id_filter_required():
+                        params.pop('platform_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)
 

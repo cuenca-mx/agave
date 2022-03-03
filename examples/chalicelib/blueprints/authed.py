@@ -3,6 +3,8 @@ from typing import Callable
 
 from chalice import Blueprint
 
+from ...config import TEST_DEFAULT_PLATFORM_ID, TEST_DEFAULT_USER_ID
+
 
 class AuthedBlueprint(Blueprint):
     """
@@ -28,7 +30,8 @@ class AuthedBlueprint(Blueprint):
             def authed_handler(*args, **kwargs):
                 # your authentication logic goes here
                 # before execute `user_handler` function.
-                self.current_request.user_id = 'US123456789'
+                self.current_request.user_id = TEST_DEFAULT_USER_ID
+                self.current_request.platform_id = TEST_DEFAULT_PLATFORM_ID
                 return user_handler(*args, **kwargs)
 
             self._register_handler(  # type: ignore
@@ -58,6 +61,13 @@ class AuthedBlueprint(Blueprint):
         But if we need to change it to `True` in tests we could monkey patch it
         when needed.
 
+        :return:
+        """
+        return False
+
+    def platform_id_filter_required(self):
+        """
+        It overrides `RestApiBlueprint.platform_id_filter_required()` method.
         :return:
         """
         return False

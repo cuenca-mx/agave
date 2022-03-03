@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import List
 from urllib.parse import urlencode
 
 import pytest
@@ -6,6 +7,16 @@ from chalice.test import Client
 from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account, Card, File
+from examples.config import (
+    TEST_DEFAULT_PLATFORM_ID,
+    TEST_DEFAULT_USER_ID,
+    TEST_SECOND_PLATFORM_ID,
+)
+
+PLATFORM_ID_FILTER_REQUIRED = (
+    'examples.chalicelib.blueprints.authed.'
+    'AuthedBlueprint.platform_id_filter_required'
+)
 
 USER_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'
@@ -34,8 +45,25 @@ def test_retrieve_resource(client: Client, account: Account) -> None:
     assert resp.json_body == account.to_dict()
 
 
+@patch(PLATFORM_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+def test_retrieve_resource_platform_id_filter_required(
+    client: Client, other_account: Account
+) -> None:
+    resp = client.http.get(f'/accounts/{other_account.id}')
+    assert resp.status_code == 404
+
+
 @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_retrieve_resource_user_id_filter_required(
+    client: Client, other_account: Account
+) -> None:
+    resp = client.http.get(f'/accounts/{other_account.id}')
+    assert resp.status_code == 404
+
+
+@patch(PLATFORM_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+def test_retrieve_resource_user_id_and_platform_id_filter_required(
     client: Client, other_account: Account
 ) -> None:
     resp = client.http.get(f'/accounts/{other_account.id}')
@@ -115,24 +143,31 @@ def test_query_all_with_limit(client: Client) -> None:
 
 
 @pytest.mark.usefixtures('accounts')
-def test_query_all_resource(client: Client) -> None:
-    query_params = dict(page_size=2)
-    resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-    assert resp.status_code == 200
-    assert len(resp.json_body['items']) == 2
+def test_query_all_resource(client: Client, accounts: List[Account]) -> None:
+    accounts = list(reversed(accounts))
 
-    resp = client.http.get(resp.json_body['next_page_uri'])
-    assert resp.status_code == 200
-    assert len(resp.json_body['items']) == 2
+    items = []
+    page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+
+    while page_uri:
+        resp = client.http.get(page_uri)
+        assert resp.status_code == 200
+        items.extend(resp.json_body['items'])
+        page_uri = resp.json_body['next_page_uri']
+
+    assert len(items) == len(accounts)
+    assert all(a.to_dict() == b for a, b in zip(accounts, items))
 
 
-def test_query_all_filter_active(client: Client, account: Account) -> None:
+def test_query_all_filter_active(
+    client: Client, account: Account, accounts: List[Account]
+) -> None:
     query_params = dict(active=True)
     # Query active items
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     items = resp.json_body['items']
-    assert len(items) == 4
+    assert len(items) == len(accounts)
     assert all(item['deactivated_at'] is None for item in items)
 
     # Deactivate Item
@@ -141,7 +176,7 @@ def test_query_all_filter_active(client: Client, account: Account) -> None:
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
     assert resp.status_code == 200
     items = resp.json_body['items']
-    assert len(items) == 3
+    assert len(items) == len(accounts) - 1
 
     # Query deactivated items
     query_params = dict(active=False)
@@ -152,23 +187,62 @@ def test_query_all_filter_active(client: Client, account: Account) -> None:
     assert items[0]['deactivated_at'] is not None
 
 
-@pytest.mark.usefixtures('accounts')
-@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
-def test_query_user_id_filter_required(client: Client) -> None:
-    query_params = dict(page_size=2)
+def test_query_all_created_after(
+    client: Client, accounts: List[Account]
+) -> None:
+    created_at = dt.datetime(2020, 2, 1)
+    expected_length = len([a for a in accounts if a.created_at > created_at])
+
+    query_params = dict(created_after=created_at.isoformat())
     resp = client.http.get(f'/accounts?{urlencode(query_params)}')
+
     assert resp.status_code == 200
-    assert len(resp.json_body['items']) == 2
-    assert all(
-        item['user_id'] == 'US123456789' for item in resp.json_body['items']
+    assert len(resp.json_body['items']) == expected_length
+
+
+@patch(PLATFORM_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+def test_query_platform_id_filter_required(
+    client: Client, accounts: List[Account]
+) -> None:
+    accounts = list(
+        reversed(
+            [a for a in accounts if a.platform_id == TEST_DEFAULT_PLATFORM_ID]
+        )
     )
 
-    resp = client.http.get(resp.json_body['next_page_uri'])
-    assert resp.status_code == 200
-    assert len(resp.json_body['items']) == 1
-    assert all(
-        item['user_id'] == 'US123456789' for item in resp.json_body['items']
+    items = []
+    page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+
+    while page_uri:
+        resp = client.http.get(page_uri)
+        assert resp.status_code == 200
+        json_body = resp.json_body
+        items.extend(json_body['items'])
+        page_uri = json_body['next_page_uri']
+
+    assert len(items) == len(accounts)
+    assert all(a.to_dict() == b for a, b in zip(accounts, items))
+
+
+@patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
+def test_query_user_id_filter_required(
+    client: Client, accounts: List[Account]
+) -> None:
+    accounts = list(
+        reversed([a for a in accounts if a.user_id == TEST_DEFAULT_USER_ID])
     )
+    items = []
+    page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+
+    while page_uri:
+        resp = client.http.get(page_uri)
+        assert resp.status_code == 200
+        json_body = resp.json_body
+        items.extend(json_body['items'])
+        page_uri = json_body['next_page_uri']
+
+    assert len(items) == len(accounts)
+    assert all(a.to_dict() == b for a, b in zip(accounts, items))
 
 
 def test_query_resource_with_invalid_params(client: Client) -> None:
@@ -211,3 +285,28 @@ def test_download_resource(client: Client, file: File) -> None:
     resp = client.http.get(f'/files/{file.id}', headers={'Accept': mimetype})
     assert resp.status_code == 200
     assert resp.headers.get('Content-Type') == mimetype
+
+
+@pytest.mark.usefixtures('users')
+def test_filter_no_user_id_query(client: Client) -> None:
+    resp = client.http.get(f'/users?platform_id={TEST_DEFAULT_PLATFORM_ID}')
+    resp_json = resp.json_body
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1
+    user1 = resp_json['items'][0]
+    resp = client.http.get(f'/users?platform_id={TEST_SECOND_PLATFORM_ID}')
+    resp_json = resp.json_body
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1
+    user2 = resp_json['items'][0]
+    assert user1['id'] != user2['id']
+
+
+@pytest.mark.usefixtures('billers')
+def test_filter_no_user_id_and_no_platform_id_query(
+    client: Client,
+) -> None:
+    resp = client.http.get('/billers?name=ATT')
+    resp_json = resp.json_body
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1
