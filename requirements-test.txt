@@ -8,3 +8,4 @@ mypy==0.812
 pytest-chalice==0.0.*
 mongomock==3.22.*
 mock==4.0.3
+click==8.0.1
