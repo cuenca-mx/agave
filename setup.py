@@ -23,7 +23,7 @@ setup(
     package_data=dict(agave=['py.typed']),
     python_requires='>=3.8',
     install_requires=[
-        'chalice>=1.16.0,<1.25.1',
+        'chalice>=1.16.0,<1.32',
         'cuenca-validations>=0.9.0,<1.0.0',
         'blinker>=1.4,<1.5',
         'mongoengine>=0.20.0,<0.23.0',
