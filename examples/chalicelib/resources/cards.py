@@ -2,7 +2,7 @@ from typing import Dict
 
 from chalice import Response
 
-from agave.filters import generic_query
+from agave.core.filters import generic_query
 
 from ..models import Card as CardModel
 from ..validators import CardQuery

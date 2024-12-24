@@ -7,7 +7,7 @@ from cuenca_validations.types import QueryParams
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
-from .decorators import copy_attributes
+from ..core.blueprints.decorators import copy_attributes
 
 
 class RestApiBlueprint(Blueprint):

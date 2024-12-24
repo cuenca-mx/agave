@@ -4,7 +4,7 @@ from io import BytesIO
 from chalice import NotFoundError, Response
 from mongoengine import DoesNotExist
 
-from agave.filters import generic_query
+from agave.core.filters import generic_query
 
 from ..models import File as FileModel
 from ..validators import FileQuery

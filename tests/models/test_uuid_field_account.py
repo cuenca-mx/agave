@@ -1,7 +1,7 @@
 import uuid
 from base64 import urlsafe_b64encode
 
-from agave.models.helpers import uuid_field_generic
+from agave.chalice_support.models.helpers import uuid_field_generic
 
 
 def test_uuid_field_generic():

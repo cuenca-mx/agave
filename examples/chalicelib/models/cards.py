@@ -1,7 +1,7 @@
 from mongoengine import DateTimeField, Document, StringField
 
-from agave.models import BaseModel
-from agave.models.helpers import uuid_field
+from agave.chalice_support.models import BaseModel
+from agave.chalice_support.models.helpers import uuid_field
 
 
 class Card(BaseModel, Document):

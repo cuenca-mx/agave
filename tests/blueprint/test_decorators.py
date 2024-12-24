@@ -1,6 +1,6 @@
 from functools import wraps
 
-from agave.blueprints.decorators import copy_attributes
+from agave.core.blueprints.decorators import copy_attributes
 
 
 def i_am_test(func):
