@@ -1,8 +1,10 @@
+from typing import List
+
 from cuenca_validations.types import QueryParams
 from mongoengine import Q
 
 
-def generic_query(query: QueryParams) -> Q:
+def generic_query(query: QueryParams, excluded: List[str] = []) -> Q:
     filters = Q()
     if query.created_before:
         filters &= Q(created_at__lt=query.created_before)
@@ -15,6 +17,7 @@ def generic_query(query: QueryParams) -> Q:
         'limit',
         'page_size',
         'key',
+        *excluded,
     }
     fields = query.dict(exclude=exclude_fields)
     if 'count' in fields:

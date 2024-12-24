@@ -16,7 +16,8 @@ def copy_attributes(resource: Type[Any]):
             return func
 
         for key, val in original_func.__dict__.items():
-            setattr(func, key, val)
+            if not key.startswith('_'):
+                setattr(func, key, val)
 
         return func
 
