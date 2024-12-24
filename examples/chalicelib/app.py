@@ -1,7 +1,7 @@
 from chalice import Chalice
 from mongoengine import connect
 
-from .chalicelib.resources import app as resources
+from .resources import app as resources
 
 DATABASE_URI = 'mongomock://localhost:27017/db'
 
