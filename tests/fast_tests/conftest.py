@@ -13,6 +13,7 @@ from aiobotocore.session import AioSession
 from fastapi.testclient import TestClient
 from mongoengine import Document
 
+from agave.fastapi_support.tasks import sqs_tasks
 from examples.fastlib.app import app
 from examples.fastlib.config import (
     TEST_DEFAULT_PLATFORM_ID,
@@ -21,7 +22,6 @@ from examples.fastlib.config import (
     TEST_SECOND_USER_ID,
 )
 from examples.fastlib.models import Account, Biller, Card, File, User
-from agave.fastapi_support.tasks import sqs_tasks
 
 FuncDecorator = Callable[..., Generator]
 

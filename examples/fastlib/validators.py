@@ -1,8 +1,8 @@
+import datetime as dt
 from typing import Optional
 
 from cuenca_validations.types import QueryParams
 from pydantic import BaseModel
-import datetime as dt
 
 
 class AccountQuery(QueryParams):

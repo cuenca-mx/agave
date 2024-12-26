@@ -1,8 +1,9 @@
 from io import BytesIO
 
-from agave.core.filters import generic_query
 from fastapi import BackgroundTasks
 from fastapi.responses import JSONResponse as Response
+
+from agave.core.filters import generic_query
 
 from ..models import File as FileModel
 from ..validators import FileQuery, FileUploadValidator

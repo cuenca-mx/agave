@@ -2,12 +2,13 @@ import asyncio
 from typing import Dict
 
 import mongomock as mongomock
-from mongoengine import connect
 from fastapi import FastAPI
+from mongoengine import connect
 
 from agave.fastapi_support.middlewares import FastAgaveErrorHandler
-from .resources import app as resources
+
 from .middlewares import AuthedMiddleware
+from .resources import app as resources
 from .tasks.task_example import dummy_task, task_validator
 
 connect(

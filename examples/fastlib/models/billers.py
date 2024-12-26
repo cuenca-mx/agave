@@ -3,7 +3,6 @@ import datetime as dt
 from mongoengine import DateTimeField, StringField
 from mongoengine_plus.aio import AsyncDocument
 from mongoengine_plus.models import BaseModel
-
 from mongoengine_plus.models.helpers import uuid_field
 
 

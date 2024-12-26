@@ -1,16 +1,10 @@
-from starlette.middleware.base import (
-    RequestResponseEndpoint,
-)
-from starlette.responses import Response
-from starlette_context.middleware import ContextMiddleware
-from starlette_context import _request_scope_context_storage
-
 from fastapi import Request
+from starlette.middleware.base import RequestResponseEndpoint
+from starlette.responses import Response
+from starlette_context import _request_scope_context_storage
+from starlette_context.middleware import ContextMiddleware
 
-from ..config import (
-    TEST_DEFAULT_USER_ID,
-    TEST_DEFAULT_PLATFORM_ID,
-)
+from ..config import TEST_DEFAULT_PLATFORM_ID, TEST_DEFAULT_USER_ID
 
 
 class AuthedMiddleware(ContextMiddleware):

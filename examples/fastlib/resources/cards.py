@@ -1,6 +1,7 @@
 from typing import Dict
 
 from fastapi.responses import JSONResponse as Response
+
 from agave.core.filters import generic_query
 
 from ..models import Card as CardModel
