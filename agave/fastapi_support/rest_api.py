@@ -155,7 +155,9 @@ class RestApiBlueprint(APIRouter):
                     summary=f'{cls.__name__} - Delete',
                     response_model=response_model,
                     responses=error_404,
-                    description=f'Use id param to delete the {cls.__name__} object',
+                    description=(
+                        f'Use id param to delete the {cls.__name__} object'
+                    ),
                     include_in_schema=include_in_schema,
                 )
                 @copy_attributes(cls)
@@ -175,7 +177,9 @@ class RestApiBlueprint(APIRouter):
                     summary=f'{cls.__name__} - Update',
                     response_model=response_model,
                     responses=error_404,
-                    description=f'Use id param to update the {cls.__name__} object',
+                    description=(
+                        f'Use id param to update the {cls.__name__} object'
+                    ),
                     include_in_schema=include_in_schema,
                 )
                 @copy_attributes(cls)
@@ -200,7 +204,9 @@ class RestApiBlueprint(APIRouter):
                 summary=f'{cls.__name__} - Retrieve',
                 response_model=response_model,
                 responses=error_404,
-                description=f'Use id param to retrieve the {cls.__name__} object',
+                description=(
+                    f'Use id param to retrieve the {cls.__name__} object'
+                ),
                 include_in_schema=include_in_schema,
             )
             @copy_attributes(cls)
@@ -229,7 +235,9 @@ class RestApiBlueprint(APIRouter):
                         file,
                         media_type=mimetype,
                         headers={
-                            'Content-Disposition': f'attachment; filename={filename}'
+                            'Content-Disposition': (
+                                f'attachment; filename={filename}'
+                            )
                         },
                     )
                 elif hasattr(cls, 'retrieve'):
@@ -240,11 +248,14 @@ class RestApiBlueprint(APIRouter):
                 return result
 
             """ GET /resource?param=value
-            Use GET method to fetch and count filtered objects using query params.
-            To Enable queries you have to define next fields in decorated class
+            Use GET method to fetch and count filtered objects
+            using query params.
+            To Enable queries you have to define next fields
+            in decorated class
 
             query_validator: Pydantic model to validate the params.
-            get_query_filter: Method to provide the way that the params are used to filter data.
+            get_query_filter: Method to provide the way that
+            the params are used to filter data.
             """
 
             if not hasattr(cls, 'query_validator') or not hasattr(
@@ -253,24 +264,34 @@ class RestApiBlueprint(APIRouter):
                 return cls
 
             query_description = (
-                f'Make queries in resource {cls.__name__} and filter the result using query parameters.  \n'
-                f'The items are paginated, to iterate over them use the `next_page_uri` included in response.  \n'
-                f'If you need only a counter not the data send value `true` in `count` param.'
+                f'Make queries in resource {cls.__name__} and filter the '
+                f'result using query parameters.  \n'
+                f'The items are paginated, to iterate over them use the '
+                f'`next_page_uri` included in response.  \n'
+                f'If you need only a counter not the data send value `true` '
+                f'in `count` param.'
             )
 
             # Build dynamically types for query response
             class QueryResponse(BaseModel):
                 items: Optional[List[response_model]] = Field(
                     [],
-                    description=f'List of {cls.__name__} that match with query filters',
+                    description=(
+                        f'List of {cls.__name__} that match with query '
+                        f'filters'
+                    ),
                 )
                 next_page_uri: Optional[str] = Field(
                     None, description='URL to fetch the next page of results'
                 )
                 count: Optional[int] = Field(
                     None,
-                    description=f'Counter of {cls.__name__} objects that match with query filters.  \n'
-                    'If you need only a counter not the data send value `true` in `count` param.',
+                    description=(
+                        f'Counter of {cls.__name__} objects that match with '
+                        f'query filters.  \n'
+                        f'If you need only a counter not the data send value '
+                        f'`true` in `count` param.'
+                    ),
                 )
 
             QueryResponse.__name__ = f'QueryResponse{cls.__name__}'
@@ -308,7 +329,9 @@ class RestApiBlueprint(APIRouter):
             )
             @copy_attributes(cls)
             async def query(
-                query_params: cls.query_validator = Depends(validate_params),  # type: ignore
+                query_params: cls.query_validator = Depends(  # type: ignore
+                    validate_params
+                ),
             ):
                 """GET /resource"""
                 if self.platform_id_filter_required() and hasattr(

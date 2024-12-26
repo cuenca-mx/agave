@@ -3,7 +3,7 @@ PATH := ./venv/bin:${PATH}
 PYTHON = python3.8
 PROJECT = agave
 isort = isort $(PROJECT) examples tests setup.py
-black = black -S -l 79 --target-version py38 $(PROJECT) tests setup.py examples $(PROJECT)/chalice_support/*
+black = black -S -l 79 --target-version py38 $(PROJECT) tests setup.py examples
 
 
 .PHONY: all
