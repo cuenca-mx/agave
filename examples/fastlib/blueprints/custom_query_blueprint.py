@@ -1,7 +1,8 @@
 from typing import Any
 
-from fast_agave.blueprints import RestApiBlueprint
 from starlette_context import context
+
+from agave.fastapi_support import RestApiBlueprint
 
 
 class CustomQueryBlueprint(RestApiBlueprint):

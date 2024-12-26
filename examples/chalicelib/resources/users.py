@@ -1,7 +1,7 @@
 from agave.core.filters import generic_query
 
+from ...validators import UserQuery
 from ..models import User as UserModel
-from ..validators import UserQuery
 from .base import app
 
 

@@ -6,13 +6,13 @@ import pytest
 from chalice.test import Client
 from mongoengine import Document
 
-from examples.chalicelib.config import (
+from examples.chalicelib.models import Account, Biller, Card, File, User
+from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
     TEST_SECOND_USER_ID,
 )
-from examples.chalicelib.models import Account, Biller, Card, File, User
 
 from .helpers import accept_json
 

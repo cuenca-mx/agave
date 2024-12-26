@@ -6,12 +6,12 @@ import pytest
 from chalice.test import Client
 from mock import MagicMock, patch
 
-from examples.chalicelib.config import (
+from examples.chalicelib.models import Account, Card, File
+from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
 )
-from examples.chalicelib.models import Account, Card, File
 
 PLATFORM_ID_FILTER_REQUIRED = (
     'examples.chalicelib.blueprints.authed.'

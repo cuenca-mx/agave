@@ -6,8 +6,8 @@ from mongoengine import DoesNotExist
 
 from agave.core.filters import generic_query
 
+from ...validators import FileQuery
 from ..models import File as FileModel
-from ..validators import FileQuery
 from .base import app
 
 

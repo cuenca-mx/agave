@@ -5,13 +5,13 @@ from fastapi.responses import JSONResponse as Response
 
 from agave.core.filters import generic_query
 
-from ..models import Account as AccountModel
-from ..validators import (
+from ...validators import (
     AccountQuery,
     AccountRequest,
     AccountResponse,
     AccountUpdateRequest,
 )
+from ..models import Account as AccountModel
 from .base import app
 
 

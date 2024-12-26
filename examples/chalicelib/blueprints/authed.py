@@ -3,7 +3,7 @@ from typing import Callable
 
 from chalice import Blueprint
 
-from ..config import TEST_DEFAULT_PLATFORM_ID, TEST_DEFAULT_USER_ID
+from ...config import TEST_DEFAULT_PLATFORM_ID, TEST_DEFAULT_USER_ID
 
 
 class AuthedBlueprint(Blueprint):

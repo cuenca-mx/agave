@@ -14,13 +14,13 @@ from fastapi.testclient import TestClient
 from mongoengine import Document
 
 from agave.fastapi_support.tasks import sqs_tasks
-from examples.fastlib.app import app
-from examples.fastlib.config import (
+from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
     TEST_SECOND_USER_ID,
 )
+from examples.fastlib.app import app
 from examples.fastlib.models import Account, Biller, Card, File, User
 
 FuncDecorator = Callable[..., Generator]
