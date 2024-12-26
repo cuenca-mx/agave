@@ -3,3 +3,10 @@ chalice==1.25.0
 mongoengine==0.22.1
 cuenca-validations===2.0.0.dev7
 dnspython==2.1.0
+
+aiobotocore==2.1.0
+fastapi==0.115.6
+mongoengine-plus==0.0.3
+python-multipart==0.0.5
+starlette-context==0.3.3
+types-aiobotocore-sqs==2.1.0.post1
