@@ -31,7 +31,7 @@ setup(
             'mongoengine>=0.20.0,<0.23.0',
             'dnspython>=2.0.0,<2.2.0',
         ],
-        'fast_support': [
+        'fastapi': [
             'aiobotocore>=2.0.0,<2.2.0',
             'types-aiobotocore-sqs>=2.1.0.post1,<3.0.0',
             'fastapi>=0.115.0,<0.120.0',
