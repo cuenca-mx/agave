@@ -35,7 +35,7 @@ setup(
     package_data=dict(agave=['py.typed']),
     python_requires='>=3.8',
     install_requires=[
-        'cuenca-validations===2.0.0.dev',
+        'cuenca-validations===2.0.0.dev7',
     ],
     extras_require={
         'chalice_support': [
