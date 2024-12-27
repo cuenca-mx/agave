@@ -5,7 +5,7 @@ import mongomock as mongomock
 from fastapi import FastAPI
 from mongoengine import connect
 
-from agave.fastapi_support.middlewares import FastAgaveErrorHandler
+from agave.fastapi.middlewares import FastAgaveErrorHandler
 
 from .middlewares import AuthedMiddleware
 from .resources import app as resources

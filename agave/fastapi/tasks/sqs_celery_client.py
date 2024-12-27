@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Dict, Iterable, Optional
 from uuid import uuid4
 
-from agave.fastapi_support.tasks.sqs_client import SqsClient
+from agave.fastapi.tasks.sqs_client import SqsClient
 
 
 def _build_celery_message(

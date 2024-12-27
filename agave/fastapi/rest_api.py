@@ -8,8 +8,8 @@ try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 except ImportError:
     raise ImportError(
-        "You must install agave with [fastapi_support] option.\n"
-        "You can install it with: pip install agave[fastapi_support]"
+        "You must install agave with [fastapi] option.\n"
+        "You can install it with: pip install agave[fastapi]"
     )
 
 

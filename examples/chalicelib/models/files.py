@@ -1,7 +1,7 @@
 from mongoengine import Document, StringField
 
-from agave.chalice_support.models import BaseModel
-from agave.chalice_support.models.helpers import uuid_field
+from agave.chalice.models import BaseModel
+from agave.chalice.models.helpers import uuid_field
 
 
 class File(BaseModel, Document):

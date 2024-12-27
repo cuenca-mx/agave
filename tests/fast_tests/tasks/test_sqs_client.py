@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from agave.fastapi_support.tasks.sqs_client import SqsClient
+from agave.fastapi.tasks.sqs_client import SqsClient
 
 CORE_QUEUE_REGION = 'us-east-1'
 

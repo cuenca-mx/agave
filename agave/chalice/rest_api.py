@@ -6,8 +6,8 @@ try:
     from chalice import Blueprint, NotFoundError, Response
 except ImportError:
     raise ImportError(
-        "You must install agave with [chalice_support] option.\n"
-        "You can install it with: pip install agave[chalice_support]"
+        "You must install agave with [chalice] option.\n"
+        "You can install it with: pip install agave[chalice]"
     )
 
 from cuenca_validations.types import QueryParams

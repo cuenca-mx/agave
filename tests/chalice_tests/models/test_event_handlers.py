@@ -3,7 +3,7 @@ import datetime as dt
 import pytest
 from mongoengine import Document
 
-from agave.chalice_support.lib.mongoengine.event_handlers import updated_at
+from agave.chalice.lib.mongoengine.event_handlers import updated_at
 
 
 @updated_at.apply

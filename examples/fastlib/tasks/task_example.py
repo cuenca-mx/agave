@@ -2,7 +2,7 @@ from typing import Optional, Union
 
 from pydantic import BaseModel
 
-from agave.fastapi_support.tasks.sqs_tasks import task
+from agave.fastapi.tasks.sqs_tasks import task
 
 # Esta URL es solo un mock de la queue.
 # Debes reemplazarla con la URL de tu queue

@@ -2,8 +2,8 @@ import datetime as dt
 
 from mongoengine import DateTimeField, Document, StringField
 
-from agave.chalice_support.models import BaseModel
-from agave.chalice_support.models.helpers import uuid_field
+from agave.chalice.models import BaseModel
+from agave.chalice.models.helpers import uuid_field
 
 
 class User(BaseModel, Document):

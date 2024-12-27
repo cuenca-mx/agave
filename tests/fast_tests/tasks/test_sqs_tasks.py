@@ -10,8 +10,8 @@ import pytest
 from aiobotocore.httpsession import HTTPClientError
 from pydantic import BaseModel
 
-from agave.fastapi_support.exc import RetryTask
-from agave.fastapi_support.tasks.sqs_tasks import (
+from agave.fastapi.exc import RetryTask
+from agave.fastapi.tasks.sqs_tasks import (
     BACKGROUND_TASKS,
     get_running_fast_agave_tasks,
     task,

@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 from _pytest.monkeypatch import MonkeyPatch
 from fastapi.testclient import TestClient
 
-from agave.fastapi_support.exc import UnauthorizedError
+from agave.fastapi.exc import UnauthorizedError
 from examples.fastlib.middlewares.authed import AuthedMiddleware
 
 

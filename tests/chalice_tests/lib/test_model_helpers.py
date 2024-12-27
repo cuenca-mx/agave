@@ -22,9 +22,9 @@ from mongoengine import (
     StringField,
 )
 
-from agave.chalice_support.lib.mongoengine.enum_field import EnumField
-from agave.chalice_support.lib.mongoengine.model_helpers import mongo_to_dict
-from agave.chalice_support.models import BaseModel
+from agave.chalice.lib.mongoengine.enum_field import EnumField
+from agave.chalice.lib.mongoengine.model_helpers import mongo_to_dict
+from agave.chalice.models import BaseModel
 
 
 class Reference(Document, BaseModel):

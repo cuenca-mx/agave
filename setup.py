@@ -25,7 +25,7 @@ setup(
         'cuenca-validations===2.0.0.dev7',
     ],
     extras_require={
-        'chalice_support': [
+        'chalice': [
             'chalice>=1.16.0,<1.25.1',
             'blinker>=1.4,<1.5',
             'mongoengine>=0.20.0,<0.23.0',

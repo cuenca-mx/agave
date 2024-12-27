@@ -2,8 +2,8 @@ from typing import Dict, NoReturn
 
 from cuenca_validations.errors import WrongCredsError
 
-from agave.fastapi_support import RestApiBlueprint
-from agave.fastapi_support.exc import UnauthorizedError
+from agave.fastapi import RestApiBlueprint
+from agave.fastapi.exc import UnauthorizedError
 
 app = RestApiBlueprint()
 

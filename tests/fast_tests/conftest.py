@@ -13,7 +13,7 @@ from aiobotocore.session import AioSession
 from fastapi.testclient import TestClient
 from mongoengine import Document
 
-from agave.fastapi_support.tasks import sqs_tasks
+from agave.fastapi.tasks import sqs_tasks
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,

@@ -2,7 +2,7 @@ from typing import Any
 
 from starlette_context import context
 
-from agave.fastapi_support import RestApiBlueprint
+from agave.fastapi import RestApiBlueprint
 
 
 class CustomQueryBlueprint(RestApiBlueprint):

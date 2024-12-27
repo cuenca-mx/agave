@@ -1,6 +1,6 @@
 __all__ = ['AuthedRestApiBlueprint']
 
-from agave.chalice_support import RestApiBlueprint
+from agave.chalice import RestApiBlueprint
 
 from .authed import AuthedBlueprint
 

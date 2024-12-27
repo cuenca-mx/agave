@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from agave.fastapi_support.tasks.sqs_celery_client import SqsCeleryClient
+from agave.fastapi.tasks.sqs_celery_client import SqsCeleryClient
 
 CORE_QUEUE_REGION = 'us-east-1'
 
