@@ -2,7 +2,14 @@ import mimetypes
 from typing import Any, Optional, Type, cast
 from urllib.parse import urlencode
 
-from chalice import Blueprint, NotFoundError, Response
+try:
+    from chalice import Blueprint, NotFoundError, Response
+except ImportError:
+    raise ImportError(
+        "You must install agave with [chalice_support] option.\n"
+        "You can install it with: pip install agave[chalice_support]"
+    )
+
 from cuenca_validations.types import QueryParams
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError

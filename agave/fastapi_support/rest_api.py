@@ -3,7 +3,16 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
-from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
+
+try:
+    from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
+except ImportError:
+    raise ImportError(
+        "You must install agave with [fastapi_support] option.\n"
+        "You can install it with: pip install agave[fastapi_support]"
+    )
+
+
 from fastapi.responses import JSONResponse as Response, StreamingResponse
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, Field, ValidationError
