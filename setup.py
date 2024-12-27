@@ -7,15 +7,13 @@ version = SourceFileLoader('version', 'agave/version.py').load_module()
 
 SKIP_VALIDATION_COMMANDS = {"sdist", "bdist_wheel", "egg_info"}
 
-if not SKIP_VALIDATION_COMMANDS.intersection(sys.argv):
-    if not any(arg.startswith('agave[') for arg in sys.argv):
-        sys.stderr.write(
-            "Error: You must install agave with either"
-            " [chalice_support] or [fast_support].\nExample:\n"
-            "  pip install 'agave[chalice_support]'\n"
-            "  pip install 'agave[fast_support]'\n"
-        )
-        sys.exit(1)
+if not any(arg.startswith('agave[') for arg in sys.argv):
+    sys.stderr.write(
+        "Warning: You must install agave with either"
+        " [chalice_support] or [fast_support].\nExample:\n"
+        "  pip install 'agave[chalice_support]'\n"
+        "  pip install 'agave[fast_support]'\n"
+    )
 
 with open('README.md', 'r') as f:
     long_description = f.read()
