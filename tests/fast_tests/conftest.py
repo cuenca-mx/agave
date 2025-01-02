@@ -1,7 +1,6 @@
 import datetime as dt
 import functools
 import os
-import subprocess
 from functools import partial
 from typing import Callable, Dict, Generator, List
 
@@ -185,13 +184,17 @@ def aws_credentials() -> None:
 def aws_endpoint_urls(
     aws_credentials,
 ) -> Generator[Dict[str, str], None, None]:
-    sqs = subprocess.Popen(['moto_server', 'sqs', '-p', '4000'])
+    from moto.server import ThreadedMotoServer
+
+    server = ThreadedMotoServer(port=4000)
+    server.start()
 
     endpoints = dict(
         sqs='http://127.0.0.1:4000/',
     )
     yield endpoints
-    sqs.kill()
+
+    server.stop()
 
 
 @pytest.fixture(autouse=True)
@@ -222,7 +225,11 @@ async def sqs_client():
     session = aiobotocore.session.get_session()
     async with session.create_client('sqs', 'us-east-1') as sqs:
         await sqs.create_queue(
-            QueueName='core.fifo', Attributes={'FifoQueue': 'true'}
+            QueueName='core.fifo',
+            Attributes={
+                'FifoQueue': 'true',
+                'ContentBasedDeduplication': 'true',
+            },
         )
         resp = await sqs.get_queue_url(QueueName='core.fifo')
         sqs.send_message = partial(sqs.send_message, QueueUrl=resp['QueueUrl'])

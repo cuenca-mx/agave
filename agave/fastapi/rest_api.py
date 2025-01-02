@@ -245,7 +245,7 @@ class RestApiBlueprint(APIRouter):
                         media_type=mimetype,
                         headers={
                             'Content-Disposition': (
-                                f'attachment; filename={filename}'
+                                'attachment; ' f'filename={filename}'
                             )
                         },
                     )
@@ -276,7 +276,7 @@ class RestApiBlueprint(APIRouter):
                 f'Make queries in resource {cls.__name__} and filter the '
                 f'result using query parameters.  \n'
                 f'The items are paginated, to iterate over them use the '
-                f'`next_page_uri` included in response.  \n'
+                f'`next_page_uri` included in response.  \n'  # noqa: W604
                 f'If you need only a counter not the data send value `true` '
                 f'in `count` param.'
             )
@@ -299,7 +299,7 @@ class RestApiBlueprint(APIRouter):
                         f'Counter of {cls.__name__} objects that match with '
                         f'query filters.  \n'
                         f'If you need only a counter not the data send value '
-                        f'`true` in `count` param.'
+                        f'`true` in `count` param.'  # noqa: W604
                     ),
                 )
 

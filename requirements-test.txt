@@ -1,20 +1,21 @@
-pytest==7.4.*
-pytest-freezegun==0.4.*
-pytest-cov==4.1.*
-black==22.3.0
-isort==5.10.*
-flake8==4.0.*
-mypy==1.13.0
-pytest-chalice==0.0.*
+#core
+pytest==7.4.4
+pytest-cov==4.1.0
+black==24.10.0
+isort==5.11.5
+flake8==5.0.4
+mypy==1.4.1
 mongomock==4.1.*
 mock==4.0.3
-types-mock==5.1.*
+
+#chalice
+pytest-freezegun==0.4.*
+pytest-chalice==0.0.*
 click==8.0.1
 
-moto[server]==2.2.*
+# fastapi
+moto[server]==5.0.25
 pytest-vcr==1.0.*
 pytest-asyncio==0.15.*
 requests==2.28.*
-boto3==1.20.24
-botocore==1.23.24
 httpx==0.28.1

@@ -1,10 +1,10 @@
 import datetime as dt
 from typing import List
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
 import pytest
 from chalice.test import Client
-from mock import MagicMock, patch
 
 from examples.chalicelib.models import Account, Card, File
 from examples.config import (

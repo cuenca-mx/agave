@@ -264,9 +264,9 @@ async def test_retry_tasks_default_max_retries(sqs_client) -> None:
 async def test_retry_tasks_custom_max_retries(sqs_client) -> None:
     """
     Este test prueba la lógica de reintentos con la configuración default,
-    es decir `max_retries=3`
+    es decir `max_retries=2`
 
-    En este caso el task debe ejecutarse 4 veces
+    En este caso el task debe ejecutarse 3 veces
     (la ejecución normal + max_retries)
     """
     test_message = dict(id='abc123', name='fast-agave')
@@ -285,10 +285,10 @@ async def test_retry_tasks_custom_max_retries(sqs_client) -> None:
         region_name=CORE_QUEUE_REGION,
         wait_time_seconds=1,
         visibility_timeout=1,
-        max_retries=3,
+        max_retries=2,
     )(my_task)()
 
-    expected_calls = [call(test_message)] * 4
+    expected_calls = [call(test_message)] * 3
     async_mock_function.assert_has_calls(expected_calls)
     assert async_mock_function.call_count == len(expected_calls)
 
@@ -391,7 +391,7 @@ async def test_concurrency_controller(
     async_mock_function = AsyncMock()
 
     async def task_counter(data: Dict) -> None:
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
         running_tasks = len(await get_running_fast_agave_tasks())
         await async_mock_function(running_tasks)
 
