@@ -1,7 +1,7 @@
 import asyncio
 import json
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 from uuid import uuid4
 
 from aiobotocore.session import get_session
@@ -37,7 +37,7 @@ class SqsClient:
 
     async def send_message(
         self,
-        data: Union[str, Dict],
+        data: Union[str, dict],
         message_group_id: Optional[str] = None,
     ) -> None:
         await self._sqs.send_message(
@@ -48,7 +48,7 @@ class SqsClient:
 
     def send_message_async(
         self,
-        data: Union[str, Dict],
+        data: Union[str, dict],
         message_group_id: Optional[str] = None,
     ) -> asyncio.Task:
         task = asyncio.create_task(self.send_message(data, message_group_id))

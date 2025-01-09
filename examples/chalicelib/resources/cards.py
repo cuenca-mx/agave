@@ -1,5 +1,3 @@
-from typing import Dict
-
 from chalice import Response
 
 from agave.core.filters import generic_query
@@ -22,7 +20,7 @@ class Card:
         return Response(data)
 
     @staticmethod
-    def query(response: Dict):
+    def query(response: dict):
         for item in response['items']:
             item['number'] = '*' * 16
         return response

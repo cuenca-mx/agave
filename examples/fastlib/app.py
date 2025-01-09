@@ -1,5 +1,4 @@
 import asyncio
-from typing import Dict
 
 import mongomock as mongomock
 from fastapi import FastAPI
@@ -24,7 +23,7 @@ app.add_middleware(FastAgaveErrorHandler)  # type: ignore
 
 
 @app.get('/')
-async def iam_healty() -> Dict:
+async def iam_healty() -> dict:
     return dict(greeting="I'm healthy!!!")
 
 

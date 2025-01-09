@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
@@ -283,7 +283,7 @@ class RestApiBlueprint(APIRouter):
 
             # Build dynamically types for query response
             class QueryResponse(BaseModel):
-                items: Optional[List[response_model]] = Field(
+                items: Optional[list[response_model]] = Field(
                     [],
                     description=(
                         f'List of {cls.__name__} that match with query '
@@ -407,7 +407,7 @@ class RestApiBlueprint(APIRouter):
         return wrapper_resource_class
 
 
-def json_openapi(code: int, description, samples: List[Dict]) -> dict:
+def json_openapi(code: int, description, samples: list[dict]) -> dict:
     examples = {f'example_{i}': ex for i, ex in enumerate(samples)}
     return {
         code: {

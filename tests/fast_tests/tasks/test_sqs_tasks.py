@@ -2,7 +2,7 @@ import asyncio
 import datetime as dt
 import json
 import uuid
-from typing import Dict, Union
+from typing import Union
 from unittest.mock import AsyncMock, call, patch
 
 import aiobotocore.client
@@ -35,7 +35,7 @@ async def test_execute_tasks(sqs_client) -> None:
 
     async_mock_function = AsyncMock()
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     await task(
@@ -153,7 +153,7 @@ async def test_not_execute_tasks(sqs_client) -> None:
     """
     async_mock_function = AsyncMock()
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     # No escribimos un mensaje en el queue
@@ -205,7 +205,7 @@ async def test_http_client_error_tasks(sqs_client) -> None:
 
     async_mock_function = AsyncMock(return_value=None)
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     with patch(
@@ -242,7 +242,7 @@ async def test_retry_tasks_default_max_retries(sqs_client) -> None:
 
     async_mock_function = AsyncMock(side_effect=RetryTask)
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     await task(
@@ -277,7 +277,7 @@ async def test_retry_tasks_custom_max_retries(sqs_client) -> None:
 
     async_mock_function = AsyncMock(side_effect=RetryTask)
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     await task(
@@ -316,7 +316,7 @@ async def test_does_not_retry_on_unhandled_exceptions(sqs_client) -> None:
         side_effect=Exception('something went wrong :(')
     )
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     await task(
@@ -359,7 +359,7 @@ async def test_retry_tasks_with_countdown(sqs_client) -> None:
 
     async_mock_function = AsyncMock(side_effect=RetryTask(countdown=2))
 
-    async def countdown_tester(data: Dict):
+    async def countdown_tester(data: dict):
         await async_mock_function(data, dt.datetime.now())
 
     await task(
@@ -390,7 +390,7 @@ async def test_concurrency_controller(
 
     async_mock_function = AsyncMock()
 
-    async def task_counter(data: Dict) -> None:
+    async def task_counter(data: dict) -> None:
         await asyncio.sleep(5)
         running_tasks = len(await get_running_fast_agave_tasks())
         await async_mock_function(running_tasks)
@@ -422,7 +422,7 @@ async def test_invalid_json_message(sqs_client) -> None:
 
     async_mock_function = AsyncMock()
 
-    async def my_task(data: Dict) -> None:
+    async def my_task(data: dict) -> None:
         await async_mock_function(data)
 
     await task(

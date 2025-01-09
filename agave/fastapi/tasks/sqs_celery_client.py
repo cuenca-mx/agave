@@ -2,14 +2,14 @@ import asyncio
 import json
 from base64 import b64encode
 from dataclasses import dataclass
-from typing import Dict, Iterable, Optional
+from typing import Iterable, Optional
 from uuid import uuid4
 
 from agave.fastapi.tasks.sqs_client import SqsClient
 
 
 def _build_celery_message(
-    task_name: str, args_: Iterable, kwargs_: Dict
+    task_name: str, args_: Iterable, kwargs_: dict
 ) -> str:
     task_id = str(uuid4())
     # la definición de esta plantila se encuentra en:
@@ -60,7 +60,7 @@ class SqsCeleryClient(SqsClient):
         self,
         name: str,
         args: Optional[Iterable] = None,
-        kwargs: Optional[Dict] = None,
+        kwargs: Optional[dict] = None,
     ) -> None:
         celery_message = _build_celery_message(name, args or (), kwargs or {})
         await super().send_message(celery_message)
@@ -69,7 +69,7 @@ class SqsCeleryClient(SqsClient):
         self,
         name: str,
         args: Optional[Iterable] = None,
-        kwargs: Optional[Dict] = None,
+        kwargs: Optional[dict] = None,
     ) -> asyncio.Task:
         celery_message = _build_celery_message(name, args or (), kwargs or {})
         return super().send_message_async(celery_message)

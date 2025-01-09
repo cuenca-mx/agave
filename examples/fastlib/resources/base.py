@@ -1,4 +1,4 @@
-from typing import Dict, NoReturn
+from typing import NoReturn
 
 from cuenca_validations.errors import WrongCredsError
 
@@ -9,7 +9,7 @@ app = RestApiBlueprint()
 
 
 @app.get('/healthy_auth')
-def health_auth_check() -> Dict:
+def health_auth_check() -> dict:
     return dict(greeting="I'm authenticated and healthy !!!")
 
 

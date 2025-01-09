@@ -1,11 +1,11 @@
 import functools
 import json as jsonlib
-from typing import Callable, Dict, Generator
+from typing import Callable, Generator
 
 FuncDecorator = Callable[..., Generator]
 
 
-def auth_header(username: str, password: str) -> Dict:
+def auth_header(username: str, password: str) -> dict:
     creds = username + password
     return {
         'Authorization': f'Basic {creds}',

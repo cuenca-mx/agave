@@ -2,7 +2,7 @@ import datetime as dt
 import functools
 import os
 from functools import partial
-from typing import Callable, Dict, Generator, List
+from typing import Callable, Generator, List
 
 import aiobotocore
 import boto3
@@ -183,7 +183,7 @@ def aws_credentials() -> None:
 @pytest.fixture(scope='session')
 def aws_endpoint_urls(
     aws_credentials,
-) -> Generator[Dict[str, str], None, None]:
+) -> Generator[dict[str, str], None, None]:
     from moto.server import ThreadedMotoServer
 
     server = ThreadedMotoServer(port=4000)
