@@ -1,21 +1,21 @@
 #core
-pytest==7.4.4
-pytest-cov==4.1.0
+pytest==8.3.4
+pytest-cov==6.0.0
 black==24.10.0
-isort==5.11.5
-flake8==5.0.4
-mypy==1.4.1
-mongomock==4.1.*
-mock==4.0.3
+isort==5.13.2
+flake8==7.1.1
+mypy==1.14.1
+mongomock==4.3.0
+mock==5.1.0
 
 #chalice
-pytest-freezegun==0.4.*
-pytest-chalice==0.0.*
-click==8.0.1
+pytest-freezegun==0.4.2
+pytest-chalice==0.0.5
+click==8.1.8
 
 # fastapi
-moto[server]==5.0.25
-pytest-vcr==1.0.*
-pytest-asyncio==0.15.*
-requests==2.28.*
+moto[server]==5.0.26
+pytest-vcr==1.0.2
+pytest-asyncio==0.18.*
+requests==2.32.3
 httpx==0.28.1

@@ -22,21 +22,21 @@ setup(
     package_data=dict(agave=['py.typed']),
     python_requires='>=3.9',
     install_requires=[
-        'cuenca-validations==2.0.0.dev9',
+        'cuenca-validations==2.0.0.dev12',
     ],
     extras_require={
         'chalice': [
             'chalice==1.31.3',
-            'blinker==1.4',
-            'mongoengine==0.27.0',
-            'dnspython==2.1.0',
+            'blinker==1.9.0',
+            'mongoengine==0.29.1',
+            'dnspython==2.7.0',
         ],
         'fastapi': [
-            'aiobotocore==2.16.1',
-            'types-aiobotocore-sqs==2.5.0',
+            'aiobotocore==2.17.0',
+            'types-aiobotocore-sqs==2.17.0',
             'fastapi==0.115.6',
-            'mongoengine-plus==0.2.3.dev1',
-            'starlette-context==0.3.3',
+            'mongoengine-plus==0.2.3.dev4',
+            'starlette-context==0.3.6',
         ],
     },
     classifiers=[
