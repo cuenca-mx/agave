@@ -28,4 +28,4 @@ async def dummy_task(message) -> None:
 
 @task(queue_url=QUEUE2_URL, region_name='us-east-1')
 async def task_validator(message: Union[User, Company]) -> None:
-    print(message.dict())
+    print(message.model_dump())

@@ -19,7 +19,7 @@ def generic_query(query: QueryParams, excluded: List[str] = []) -> Q:
         'key',
         *excluded,
     }
-    fields = query.dict(exclude=exclude_fields)
+    fields = query.model_dump(exclude=exclude_fields)
     if 'count' in fields:
         del fields['count']
     return filters & Q(**fields)

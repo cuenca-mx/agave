@@ -394,7 +394,7 @@ class RestApiBlueprint(APIRouter):
                 next_page_uri: Optional[str] = None
                 if wants_more and has_more:
                     query.created_before = item_dicts[-1]['created_at']
-                    params = query.dict()
+                    params = query.model_dump()
                     if self.user_id_filter_required():
                         params.pop('user_id')
                     if self.platform_id_filter_required():
