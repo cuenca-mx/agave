@@ -21,7 +21,7 @@ class BillerQuery(QueryParams):
 
 
 class UserQuery(QueryParams):
-    platform_id: str
+    platform_id: Optional[str] = None
 
 
 class AccountRequest(BaseModel):
