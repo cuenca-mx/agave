@@ -2,7 +2,7 @@ import datetime as dt
 import functools
 import os
 from functools import partial
-from typing import Callable, Generator, List
+from typing import Callable, Generator
 
 import aiobotocore
 import boto3
@@ -28,7 +28,7 @@ FuncDecorator = Callable[..., Generator]
 def collection_fixture(model: Document) -> Callable[..., FuncDecorator]:
     def collection_decorator(func: Callable) -> FuncDecorator:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> Generator[List, None, None]:
+        def wrapper(*args, **kwargs) -> Generator[list, None, None]:
             items = func(*args, **kwargs)
             for item in items:
                 item.save()
@@ -48,7 +48,7 @@ def client() -> Generator[TestClient, None, None]:
 
 @pytest.fixture
 @collection_fixture(Account)
-def accounts() -> List[Account]:
+def accounts() -> list[Account]:
     return [
         Account(
             name='Frida Kahlo',
@@ -90,23 +90,23 @@ def accounts() -> List[Account]:
 
 
 @pytest.fixture
-def account(accounts: List[Account]) -> Generator[Account, None, None]:
+def account(accounts: list[Account]) -> Generator[Account, None, None]:
     yield accounts[0]
 
 
 @pytest.fixture
-def user(users: List[User]) -> Generator[User, None, None]:
+def user(users: list[User]) -> Generator[User, None, None]:
     yield users[0]
 
 
 @pytest.fixture
-def other_account(accounts: List[Account]) -> Generator[Account, None, None]:
+def other_account(accounts: list[Account]) -> Generator[Account, None, None]:
     yield accounts[-1]
 
 
 @pytest.fixture
 @collection_fixture(File)
-def files() -> List[File]:
+def files() -> list[File]:
     return [
         File(
             name='Frida Kahlo',
@@ -116,13 +116,13 @@ def files() -> List[File]:
 
 
 @pytest.fixture
-def file(files: List[File]) -> Generator[File, None, None]:
+def file(files: list[File]) -> Generator[File, None, None]:
     yield files[0]
 
 
 @pytest.fixture
 @collection_fixture(Card)
-def cards() -> List[Card]:
+def cards() -> list[Card]:
     return [
         Card(
             number='5434000000000001',
@@ -148,13 +148,13 @@ def cards() -> List[Card]:
 
 
 @pytest.fixture
-def card(cards: List[Card]) -> Generator[Card, None, None]:
+def card(cards: list[Card]) -> Generator[Card, None, None]:
     yield cards[0]
 
 
 @pytest.fixture
 @collection_fixture(User)
-def users() -> List[User]:
+def users() -> list[User]:
     return [
         User(name='User1', platform_id=TEST_DEFAULT_PLATFORM_ID),
         User(name='User2', platform_id=TEST_SECOND_PLATFORM_ID),
@@ -163,7 +163,7 @@ def users() -> List[User]:
 
 @pytest.fixture
 @collection_fixture(Biller)
-def billers() -> List[Biller]:
+def billers() -> list[Biller]:
     return [
         Biller(name='Telcel'),
         Biller(name='ATT'),

@@ -1,5 +1,4 @@
 import datetime as dt
-from typing import List
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
@@ -143,7 +142,7 @@ def test_query_all_with_limit(client: Client) -> None:
 
 
 @pytest.mark.usefixtures('accounts')
-def test_query_all_resource(client: Client, accounts: List[Account]) -> None:
+def test_query_all_resource(client: Client, accounts: list[Account]) -> None:
     accounts = list(reversed(accounts))
 
     items = []
@@ -160,7 +159,7 @@ def test_query_all_resource(client: Client, accounts: List[Account]) -> None:
 
 
 def test_query_all_filter_active(
-    client: Client, account: Account, accounts: List[Account]
+    client: Client, account: Account, accounts: list[Account]
 ) -> None:
     query_params = dict(active=True)
     # Query active items
@@ -188,7 +187,7 @@ def test_query_all_filter_active(
 
 
 def test_query_all_created_after(
-    client: Client, accounts: List[Account]
+    client: Client, accounts: list[Account]
 ) -> None:
     created_at = dt.datetime(2020, 2, 1)
     expected_length = len([a for a in accounts if a.created_at > created_at])
@@ -202,7 +201,7 @@ def test_query_all_created_after(
 
 @patch(PLATFORM_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_query_platform_id_filter_required(
-    client: Client, accounts: List[Account]
+    client: Client, accounts: list[Account]
 ) -> None:
     accounts = list(
         reversed(
@@ -226,7 +225,7 @@ def test_query_platform_id_filter_required(
 
 @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_query_user_id_filter_required(
-    client: Client, accounts: List[Account]
+    client: Client, accounts: list[Account]
 ) -> None:
     accounts = list(
         reversed([a for a in accounts if a.user_id == TEST_DEFAULT_USER_ID])

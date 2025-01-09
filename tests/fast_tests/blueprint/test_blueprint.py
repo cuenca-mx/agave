@@ -1,6 +1,5 @@
 import datetime as dt
 from tempfile import TemporaryFile
-from typing import List
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
@@ -139,7 +138,7 @@ def test_query_all_with_limit(client: TestClient) -> None:
 
 
 def test_query_all_resource(
-    client: TestClient, accounts: List[Account]
+    client: TestClient, accounts: list[Account]
 ) -> None:
     accounts = list(reversed(accounts))
 
@@ -158,7 +157,7 @@ def test_query_all_resource(
 
 
 def test_query_all_created_after(
-    client: TestClient, accounts: List[Account]
+    client: TestClient, accounts: list[Account]
 ) -> None:
     created_at = dt.datetime(2020, 2, 1)
     expected_length = len([a for a in accounts if a.created_at > created_at])
@@ -173,7 +172,7 @@ def test_query_all_created_after(
 
 @patch(PLATFORM_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_query_platform_id_filter_required(
-    client: TestClient, accounts: List[Account]
+    client: TestClient, accounts: list[Account]
 ) -> None:
     accounts = list(
         reversed(
@@ -197,7 +196,7 @@ def test_query_platform_id_filter_required(
 
 @patch(USER_ID_FILTER_REQUIRED, MagicMock(return_value=True))
 def test_query_user_id_filter_required(
-    client: TestClient, accounts: List[Account]
+    client: TestClient, accounts: list[Account]
 ) -> None:
     accounts = list(
         reversed([a for a in accounts if a.user_id == TEST_DEFAULT_USER_ID])
