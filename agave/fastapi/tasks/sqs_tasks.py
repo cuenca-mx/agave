@@ -1,6 +1,8 @@
 import asyncio
 import json
+import logging
 import os
+import sys
 from functools import wraps
 from itertools import count
 from json import JSONDecodeError
@@ -11,6 +13,16 @@ from aiobotocore.session import get_session
 from pydantic import validate_call
 
 from ..exc import RetryTask
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+    ],
+)
+
+logger = logging.getLogger(__name__)
 
 AWS_DEFAULT_REGION = os.getenv('AWS_DEFAULT_REGION', '')
 
@@ -118,6 +130,19 @@ def task(
                 ):
                     try:
                         body = json.loads(message['Body'])
+                        task_info = {
+                            'task_with_validators': (
+                                task_with_validators.__name__
+                            ),
+                            'body': body,
+                            'sqs': sqs,
+                            'queue_url': queue_url,
+                            'message_receipt_handle': message['ReceiptHandle'],
+                            'max_retries': max_retries,
+                        }
+                        logger.info(
+                            f"Task Info: {json.dumps(task_info, default=str)}"
+                        )
                     except JSONDecodeError:
                         continue
 
