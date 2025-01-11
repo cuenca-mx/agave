@@ -1,4 +1,3 @@
-from fastapi import Request
 from fastapi.responses import JSONResponse as Response
 
 from ..models.transactions import Transaction as TransactionModel
@@ -10,5 +9,5 @@ class Transaction:
     model = TransactionModel
 
     @staticmethod
-    async def create(request: Request) -> Response:
+    async def create() -> Response:
         return Response(content={}, status_code=201)
