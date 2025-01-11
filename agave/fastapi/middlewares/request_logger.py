@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from typing import Any
+from typing import Any, Union
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -64,7 +64,7 @@ def obfuscate_sensitive_body(
     return result
 
 
-def parse_body(body: bytes) -> dict | None:
+def parse_body(body: bytes) -> Union[dict, None]:
     """
     Attempts to decode the request body.
     """
