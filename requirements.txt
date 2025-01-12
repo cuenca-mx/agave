@@ -1,5 +1,5 @@
 #core
-cuenca-validations==2.0.0.dev12
+cuenca-validations==2.0.0.dev13
 
 #chalice
 blinker==1.9.0

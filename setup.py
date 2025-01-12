@@ -22,7 +22,7 @@ setup(
     package_data=dict(agave=['py.typed']),
     python_requires='>=3.9',
     install_requires=[
-        'cuenca-validations==2.0.0.dev12',
+        'cuenca-validations==2.0.0.dev13',
     ],
     extras_require={
         'chalice': [
