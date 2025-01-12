@@ -4,6 +4,8 @@ import sys
 from typing import Any, Union
 
 from fastapi import Request
+from fastapi.routing import APIRoute
+from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
@@ -52,12 +54,15 @@ def obfuscate_sensitive_headers(
 
 def obfuscate_sensitive_body(
     body: dict[str, Any],
+    model_name: str,
     sensitive_fields: list[str],
     prefix_length: int = 5,
 ) -> dict[str, Any]:
     result = body.copy()
-    for field in sensitive_fields:
-        if field in result:
+    for long_name_field in sensitive_fields:
+        field = long_name_field.split('.')[-1]
+        real_name_field = f"{model_name}.{field}"
+        if real_name_field in sensitive_fields and field in result:
             value = result[field]
             if isinstance(value, str) and len(value) > 4:
                 result[field] = '*' * prefix_length + value[-4:]
@@ -81,27 +86,6 @@ class FastAgaveRequestLogger(BaseHTTPMiddleware):
         try:
 
             body = await request.body()
-            body_decoded = parse_body(body)
-            obfuscated_request_body = None
-            if body_decoded:
-                obfuscated_request_body = obfuscate_sensitive_body(
-                    body_decoded, SENSITIVE_REQUEST_MODEL_FIELDS
-                )
-            obfuscated_headers = obfuscate_sensitive_headers(
-                headers, SENSITIVE_HEADERS
-            )
-
-            request_info = {
-                "method": request.method,
-                "url": str(request.url),
-                "headers": obfuscated_headers,
-                "body": obfuscated_request_body,
-            }
-
-            logger.info(
-                f"Request Info: {json.dumps(request_info, default=str)}"
-            )
-
             response = await call_next(request)
 
             # Get response body
@@ -118,11 +102,48 @@ class FastAgaveRequestLogger(BaseHTTPMiddleware):
                 media_type=response.media_type,
             )
 
+            # Get request and response models
+            route = request.scope.get("route")
+            response_model = ""
+            request_model = ""
+            if isinstance(route, APIRoute) and hasattr(
+                route.response_model, "__name__"
+            ):  # pragma: no cover
+                response_model = route.response_model.__name__
+                for dep in route.dependant.body_params:
+                    if isinstance(dep.type_, type) and issubclass(
+                        dep.type_, BaseModel
+                    ):  # pragma: no cover
+                        request_model = dep.type_.__name__
+
+            body_decoded = parse_body(body)
+            obfuscated_request_body = None
+            if body_decoded:
+                obfuscated_request_body = obfuscate_sensitive_body(
+                    body_decoded, request_model, SENSITIVE_REQUEST_MODEL_FIELDS
+                )
+            obfuscated_headers = obfuscate_sensitive_headers(
+                headers, SENSITIVE_HEADERS
+            )
+
+            request_info = {
+                "method": request.method,
+                "url": str(request.url),
+                "headers": obfuscated_headers,
+                "body": obfuscated_request_body,
+            }
+
+            logger.info(
+                f"Request Info: {json.dumps(request_info, default=str)}"
+            )
+
             parsed_body = parse_body(response_body)
             obfuscated_response_body = None
             if parsed_body and isinstance(parsed_body, dict):
                 obfuscated_response_body = obfuscate_sensitive_body(
-                    parsed_body, SENSITIVE_RESPONSE_MODEL_FIELDS
+                    parsed_body,
+                    response_model,
+                    SENSITIVE_RESPONSE_MODEL_FIELDS,
                 )
 
             response_info = {

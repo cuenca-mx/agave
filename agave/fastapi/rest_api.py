@@ -452,6 +452,6 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
 
     for field_name, field_type in model.__annotations__.items():
         if field_type is SecretStr:
-            sensitive_fields.add(field_name)
+            sensitive_fields.add(f"{model.__name__}.{field_name}")
 
     return sensitive_fields

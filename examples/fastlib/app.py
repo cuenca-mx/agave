@@ -5,8 +5,6 @@ from fastapi import FastAPI
 from mongoengine import connect
 
 from agave.fastapi.middlewares import (
-    SENSITIVE_REQUEST_MODEL_FIELDS,
-    SENSITIVE_RESPONSE_MODEL_FIELDS,
     FastAgaveErrorHandler,
     FastAgaveRequestLogger,
 )
