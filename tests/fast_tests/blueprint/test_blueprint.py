@@ -32,29 +32,6 @@ def test_create_resource(client: TestClient) -> None:
     model.delete()
 
 
-def test_create_api_key(client: TestClient) -> None:
-    """
-    This test verifies the logger middleware properly masks sensitive data:
-    - Request headers
-    - Request body fields
-    - Response body fields
-    """
-    data = dict(
-        user='user', password='My-super-secret-password', short_secret='123'
-    )
-    headers = {
-        'X-Cuenca-LoginId': 'My-secret-login-id',
-        'X-Cuenca-LoginToken': 'My-secret-login-token',
-        'Authorization': '123',
-        'content-type': 'application/json',
-    }
-    resp = client.post('/api_keys', json=data, headers=headers)
-    json_body = resp.json()
-    assert resp.status_code == 201
-    assert json_body['secret'] == 'My-super-secret-key'
-    assert json_body['password'] == 'My-super-secret-password'
-
-
 def test_create_resource_bad_request(client: TestClient) -> None:
     data = dict(invalid_field='some value')
     resp = client.post('/accounts', json=data)

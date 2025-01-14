@@ -1,15 +1,8 @@
-import inspect
 import mimetypes
 from typing import Any, Optional
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
-from pydantic import SecretStr
-
-from .middlewares import (
-    SENSITIVE_REQUEST_MODEL_FIELDS,
-    SENSITIVE_RESPONSE_MODEL_FIELDS,
-)
 
 try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
@@ -115,10 +108,6 @@ class RestApiBlueprint(APIRouter):
                 response_model = cls.response_model
                 response_sample = response_model.schema().get('example')
 
-                # Get sensitive fields from response model
-                sensitive_fields = get_sensitive_fields(response_model)
-                SENSITIVE_RESPONSE_MODEL_FIELDS.extend(sensitive_fields)
-
             """ POST /resource
             Create a FastApi endpoint using the method "create"
 
@@ -127,21 +116,6 @@ class RestApiBlueprint(APIRouter):
             validates form data using `Resource.upload_validator`.
             """
             if hasattr(cls, 'create'):
-
-                # Get input model from create method's type hints
-                create_signature = inspect.signature(cls.create)
-                parameters = list(create_signature.parameters.values())
-                request_model = None
-
-                # Validate if the method has parameters
-                # First one must have a type annotation
-                if parameters:
-                    request_param = parameters[0]
-                    request_model = request_param.annotation
-                    # Get sensitive fields from request model
-                    sensitive_fields = get_sensitive_fields(request_model)
-                    SENSITIVE_REQUEST_MODEL_FIELDS.extend(sensitive_fields)
-
                 route = self.post(
                     path,
                     summary=f'{cls.__name__} - Create',
@@ -442,16 +416,3 @@ def json_openapi(code: int, description, samples: list[dict]) -> dict:
         },
     }
 
-
-def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
-    """
-    Analyzes a Pydantic model and returns a set of field names
-    that are SecretStr type.
-    """
-    sensitive_fields: set[str] = set()
-
-    for field_name, field_type in model.__annotations__.items():
-        if field_type is SecretStr:
-            sensitive_fields.add(f"{model.__name__}.{field_name}")
-
-    return sensitive_fields
