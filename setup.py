@@ -32,11 +32,13 @@ setup(
             'dnspython==2.7.0',
         ],
         'fastapi': [
-            'aiobotocore==2.17.0',
-            'types-aiobotocore-sqs==2.17.0',
             'fastapi==0.115.6',
             'mongoengine-plus==0.2.3.dev4',
             'starlette-context==0.3.6',
+        ],
+        'tasks': [
+            'aiobotocore==2.17.0',
+            'types-aiobotocore-sqs==2.17.0',
         ],
     },
     classifiers=[

@@ -4,8 +4,14 @@ from dataclasses import dataclass, field
 from typing import Optional, Union
 from uuid import uuid4
 
-from aiobotocore.session import get_session
-from types_aiobotocore_sqs import SQSClient
+try:
+    from aiobotocore.session import get_session
+    from types_aiobotocore_sqs import SQSClient
+except ImportError:
+    raise ImportError(
+        "You must install agave with [fastapi, tasks] option.\n"
+        "You can install it with: pip install agave[fastapi, tasks]"
+    )
 
 
 @dataclass
