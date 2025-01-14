@@ -4,10 +4,7 @@ import mongomock as mongomock
 from fastapi import FastAPI
 from mongoengine import connect
 
-from agave.fastapi.middlewares import (
-    FastAgaveErrorHandler,
-    FastAgaveRequestLogger,
-)
+from agave.fastapi.middlewares import AgaveErrorHandler, FastAgaveRequestLogger
 
 from .middlewares import AuthedMiddleware
 from .resources import app as resources
@@ -24,7 +21,7 @@ app.include_router(resources)
 
 app.add_middleware(FastAgaveRequestLogger)
 app.add_middleware(AuthedMiddleware)
-app.add_middleware(FastAgaveErrorHandler)  # type: ignore
+app.add_middleware(AgaveErrorHandler)
 
 
 @app.get('/')

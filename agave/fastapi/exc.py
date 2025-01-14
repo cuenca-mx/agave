@@ -3,58 +3,58 @@ from typing import Optional
 
 
 @dataclass
-class FastAgaveError(Exception):
+class AgaveError(Exception):
     error: str
     status_code: int
 
 
 @dataclass
-class BadRequestError(FastAgaveError):
+class BadRequestError(AgaveError):
     status_code: int = 400
 
 
 @dataclass
-class UnauthorizedError(FastAgaveError):
+class UnauthorizedError(AgaveError):
     status_code: int = 401
 
 
 @dataclass
-class ForbiddenError(FastAgaveError):
+class ForbiddenError(AgaveError):
     status_code: int = 403
 
 
 @dataclass
-class NotFoundError(FastAgaveError):
+class NotFoundError(AgaveError):
     status_code: int = 404
 
 
 @dataclass
-class MethodNotAllowedError(FastAgaveError):
+class MethodNotAllowedError(AgaveError):
     status_code: int = 405
 
 
 @dataclass
-class ConflictError(FastAgaveError):
+class ConflictError(AgaveError):
     status_code: int = 409
 
 
 @dataclass
-class UnprocessableEntity(FastAgaveError):
+class UnprocessableEntity(AgaveError):
     status_code: int = 422
 
 
 @dataclass
-class TooManyRequests(FastAgaveError):
+class TooManyRequests(AgaveError):
     status_code: int = 429
 
 
 @dataclass
-class FastAgaveViewError(FastAgaveError):
+class AgaveViewError(AgaveError):
     status_code: int = 500
 
 
 @dataclass
-class ServiceUnavailableError(FastAgaveError):
+class ServiceUnavailableError(AgaveError):
     status_code: int = 503
 
 

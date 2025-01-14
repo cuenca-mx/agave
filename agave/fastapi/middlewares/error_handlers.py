@@ -8,10 +8,10 @@ from starlette.middleware.base import (
 )
 from starlette.routing import Match
 
-from ..exc import FastAgaveError, MethodNotAllowedError, NotFoundError
+from ..exc import AgaveError, MethodNotAllowedError, NotFoundError
 
 
-class FastAgaveErrorHandler(BaseHTTPMiddleware):
+class AgaveErrorHandler(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
@@ -26,7 +26,7 @@ class FastAgaveErrorHandler(BaseHTTPMiddleware):
                     error=str(exc),
                 ),
             )
-        except FastAgaveError as exc:
+        except AgaveError as exc:
             return JSONResponse(
                 status_code=exc.status_code, content=dict(error=exc.error)
             )
