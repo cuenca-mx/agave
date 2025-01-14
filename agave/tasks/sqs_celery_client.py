@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 from uuid import uuid4
 
-from agave.fastapi.tasks.sqs_client import SqsClient
+from agave.tasks.sqs_client import SqsClient
 
 
 def _build_celery_message(

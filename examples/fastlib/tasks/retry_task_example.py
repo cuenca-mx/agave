@@ -1,7 +1,7 @@
 import random
 
-from agave.fastapi.exc import RetryTask
-from agave.fastapi.tasks.sqs_tasks import task
+from agave.core.exc import RetryTask
+from agave.tasks.sqs_tasks import task
 
 # Esta URL es solo un mock de la queue.
 # Debes reemplazarla con la URL de tu queue

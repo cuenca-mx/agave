@@ -8,7 +8,7 @@ from starlette.middleware.base import (
 )
 from starlette.routing import Match
 
-from ..exc import AgaveError, MethodNotAllowedError, NotFoundError
+from ...core.exc import AgaveError, MethodNotAllowedError, NotFoundError
 
 
 class AgaveErrorHandler(BaseHTTPMiddleware):

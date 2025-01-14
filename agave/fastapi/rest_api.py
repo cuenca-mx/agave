@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field, ValidationError
 from starlette_context import context
 
 from ..core.blueprints.decorators import copy_attributes
-from .exc import NotFoundError, UnprocessableEntity
+from ..core.exc import NotFoundError, UnprocessableEntity
 
 SAMPLE_404 = {
     "summary": "Not found item",
@@ -415,4 +415,3 @@ def json_openapi(code: int, description, samples: list[dict]) -> dict:
             'content': {'application/json': {'examples': examples}},
         },
     }
-

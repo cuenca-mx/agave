@@ -12,7 +12,7 @@ from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session
 from pydantic import validate_call
 
-from ..exc import RetryTask
+from ..core.exc import RetryTask
 
 logging.basicConfig(
     level=logging.INFO,
