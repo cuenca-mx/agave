@@ -2,8 +2,7 @@ import datetime as dt
 
 import pytest
 from mongoengine import Document
-
-from agave.chalice.lib.mongoengine.event_handlers import updated_at
+from mongoengine_plus.models.event_handlers import updated_at
 
 
 @updated_at.apply

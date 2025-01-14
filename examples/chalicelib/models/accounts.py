@@ -1,7 +1,7 @@
 from mongoengine import DateTimeField, Document, StringField
+from mongoengine_plus.models.helpers import uuid_field
 
 from agave.chalice.models import BaseModel
-from agave.chalice.models.helpers import uuid_field
 
 
 class Account(BaseModel, Document):

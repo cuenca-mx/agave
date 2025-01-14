@@ -21,9 +21,9 @@ from mongoengine import (
     ListField,
     StringField,
 )
+from mongoengine_plus.models.helpers import mongo_to_dict
+from mongoengine_plus.types import EnumField
 
-from agave.chalice.lib.mongoengine.enum_field import EnumField
-from agave.chalice.lib.mongoengine.model_helpers import mongo_to_dict
 from agave.chalice.models import BaseModel
 
 

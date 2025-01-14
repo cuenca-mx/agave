@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from ..lib.mongoengine.model_helpers import mongo_to_dict
+from mongoengine_plus.models.helpers import mongo_to_dict
 
 
 class BaseModel:
