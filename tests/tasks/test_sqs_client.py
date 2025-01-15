@@ -1,13 +1,10 @@
 import json
 
-import pytest
-
 from agave.tasks.sqs_client import SqsClient
 
 CORE_QUEUE_REGION = 'us-east-1'
 
 
-@pytest.mark.asyncio
 async def test_send_message(sqs_client) -> None:
     data1 = dict(hola='mundo')
     data2 = dict(foo='bar')
@@ -25,7 +22,6 @@ async def test_send_message(sqs_client) -> None:
     assert message == data2
 
 
-@pytest.mark.asyncio
 async def test_send_message_async(sqs_client) -> None:
     data1 = dict(hola='mundo')
 

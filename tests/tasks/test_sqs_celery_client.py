@@ -1,14 +1,11 @@
 import base64
 import json
 
-import pytest
-
 from agave.tasks.sqs_celery_client import SqsCeleryClient
 
 CORE_QUEUE_REGION = 'us-east-1'
 
 
-@pytest.mark.asyncio
 async def test_send_task(sqs_client) -> None:
     args = [10, 'foo']
     kwargs = dict(hola='mundo')
@@ -32,7 +29,6 @@ async def test_send_task(sqs_client) -> None:
     await queue.close()
 
 
-@pytest.mark.asyncio
 async def test_send_background_task(sqs_client) -> None:
     args = [10, 'foo']
     kwargs = dict(hola='mundo')

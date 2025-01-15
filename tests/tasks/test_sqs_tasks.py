@@ -6,7 +6,6 @@ from typing import Union
 from unittest.mock import AsyncMock, call, patch
 
 import aiobotocore.client
-import pytest
 from aiobotocore.httpsession import HTTPClientError
 from pydantic import BaseModel
 
@@ -20,7 +19,6 @@ from agave.tasks.sqs_tasks import (
 CORE_QUEUE_REGION = 'us-east-1'
 
 
-@pytest.mark.asyncio
 async def test_execute_tasks(sqs_client) -> None:
     """
     Happy path: Se obtiene el mensaje y se ejecuta el task exitosamente.
@@ -52,7 +50,6 @@ async def test_execute_tasks(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-@pytest.mark.asyncio
 async def test_execute_tasks_with_validator(sqs_client) -> None:
     class Validator(BaseModel):
         id: str
@@ -94,7 +91,6 @@ async def test_execute_tasks_with_validator(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-@pytest.mark.asyncio
 async def test_execute_tasks_with_union_validator(sqs_client) -> None:
     class User(BaseModel):
         id: str
@@ -146,7 +142,6 @@ async def test_execute_tasks_with_union_validator(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-@pytest.mark.asyncio
 async def test_not_execute_tasks(sqs_client) -> None:
     """
     Este caso es cuando el queue está vacío. No hay nada que ejecutar
@@ -169,7 +164,6 @@ async def test_not_execute_tasks(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-@pytest.mark.asyncio
 async def test_http_client_error_tasks(sqs_client) -> None:
     """
     Este test prueba el caso cuando hay un error de conexión al intentar
@@ -221,7 +215,6 @@ async def test_http_client_error_tasks(sqs_client) -> None:
         async_mock_function.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_retry_tasks_default_max_retries(sqs_client) -> None:
     """
     Este test prueba la lógica de reintentos con la configuración default,
@@ -260,7 +253,6 @@ async def test_retry_tasks_default_max_retries(sqs_client) -> None:
     assert 'Messages' not in resp
 
 
-@pytest.mark.asyncio
 async def test_retry_tasks_custom_max_retries(sqs_client) -> None:
     """
     Este test prueba la lógica de reintentos con la configuración default,
@@ -297,7 +289,6 @@ async def test_retry_tasks_custom_max_retries(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-@pytest.mark.asyncio
 async def test_does_not_retry_on_unhandled_exceptions(sqs_client) -> None:
     """
     Este caso prueba que las excepciones no controladas no se reintentan por
@@ -335,7 +326,6 @@ async def test_does_not_retry_on_unhandled_exceptions(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-@pytest.mark.asyncio
 async def test_retry_tasks_with_countdown(sqs_client) -> None:
     """
     Este test prueba la lógica de reintentos con un countdown,
@@ -376,7 +366,6 @@ async def test_retry_tasks_with_countdown(sqs_client) -> None:
     assert 'Messages' not in resp
 
 
-@pytest.mark.asyncio
 async def test_concurrency_controller(
     sqs_client,
 ) -> None:
@@ -408,7 +397,6 @@ async def test_concurrency_controller(
     assert max(running_tasks) == 2
 
 
-@pytest.mark.asyncio
 async def test_invalid_json_message(sqs_client) -> None:
     """
     Este test verifica que los mensajes con JSON inválido son ignorados
