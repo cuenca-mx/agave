@@ -3,31 +3,53 @@
 [![codecov](https://codecov.io/gh/cuenca-mx/agave/branch/main/graph/badge.svg)](https://codecov.io/gh/cuenca-mx/agave)
 [![PyPI](https://img.shields.io/pypi/v/agave.svg)](https://pypi.org/project/agave/)
 
-Agave is a library that implement rest_api across the use of Blueprints based on Chalice Aws.
+Agave is a library for implementing REST APIs using Blueprints, designed to work with Chalice AWS or FastAPI. It provides a convenient way to send and receive JSON data through endpoints for querying, modifying, and creating content.
 
-this library allow send and receive JSON data to these endpoints to query, modify and create content.
+## Installation
 
-Install agave using pip:
+
+### For Chalice
+
+To use Agave with Chalice, install it using pip:
 
 ```bash
-pip install agave==0.0.2.dev0
+pip install agave[chalice]
 ```
 
-You can use agave for blueprint like this:
+You can then create a REST API blueprint as follows:
 ```python
-
-from agave.blueprints.rest_api import RestApiBlueprint
-
+from agave.chalice import RestApiBlueprint
 ```
 
-agave include helpers for mongoengine, for example:
+### For FastAPI
+To use Agave with FastAPI, install it with the [fastapi] option:
+
+```bash
+pip install agave[fastapi]
+```
+
+Create a REST API blueprint for FastAPI like this:
+
 ```python
-
-from agave.models.helpers import (uuid_field, mongo_to_dict, EnumField, updated_at, list_field_to_dict)
-
+from agave.fastapi import RestApiBlueprint
 ```
 
-Correr tests
+### Tasks for FastAPI
+
+If you want to use tasks with FastAPI, install Agave with the [fastapi,tasks] option:
+```bash
+pip install agave[fastapi,tasks]
+```
+
+Then, you can define tasks like this:
+```python
+from agave.tasks.sqs_tasks import task
+```
+
+## Running Tests
+
+Run the tests using the following command:
+
 ```bash
 make test
 ```
