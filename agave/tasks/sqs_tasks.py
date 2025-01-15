@@ -1,8 +1,6 @@
 import asyncio
 import json
-import logging
 import os
-import sys
 from functools import wraps
 from itertools import count
 from json import JSONDecodeError
@@ -13,16 +11,6 @@ from aiobotocore.session import get_session
 from pydantic import validate_call
 
 from ..core.exc import RetryTask
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-    ],
-)
-
-logger = logging.getLogger(__name__)
 
 AWS_DEFAULT_REGION = os.getenv('AWS_DEFAULT_REGION', '')
 
@@ -40,21 +28,7 @@ async def run_task(
 ) -> None:
     delete_message = True
     try:
-        result = await task_func(body)
-        parsed_result = (
-            json.loads(result) if isinstance(result, str) else result
-        )
-
-        task_info = {
-            'task_name': (task_func.__name__),
-            'body': body,
-            'result': parsed_result,
-            'sqs': sqs,
-            'queue_url': queue_url,
-            'message_receipt_handle': receipt_handle,
-            'max_retries': max_retries,
-        }
-        logger.info(f"Task Info: {json.dumps(task_info, default=str)}")
+        await task_func(body)
     except RetryTask as retry:
         delete_message = message_receive_count >= max_retries + 1
         if not delete_message and retry.countdown and retry.countdown > 0:

@@ -28,7 +28,6 @@ setup(
         'chalice': [
             'chalice>=1.30.0,<1.35.0',
             'mongoengine>=0.29.0,<0.30.0',
-
         ],
         'fastapi': [
             'fastapi>=0.115.0,<0.120.0',
