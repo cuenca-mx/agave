@@ -20,7 +20,7 @@ class Card:
         return Response(data)
 
     @staticmethod
-    def query(response: dict):
+    def query(response: dict) -> dict:
         for item in response['items']:
             item['number'] = '*' * 16
         return response
