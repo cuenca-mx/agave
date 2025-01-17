@@ -1,8 +1,8 @@
-cuenca-validations==2.0.0.dev13
+cuenca-validations==2.0.0
 chalice==1.31.3
 mongoengine==0.29.1
 fastapi==0.115.6
-mongoengine-plus==0.2.3.dev4
+mongoengine-plus==1.0.0
 python-multipart==0.0.20
 starlette-context==0.3.6
 aiobotocore==2.17.0
