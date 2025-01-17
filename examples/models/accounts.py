@@ -5,7 +5,6 @@ from mongoengine_plus.models.helpers import uuid_field
 
 
 class Account(BaseModel, AsyncDocument):
-    meta = {'db_alias': 'fast_connection'}
     id = StringField(primary_key=True, default=uuid_field('AC'))
     name = StringField(required=True)
     user_id = StringField(required=True)

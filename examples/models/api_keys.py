@@ -5,7 +5,6 @@ from mongoengine_plus.models.helpers import uuid_field
 
 
 class ApiKey(BaseModel, AsyncDocument):
-    meta = {'db_alias': 'fast_connection'}
     id = StringField(primary_key=True, default=uuid_field('AK'))
     secret = StringField(required=True)
     user = StringField(required=True)
