@@ -1,16 +1,9 @@
-#core
 cuenca-validations==2.0.0.dev13
-
-#chalice
 chalice==1.31.3
 mongoengine==0.29.1
-
-#fastapi
 fastapi==0.115.6
 mongoengine-plus==0.2.3.dev4
 python-multipart==0.0.20
 starlette-context==0.3.6
-
-#tasks
 aiobotocore==2.17.0
 types-aiobotocore-sqs==2.17.0
