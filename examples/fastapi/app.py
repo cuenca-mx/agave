@@ -6,9 +6,9 @@ from mongoengine import connect
 
 from agave.fastapi.middlewares import AgaveErrorHandler
 
+from ..tasks.task_example import dummy_task, task_validator
 from .middlewares import AuthedMiddleware
 from .resources import app as resources
-from .tasks.task_example import dummy_task, task_validator
 
 connect(
     host='mongodb://localhost:27017/db',
