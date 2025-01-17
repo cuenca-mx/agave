@@ -1,7 +1,7 @@
 from agave.core.filters import generic_query
 
 from ...validators import BillerQuery
-from ..models import Biller as BillerModel
+from ...models import Biller as BillerModel
 from .base import app
 
 

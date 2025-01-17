@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse as Response
 from agave.core.filters import generic_query
 
 from ...validators import CardQuery
-from ..models import Card as CardModel
+from ...models import Card as CardModel
 from .base import app
 
 

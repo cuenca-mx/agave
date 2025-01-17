@@ -3,7 +3,7 @@ from chalice import Response
 from agave.core.filters import generic_query
 
 from ...validators import CardQuery
-from ..models import Card as CardModel
+from ...models import Card as CardModel
 from .base import app
 
 

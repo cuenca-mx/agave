@@ -5,7 +5,7 @@ from chalice import Response
 from agave.core.filters import generic_query
 
 from ...validators import AccountQuery, AccountRequest, AccountUpdateRequest
-from ..models import Account as AccountModel
+from ...models import Account as AccountModel
 from .base import app
 
 

@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 import pytest
 from chalice.test import Client
 
-from examples.chalice.models import Account, Card, File
+from examples.models import Account, Card, File
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,

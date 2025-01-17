@@ -1,6 +1,6 @@
 from fastapi.responses import JSONResponse as Response
 
-from ..models.transactions import Transaction as TransactionModel
+from ...models.transactions import Transaction as TransactionModel
 from .base import app
 
 

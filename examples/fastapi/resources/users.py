@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse as Response
 from agave.core.filters import generic_query
 
 from ...validators import UserQuery, UserUpdateRequest
-from ..models import User as UserModel
+from ...models import User as UserModel
 from .base import app
 
 

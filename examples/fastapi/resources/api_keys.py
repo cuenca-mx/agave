@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse as Response
 from agave.core.filters import generic_query
 
 from ...validators import ApiKeyRequest, ApiKeyResponse
-from ..models import ApiKey as ApiKeyModel
+from ...models import ApiKey as ApiKeyModel
 from .base import app
 
 

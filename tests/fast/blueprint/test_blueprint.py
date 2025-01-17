@@ -11,8 +11,7 @@ from examples.config import (
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
 )
-from examples.fastapi.models import Account, Card, File
-from examples.fastapi.models.users import User
+from examples.models import Account, Card, File, User
 
 PLATFORM_ID_FILTER_REQUIRED = (
     'examples.fastapi.middlewares.AuthedMiddleware.required_platform_id'

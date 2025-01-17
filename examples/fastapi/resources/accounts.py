@@ -11,7 +11,7 @@ from ...validators import (
     AccountResponse,
     AccountUpdateRequest,
 )
-from ..models import Account as AccountModel
+from ...models import Account as AccountModel
 from .base import app
 
 
