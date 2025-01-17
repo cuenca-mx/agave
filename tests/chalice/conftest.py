@@ -6,7 +6,7 @@ import pytest
 from chalice.test import Client
 from mongoengine import Document
 
-from examples.chalicelib.models import Account, Biller, Card, File, User
+from examples.chalice.models import Account, Biller, Card, File, User
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
@@ -36,7 +36,7 @@ def collection_fixture(model: Document) -> Callable[..., FuncDecorator]:
 
 @pytest.fixture()
 def client() -> Generator[Client, None, None]:
-    from examples.chalicelib import app
+    from examples.chalice import app
 
     with Client(app) as client:
         client.http.post = accept_json(  # type: ignore[assignment]

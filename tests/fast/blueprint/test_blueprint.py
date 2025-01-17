@@ -11,14 +11,14 @@ from examples.config import (
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
 )
-from examples.fastlib.models import Account, Card, File
-from examples.fastlib.models.users import User
+from examples.fastapi.models import Account, Card, File
+from examples.fastapi.models.users import User
 
 PLATFORM_ID_FILTER_REQUIRED = (
-    'examples.fastlib.middlewares.AuthedMiddleware.required_platform_id'
+    'examples.fastapi.middlewares.AuthedMiddleware.required_platform_id'
 )
 USER_ID_FILTER_REQUIRED = (
-    'examples.fastlib.middlewares.AuthedMiddleware.required_user_id'
+    'examples.fastapi.middlewares.AuthedMiddleware.required_user_id'
 )
 
 

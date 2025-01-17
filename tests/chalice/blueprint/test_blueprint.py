@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 import pytest
 from chalice.test import Client
 
-from examples.chalicelib.models import Account, Card, File
+from examples.chalice.models import Account, Card, File
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
@@ -13,12 +13,12 @@ from examples.config import (
 )
 
 PLATFORM_ID_FILTER_REQUIRED = (
-    'examples.chalicelib.blueprints.authed.'
+    'examples.chalice.blueprints.authed.'
     'AuthedBlueprint.platform_id_filter_required'
 )
 
 USER_ID_FILTER_REQUIRED = (
-    'examples.chalicelib.blueprints.authed.'
+    'examples.chalice.blueprints.authed.'
     'AuthedBlueprint.user_id_filter_required'
 )
 

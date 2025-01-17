@@ -12,8 +12,8 @@ from examples.config import (
     TEST_SECOND_PLATFORM_ID,
     TEST_SECOND_USER_ID,
 )
-from examples.fastlib.app import app
-from examples.fastlib.models import Account, Biller, Card, File, User
+from examples.fastapi.app import app
+from examples.fastapi.models import Account, Biller, Card, File, User
 
 FuncDecorator = Callable[..., Generator]
 

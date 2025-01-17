@@ -4,7 +4,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from fastapi.testclient import TestClient
 
 from agave.core.exc import UnauthorizedError
-from examples.fastlib.middlewares.authed import AuthedMiddleware
+from examples.fastapi.middlewares.authed import AuthedMiddleware
 
 
 def test_iam_healthy(client: TestClient) -> None:
