@@ -13,7 +13,6 @@ from .tasks.task_example import dummy_task, task_validator
 connect(
     host='mongodb://localhost:27017/db',
     mongo_client_class=mongomock.MongoClient,
-    alias='fast_connection',
 )
 app = FastAPI(title='example')
 app.include_router(resources)

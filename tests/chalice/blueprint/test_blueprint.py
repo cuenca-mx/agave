@@ -5,12 +5,12 @@ from urllib.parse import urlencode
 import pytest
 from chalice.test import Client
 
-from examples.models import Account, Card, File
 from examples.config import (
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
 )
+from examples.models import Account, Card, File
 
 PLATFORM_ID_FILTER_REQUIRED = (
     'examples.chalice.blueprints.authed.'

@@ -1,7 +1,7 @@
 from agave.core.filters import generic_query
 
-from ...validators import TransactionQuery
 from ...models.transactions import Transaction as TransactionModel
+from ...validators import TransactionQuery
 from .base import app
 
 

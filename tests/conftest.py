@@ -11,7 +11,6 @@ from examples.config import (
     TEST_SECOND_PLATFORM_ID,
     TEST_SECOND_USER_ID,
 )
-
 from examples.models import Account, Biller, Card, File, User
 
 FuncDecorator = Callable[..., Generator]
@@ -79,9 +78,11 @@ def accounts() -> list[Account]:
 def account(accounts: list[Account]) -> Generator[Account, None, None]:
     yield accounts[0]
 
+
 @pytest.fixture
 def user(users: list[User]) -> Generator[User, None, None]:
     yield users[0]
+
 
 @pytest.fixture
 def other_account(accounts: list[Account]) -> Generator[Account, None, None]:

@@ -5,6 +5,7 @@ from chalice.test import Client
 
 from .helpers import accept_json
 
+
 @pytest.fixture()
 def client() -> Generator[Client, None, None]:
     from examples.chalice import app
