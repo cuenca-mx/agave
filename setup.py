@@ -23,16 +23,16 @@ setup(
     python_requires='>=3.9',
     install_requires=[
         'cuenca-validations>=2.0.0,<3.0.0',
+        'mongoengine>=0.29.0,<0.30.0',
+        'mongoengine-plus>=0.2.3,<1.0.0',
+        'python-multipart>=0.0.20,<0.0.30',qq
     ],
     extras_require={
         'chalice': [
             'chalice>=1.30.0,<1.35.0',
-            'mongoengine>=0.29.0,<0.30.0',
         ],
         'fastapi': [
             'fastapi>=0.115.0,<0.120.0',
-            'mongoengine-plus>=0.2.3,<1.0.0',
-            'python-multipart>=0.0.20,<0.0.30',
             'starlette-context>=0.3.2,<0.4.0',
         ],
         'tasks': [
