@@ -1,6 +1,5 @@
 from mongoengine import Document, StringField
-
-from agave.chalice.models import BaseModel
+from mongoengine_plus.models import BaseModel
 
 
 class TestModel(BaseModel, Document):
