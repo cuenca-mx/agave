@@ -3,7 +3,7 @@ import functools
 from typing import Callable, Generator
 
 import pytest
-from chalice.test import Client as ChaliceClient
+from chalice.test import Client as OriginalChaliceClient
 from fastapi.testclient import TestClient as FastAPIClient
 from mongoengine import Document
 
@@ -167,6 +167,43 @@ def fastapi_client() -> Generator[FastAPIClient, None, None]:
     yield client
 
 
+class ChaliceResponse:
+    def __init__(self, chalice_response):
+        self._response = chalice_response
+        self._json_body = chalice_response.json_body
+        self._status_code = chalice_response.status_code
+        self._headers = chalice_response.headers
+
+    def json(self):
+        return self._json_body
+
+    @property
+    def status_code(self):
+        return self._status_code
+
+    @property
+    def headers(self):
+        return self._headers
+
+
+class ChaliceClient(OriginalChaliceClient):
+    def post(self, url: str, **kwargs) -> ChaliceResponse:
+        response = self.http.post(url, **kwargs)
+        return ChaliceResponse(response)
+
+    def get(self, url: str, **kwargs) -> ChaliceResponse:
+        response = self.http.get(url, **kwargs)
+        return ChaliceResponse(response)
+
+    def patch(self, url: str, **kwargs) -> ChaliceResponse:
+        response = self.http.patch(url, **kwargs)
+        return ChaliceResponse(response)
+
+    def delete(self, url: str, **kwargs) -> ChaliceResponse:
+        response = self.http.delete(url, **kwargs)
+        return ChaliceResponse(response)
+
+
 @pytest.fixture()
 def chalice_client() -> Generator[ChaliceClient, None, None]:
     from examples.chalice import app
@@ -182,4 +219,4 @@ def chalice_client() -> Generator[ChaliceClient, None, None]:
         client.http.delete = accept_json(  # type: ignore[assignment]
             client.http.delete
         )
-        yield client
+        yield client  # type: ignore[misc]

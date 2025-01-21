@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
 import pytest
-from chalice.test import Client as ChaliceClient
 from fastapi.testclient import TestClient
 
 from examples.config import (
@@ -54,14 +53,9 @@ def test_create_resource(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     data = dict(name='Doroteo Arango')
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.post("/accounts", json=data)
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.post("/accounts", json=data)
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.post("/accounts", json=data)
+    json_body = resp.json()
+    status_code = resp.status_code
     model = Account.objects.get(id=json_body['id'])
     assert status_code == 201
     assert model.to_dict() == json_body
@@ -80,10 +74,7 @@ def test_create_resource_bad_request(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     data = dict(invalid_field='some value')
-    if isinstance(client, ChaliceClient):
-        resp = client.http.post('/accounts', json=data)
-    else:
-        resp = client.post('/accounts', json=data)
+    resp = client.post('/accounts', json=data)
     assert resp.status_code == framework_config['validation_error_code']
 
 
@@ -94,14 +85,9 @@ def test_retrieve_resource(
     client_fixture: str, request: pytest.FixtureRequest, account: Account
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/accounts/{account.id}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/accounts/{account.id}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts/{account.id}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert json_body == account.to_dict()
 
@@ -122,10 +108,7 @@ def test_retrieve_resource_platform_id_filter_required(
     patch_target = framework_config["platform_id_filter"]
     with patch(patch_target, MagicMock(return_value=True)):
         client = request.getfixturevalue(client_fixture)
-        if isinstance(client, ChaliceClient):
-            resp = client.http.get(f"/accounts/{other_account.id}")
-        else:
-            resp = client.get(f"/accounts/{other_account.id}")
+        resp = client.get(f"/accounts/{other_account.id}")
         assert resp.status_code == 404
 
 
@@ -145,10 +128,7 @@ def test_retrieve_resource_user_id_filter_required(
     patch_target = framework_config["user_id_filter"]
     with patch(patch_target, MagicMock(return_value=True)):
         client = request.getfixturevalue(client_fixture)
-        if isinstance(client, ChaliceClient):
-            resp = client.http.get(f"/accounts/{other_account.id}")
-        else:
-            resp = client.get(f"/accounts/{other_account.id}")
+        resp = client.get(f"/accounts/{other_account.id}")
         assert resp.status_code == 404
 
 
@@ -174,10 +154,7 @@ def test_retrieve_resource_user_id_and_platform_id_filter_required(
     ):
 
         client = request.getfixturevalue(client_fixture)
-        if isinstance(client, ChaliceClient):
-            resp = client.http.get(f"/accounts/{other_account.id}")
-        else:
-            resp = client.get(f"/accounts/{other_account.id}")
+        resp = client.get(f"/accounts/{other_account.id}")
         assert resp.status_code == 404
 
 
@@ -188,10 +165,7 @@ def test_retrieve_resource_not_found(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        resp = client.http.get('/accounts/unknown_id')
-    else:
-        resp = client.get('/accounts/unknown_id')
+    resp = client.get('/accounts/unknown_id')
     assert resp.status_code == 404
 
 
@@ -208,16 +182,10 @@ def test_update_resource_with_invalid_params(
     client = request.getfixturevalue(client_fixture)
     wrong_params = dict(wrong_param='wrong_value')
     wrong_params = dict(wrong_param='wrong_value')
-    if isinstance(client, ChaliceClient):
-        response = client.http.patch(
-            '/accounts/NOT_EXISTS',
-            json=wrong_params,
-        )
-    else:
-        response = client.patch(
-            '/accounts/NOT_EXISTS',
-            json=wrong_params,
-        )
+    response = client.patch(
+        '/accounts/NOT_EXISTS',
+        json=wrong_params,
+    )
     assert response.status_code == framework_config['validation_error_code']
 
 
@@ -228,14 +196,9 @@ def test_retrieve_custom_method(
     client_fixture: str, request: pytest.FixtureRequest, card: Card
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/cards/{card.id}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/cards/{card.id}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/cards/{card.id}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert json_body['number'] == '*' * 16
 
@@ -247,16 +210,10 @@ def test_update_resource_that_doesnt_exist(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        resp = client.http.patch(
-            '/accounts/5f9b4d0ff8d7255e3cc3c128',
-            json=dict(name='Frida'),
-        )
-    else:
-        resp = client.patch(
-            '/accounts/5f9b4d0ff8d7255e3cc3c128',
-            json=dict(name='Frida'),
-        )
+    resp = client.patch(
+        '/accounts/5f9b4d0ff8d7255e3cc3c128',
+        json=dict(name='Frida'),
+    )
     assert resp.status_code == 404
 
 
@@ -267,20 +224,12 @@ def test_update_resource(
     client_fixture: str, request: pytest.FixtureRequest, account: Account
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.patch(
-            f'/accounts/{account.id}',
-            json=dict(name='Maria Felix'),
-        )
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.patch(
-            f'/accounts/{account.id}',
-            json=dict(name='Maria Felix'),
-        )
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.patch(
+        f'/accounts/{account.id}',
+        json=dict(name='Maria Felix'),
+    )
+    json_body = resp.json()
+    status_code = resp.status_code
     account.reload()
     assert json_body['name'] == 'Maria Felix'
     assert account.name == 'Maria Felix'
@@ -294,14 +243,9 @@ def test_delete_resource(
     client_fixture: str, request: pytest.FixtureRequest, account: Account
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.delete(f'/accounts/{account.id}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.delete(f'/accounts/{account.id}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.delete(f'/accounts/{account.id}')
+    json_body = resp.json()
+    status_code = resp.status_code
     account.reload()
     assert status_code == 200
     assert json_body['deactivated_at'] is not None
@@ -315,10 +259,7 @@ def test_delete_resource_not_exists(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        resp = client.http.delete('/accounts/1234')
-    else:
-        resp = client.delete('/accounts/1234')
+    resp = client.delete('/accounts/1234')
     assert resp.status_code == 404
 
 
@@ -331,18 +272,9 @@ def test_query_count_resource(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     query_params = dict(count=1, name='Frida Kahlo')
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(
-            f'/accounts?{urlencode(query_params)}',
-        )
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(
-            f'/accounts?{urlencode(query_params)}',
-        )
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert json_body['count'] == 1
 
@@ -357,14 +289,9 @@ def test_query_all_with_limit(
     client = request.getfixturevalue(client_fixture)
     limit = 2
     query_params = dict(limit=limit)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/accounts?{urlencode(query_params)}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(json_body['items']) == limit
     assert json_body['next_page_uri'] is None
@@ -386,14 +313,9 @@ def test_query_all_resource(
     page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
 
     while page_uri:
-        if isinstance(client, ChaliceClient):
-            chalice_resp = client.http.get(page_uri)
-            json_body = chalice_resp.json_body
-            status_code = chalice_resp.status_code
-        else:
-            fastapi_resp = client.get(page_uri)
-            json_body = fastapi_resp.json()
-            status_code = fastapi_resp.status_code
+        resp = client.get(page_uri)
+        json_body = resp.json()
+        status_code = resp.status_code
         assert status_code == 200
         items.extend(json_body['items'])
         page_uri = json_body['next_page_uri']
@@ -412,14 +334,9 @@ def test_query_all_filter_active(
     client = request.getfixturevalue(client_fixture)
     query_params = dict(active=True)
     # Query active items
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/accounts?{urlencode(query_params)}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     items = json_body['items']
     assert len(items) == len(accounts)
@@ -428,28 +345,18 @@ def test_query_all_filter_active(
     # Deactivate Item
     account.deactivated_at = dt.datetime.utcnow()
     account.save()
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/accounts?{urlencode(query_params)}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     items = json_body['items']
     assert len(items) == len(accounts) - 1
 
     # Query deactivated items
     query_params = dict(active=False)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/accounts?{urlencode(query_params)}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     items = json_body['items']
     assert len(items) == 1
@@ -469,14 +376,9 @@ def test_query_all_created_after(
     expected_length = len([a for a in accounts if a.created_at > created_at])
 
     query_params = dict(created_after=created_at.isoformat())
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/accounts?{urlencode(query_params)}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/accounts?{urlencode(query_params)}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/accounts?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(json_body['items']) == expected_length
 
@@ -511,14 +413,9 @@ def test_query_platform_id_filter_required(
         page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
 
         while page_uri:
-            if isinstance(client, ChaliceClient):
-                chalice_resp = client.http.get(page_uri)
-                json_body = chalice_resp.json_body
-                status_code = chalice_resp.status_code
-            else:
-                fastapi_resp = client.get(page_uri)
-                json_body = fastapi_resp.json()
-                status_code = fastapi_resp.status_code
+            resp = client.get(page_uri)
+            json_body = resp.json()
+            status_code = resp.status_code
             assert status_code == 200
             items.extend(json_body['items'])
             page_uri = json_body['next_page_uri']
@@ -552,14 +449,9 @@ def test_query_user_id_filter_required(
         page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
 
         while page_uri:
-            if isinstance(client, ChaliceClient):
-                chalice_resp = client.http.get(page_uri)
-                json_body = chalice_resp.json_body
-                status_code = chalice_resp.status_code
-            else:
-                fastapi_resp = client.get(page_uri)
-                json_body = fastapi_resp.json()
-                status_code = fastapi_resp.status_code
+            resp = client.get(page_uri)
+            json_body = resp.json()
+            status_code = resp.status_code
             assert status_code == 200
             items.extend(json_body['items'])
             page_uri = json_body['next_page_uri']
@@ -580,11 +472,8 @@ def test_query_resource_with_invalid_params(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     wrong_params = dict(wrong_param='wrong_value')
-    if isinstance(client, ChaliceClient):
-        response = client.http.get(f'/accounts?{urlencode(wrong_params)}')
-    else:
-        response = client.get(f'/accounts?{urlencode(wrong_params)}')
-    assert response.status_code == framework_config['validation_error_code']
+    resp = client.get(f'/accounts?{urlencode(wrong_params)}')
+    assert resp.status_code == framework_config['validation_error_code']
 
 
 @pytest.mark.parametrize(
@@ -596,26 +485,16 @@ def test_query_custom_method(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     query_params = dict(page_size=2)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(f'/cards?{urlencode(query_params)}')
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(f'/cards?{urlencode(query_params)}')
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/cards?{urlencode(query_params)}')
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(json_body['items']) == 2
     assert all(card['number'] == '*' * 16 for card in json_body['items'])
 
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(json_body['next_page_uri'])
-        json_body = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(json_body['next_page_uri'])
-        json_body = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(json_body['next_page_uri'])
+    json_body = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(json_body['items']) == 2
     assert all(card['number'] == '*' * 16 for card in json_body['items'])
@@ -628,11 +507,8 @@ def test_cannot_create_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        response = client.http.post('/transactions', json=dict())
-    else:
-        response = client.post('/billers', json=dict())
-    assert response.status_code == 405
+    resp = client.post('/billers', json=dict())
+    assert resp.status_code == 405
 
 
 @pytest.mark.parametrize(
@@ -647,13 +523,8 @@ def test_cannot_query_resource(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     query_params = dict(count=1, name='Frida Kahlo')
-    if isinstance(client, ChaliceClient):
-        response = client.http.get(f'/transactions?{urlencode(query_params)}')
-    else:
-        response = client.get(f'/transactions?{urlencode(query_params)}')
-        assert (
-            response.status_code == framework_config['method_not_allowed_code']
-        )
+    resp = client.get(f'/transactions?{urlencode(query_params)}')
+    assert resp.status_code == framework_config['method_not_allowed_code']
 
 
 @pytest.mark.parametrize(
@@ -663,11 +534,8 @@ def test_cannot_update_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        response = client.http.post('/transactions', json=dict())
-    else:
-        response = client.patch('/transactions/123', json=dict())
-    assert response.status_code == 405
+    resp = client.patch('/transactions/123', json=dict())
+    assert resp.status_code == 405
 
 
 @pytest.mark.parametrize(
@@ -677,10 +545,7 @@ def test_cannot_delete_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        resp = client.http.delete('/transactions/TR1234')
-    else:
-        resp = client.delete('/transactions/TR1234')
+    resp = client.delete('/transactions/TR1234')
     assert resp.status_code == 405
 
 
@@ -695,10 +560,7 @@ def test_not_found(
     client_fixture: str, request: pytest.FixtureRequest, framework_config: dict
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        resp = client.http.get('/non-registered-endpoint')
-    else:
-        resp = client.get('/non-registered-endpoint')
+    resp = client.get('/non-registered-endpoint')
     assert resp.status_code == framework_config['not_found_code']
 
 
@@ -710,12 +572,7 @@ def test_download_resource(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     mimetype = 'application/pdf'
-    if isinstance(client, ChaliceClient):
-        resp = client.http.get(
-            f'/files/{file.id}', headers={'Accept': mimetype}
-        )
-    else:
-        resp = client.get(f'/files/{file.id}', headers={'Accept': mimetype})
+    resp = client.get(f'/files/{file.id}', headers={'Accept': mimetype})
     assert resp.status_code == 200
     assert resp.headers.get('Content-Type') == mimetype
 
@@ -728,34 +585,16 @@ def test_filter_no_user_id_query(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(
-            f'/users?platform_id={TEST_DEFAULT_PLATFORM_ID}'
-        )
-        resp_json = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(
-            f'/users?platform_id={TEST_DEFAULT_PLATFORM_ID}'
-        )
-        resp_json = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/users?platform_id={TEST_DEFAULT_PLATFORM_ID}')
+    resp_json = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(resp_json['items']) == 1
     user1 = resp_json['items'][0]
 
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get(
-            f'/users?platform_id={TEST_SECOND_PLATFORM_ID}'
-        )
-        resp_json = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get(
-            f'/users?platform_id={TEST_SECOND_PLATFORM_ID}'
-        )
-        resp_json = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get(f'/users?platform_id={TEST_SECOND_PLATFORM_ID}')
+    resp_json = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(resp_json['items']) == 1
     user2 = resp_json['items'][0]
@@ -780,14 +619,9 @@ def test_filter_no_user_id_and_no_platform_id_query(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    if isinstance(client, ChaliceClient):
-        chalice_resp = client.http.get('/billers?name=ATT')
-        resp_json = chalice_resp.json_body
-        status_code = chalice_resp.status_code
-    else:
-        fastapi_resp = client.get('/billers?name=ATT')
-        resp_json = fastapi_resp.json()
-        status_code = fastapi_resp.status_code
+    resp = client.get('/billers?name=ATT')
+    resp_json = resp.json()
+    status_code = resp.status_code
     assert status_code == 200
     assert len(resp_json['items']) == 1
 
