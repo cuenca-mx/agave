@@ -3,6 +3,8 @@ import functools
 from typing import Callable, Generator
 
 import pytest
+from chalice.test import Client as ChaliceClient
+from fastapi.testclient import TestClient as FastAPIClient
 from mongoengine import Document
 
 from examples.config import (
@@ -12,6 +14,8 @@ from examples.config import (
     TEST_SECOND_USER_ID,
 )
 from examples.models import Account, Biller, Card, File, User
+
+from .helpers import accept_json
 
 FuncDecorator = Callable[..., Generator]
 
@@ -153,3 +157,29 @@ def billers() -> list[Biller]:
         Biller(name='Telcel'),
         Biller(name='ATT'),
     ]
+
+
+@pytest.fixture
+def fastapi_client() -> Generator[FastAPIClient, None, None]:
+    from examples.fastapi.app import app
+
+    client = FastAPIClient(app)
+    yield client
+
+
+@pytest.fixture()
+def chalice_client() -> Generator[ChaliceClient, None, None]:
+    from examples.chalice import app
+
+    with ChaliceClient(app) as client:
+        client.http.post = accept_json(  # type: ignore[assignment]
+            client.http.post
+        )
+        client.http.patch = accept_json(  # type: ignore[assignment]
+            client.http.patch
+        )
+
+        client.http.delete = accept_json(  # type: ignore[assignment]
+            client.http.delete
+        )
+        yield client
