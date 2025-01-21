@@ -3,47 +3,130 @@
 [![codecov](https://codecov.io/gh/cuenca-mx/agave/branch/main/graph/badge.svg)](https://codecov.io/gh/cuenca-mx/agave)
 [![PyPI](https://img.shields.io/pypi/v/agave.svg)](https://pypi.org/project/agave/)
 
-Agave is a library for implementing REST APIs using Blueprints, designed to work with Chalice AWS or FastAPI. It provides a convenient way to send and receive JSON data through endpoints for querying, modifying, and creating content.
+Agave is a library for building REST APIs using a Blueprint pattern, with support for both AWS Chalice and FastAPI frameworks. It simplifies the creation of JSON-based endpoints for querying, modifying, and creating resources.
 
 ## Installation
 
+Choose the installation option based on your framework:
 
-### For Chalice
-
-To use Agave with Chalice, install it using pip:
+### Chalice Installation
 
 ```bash
 pip install agave[chalice]
 ```
 
-You can then create a REST API blueprint as follows:
-```python
-from agave.chalice import RestApiBlueprint
-```
-
-### For FastAPI
-To use Agave with FastAPI, install it with the [fastapi] option:
+### FastAPI Installation
 
 ```bash
 pip install agave[fastapi]
 ```
 
-Create a REST API blueprint for FastAPI like this:
-
-```python
-from agave.fastapi import RestApiBlueprint
-```
-
-### Tasks for FastAPI
-
-If you want to use tasks with FastAPI, install Agave with the [fastapi,tasks] option:
+### SQS task support:
 ```bash
 pip install agave[fastapi,tasks]
 ```
 
-Then, you can define tasks like this:
+## Usage
+
+### Chalice Example
+
+You can then create a REST API blueprint as follows:
+```python
+from agave.chalice import RestApiBlueprint
+
+app = RestApiBlueprint()
+
+@app.resource('/accounts')
+class Account:
+    model = AccountModel
+    query_validator = AccountQuery
+    update_validator = AccountUpdateRequest
+    get_query_filter = generic_query
+
+    @staticmethod
+    @app.validate(AccountRequest)
+    def create(request: AccountRequest) -> Response:
+        account = AccountModel(
+            name=request.name,
+            user_id=app.current_user_id,
+            platform_id=app.current_platform_id,
+        )
+        account.save()
+        return Response(account.to_dict(), status_code=201)
+
+    @staticmethod
+    def update(
+        account: AccountModel, request: AccountUpdateRequest
+    ) -> Response:
+        account.name = request.name
+        account.save()
+        return Response(account.to_dict(), status_code=200)
+
+    @staticmethod
+    def delete(account: AccountModel) -> Response:
+        account.deactivated_at = dt.datetime.utcnow().replace(microsecond=0)
+        account.save()
+        return Response(account.to_dict(), status_code=200)
+```
+
+### FastAPI Example
+
+```python
+from agave.fastapi import RestApiBlueprint
+
+app = RestApiBlueprint()
+
+@app.resource('/accounts')
+class Account:
+    model = AccountModel
+    query_validator = AccountQuery
+    update_validator = AccountUpdateRequest
+    get_query_filter = generic_query
+    response_model = AccountResponse
+
+    @staticmethod
+    async def create(request: AccountRequest) -> Response:
+        """This is the description for openapi"""
+        account = AccountModel(
+            name=request.name,
+            user_id=app.current_user_id,
+            platform_id=app.current_platform_id,
+        )
+        await account.async_save()
+        return Response(content=account.to_dict(), status_code=201)
+
+    @staticmethod
+    async def update(
+        account: AccountModel,
+        request: AccountUpdateRequest,
+    ) -> Response:
+        account.name = request.name
+        await account.async_save()
+        return Response(content=account.to_dict(), status_code=200)
+
+    @staticmethod
+    async def delete(account: AccountModel, _: Request) -> Response:
+        account.deactivated_at = dt.datetime.utcnow().replace(microsecond=0)
+        await account.async_save()
+        return Response(content=account.to_dict(), status_code=200)
+```
+
+### Async Tasks
+
 ```python
 from agave.tasks.sqs_tasks import task
+
+QUEUE_URL = 'https://sqs.region.amazonaws.com/account/queue'
+AWS_DEFAULT_REGION = 'us-east-1'
+@task(
+    queue_url=QUEUE_URL,
+    region_name=AWS_DEFAULT_REGION,
+    visibility_timeout=30,
+    max_retries=10,
+)
+async def process_data(data: dict):
+    # Async task processing
+    return {'processed': data}
 ```
 
 ## Running Tests
