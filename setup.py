@@ -29,10 +29,10 @@ setup(
     ],
     extras_require={
         'chalice': [
-            'chalice>=1.30.0,<1.35.0',
+            'chalice>=1.30.0,<2.0.0',
         ],
         'fastapi': [
-            'fastapi>=0.115.0,<0.120.0',
+            'fastapi>=0.115.0,<1.0.0',
             'starlette-context>=0.3.2,<0.4.0',
         ],
         'tasks': [
