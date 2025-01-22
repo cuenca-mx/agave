@@ -4,7 +4,6 @@ from setuptools import find_packages, setup
 
 version = SourceFileLoader('version', 'agave/version.py').load_module()
 
-
 with open('README.md', 'r') as f:
     long_description = f.read()
 
@@ -21,16 +20,32 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data=dict(agave=['py.typed']),
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     install_requires=[
-        'chalice>=1.16.0,<1.25.1',
-        'cuenca-validations>=0.9.0,<1.0.0',
-        'blinker>=1.4,<1.5',
-        'mongoengine>=0.20.0,<0.23.0',
-        'dnspython>=2.0.0,<2.2.0',
+        'cuenca-validations>=2.0.2,<3.0.0',
+        'mongoengine>=0.29.0,<0.30.0',
+        'mongoengine-plus>=1.0.0,<2.0.0',
+        'python-multipart>=0.0.20,<0.0.30',
     ],
+    extras_require={
+        'chalice': [
+            'chalice>=1.30.0,<2.0.0',
+        ],
+        'fastapi': [
+            'fastapi>=0.115.0,<1.0.0',
+            'starlette-context>=0.3.2,<0.4.0',
+        ],
+        'tasks': [
+            'aiobotocore>=2.0.0,<3.0.0',
+            'types-aiobotocore-sqs>=2.1.0,<3.0.0',
+        ],
+    },
     classifiers=[
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
