@@ -181,7 +181,6 @@ def test_update_resource_with_invalid_params(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     wrong_params = dict(wrong_param='wrong_value')
-    wrong_params = dict(wrong_param='wrong_value')
     response = client.patch(
         '/accounts/NOT_EXISTS',
         json=wrong_params,
