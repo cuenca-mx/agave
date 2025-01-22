@@ -22,7 +22,7 @@ setup(
     package_data=dict(agave=['py.typed']),
     python_requires='>=3.9',
     install_requires=[
-        'cuenca-validations>=2.0.0,<3.0.0',
+        'cuenca-validations>=2.0.2,<3.0.0',
         'mongoengine>=0.29.0,<0.30.0',
         'mongoengine-plus>=1.0.0,<2.0.0',
         'python-multipart>=0.0.20,<0.0.30',

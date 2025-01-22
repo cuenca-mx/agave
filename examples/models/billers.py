@@ -1,9 +1,9 @@
 import datetime as dt
 
+from cuenca_validations.types import uuid_field
 from mongoengine import DateTimeField, StringField
 from mongoengine_plus.aio import AsyncDocument
 from mongoengine_plus.models import BaseModel
-from mongoengine_plus.models.helpers import uuid_field
 
 
 class Biller(BaseModel, AsyncDocument):
