@@ -1,5 +1,6 @@
 import datetime as dt
 import functools
+import json
 from typing import Callable, Generator
 
 import pytest
@@ -14,8 +15,6 @@ from examples.config import (
     TEST_SECOND_USER_ID,
 )
 from examples.models import Account, Biller, Card, File, User
-
-from .helpers import accept_json
 
 FuncDecorator = Callable[..., Generator]
 
@@ -187,36 +186,33 @@ class ChaliceResponse:
 
 
 class ChaliceClient(OriginalChaliceClient):
-    def post(self, url: str, **kwargs) -> ChaliceResponse:
-        response = self.http.post(url, **kwargs)
+    def _request_with_json(
+        self, method: str, url: str, **kwargs
+    ) -> ChaliceResponse:
+        body = json.dumps(kwargs.pop('json')) if 'json' in kwargs else None
+        headers = {'Content-Type': 'application/json'}
+        response = getattr(self.http, method)(
+            url, body=body, headers=headers, **kwargs
+        )
         return ChaliceResponse(response)
+
+    def post(self, url: str, **kwargs) -> ChaliceResponse:
+        return self._request_with_json('post', url, **kwargs)
 
     def get(self, url: str, **kwargs) -> ChaliceResponse:
         response = self.http.get(url, **kwargs)
         return ChaliceResponse(response)
 
     def patch(self, url: str, **kwargs) -> ChaliceResponse:
-        response = self.http.patch(url, **kwargs)
-        return ChaliceResponse(response)
+        return self._request_with_json('patch', url, **kwargs)
 
     def delete(self, url: str, **kwargs) -> ChaliceResponse:
-        response = self.http.delete(url, **kwargs)
-        return ChaliceResponse(response)
+        return self._request_with_json('delete', url, **kwargs)
 
 
 @pytest.fixture()
 def chalice_client() -> Generator[ChaliceClient, None, None]:
     from examples.chalice import app
 
-    with ChaliceClient(app) as client:
-        client.http.post = accept_json(  # type: ignore[assignment]
-            client.http.post
-        )
-        client.http.patch = accept_json(  # type: ignore[assignment]
-            client.http.patch
-        )
-
-        client.http.delete = accept_json(  # type: ignore[assignment]
-            client.http.delete
-        )
-        yield client  # type: ignore[misc]
+    client = ChaliceClient(app)
+    yield client
