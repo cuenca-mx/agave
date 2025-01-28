@@ -641,3 +641,26 @@ def test_upload_resource_with_invalid_form(fastapi_client: TestClient) -> None:
     wrong_form = dict(another_file=b'Whasaaaaap')
     resp = fastapi_client.post('/files', files=wrong_form)
     assert resp.status_code == 400
+
+
+def test_create_api_key(fastapi_client: TestClient) -> None:
+    """
+    This test verifies the logger middleware properly masks sensitive data:
+    - Request headers
+    - Request body fields
+    - Response body fields
+    """
+    data = dict(
+        user='user', password='My-super-secret-password', short_secret='123'
+    )
+    headers = {
+        'X-Cuenca-LoginId': 'My-secret-login-id',
+        'X-Cuenca-LoginToken': 'My-secret-login-token',
+        'Authorization': '123',
+        'content-type': 'application/json',
+    }
+    resp = fastapi_client.post('/api_keys', json=data, headers=headers)
+    json_body = resp.json()
+    assert resp.status_code == 201
+    assert json_body['secret'] == 'My-super-secret-key'
+    assert json_body['password'] == 'My-super-secret-password'

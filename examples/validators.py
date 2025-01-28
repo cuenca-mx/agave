@@ -1,7 +1,7 @@
 import datetime as dt
-from typing import Optional
+from typing import Annotated, Optional
 
-from cuenca_validations.types import QueryParams
+from cuenca_validations.types import Metadata, QueryParams
 from pydantic import BaseModel, SecretStr
 
 
@@ -43,15 +43,15 @@ class AccountUpdateRequest(BaseModel):
 
 class ApiKeyRequest(BaseModel):
     user: str
-    password: SecretStr
-    short_secret: SecretStr
+    password: Annotated[str, Metadata(sensitive=True)]
+    short_secret: Annotated[str, Metadata(sensitive=True)]
 
 
 class ApiKeyResponse(BaseModel):
     id: str
-    secret: SecretStr
+    secret: Annotated[str, Metadata(sensitive=True, log_chars=4)]
     user: str
-    password: SecretStr
+    password: Annotated[str, Metadata(sensitive=True, log_chars=4)]
     user_id: str
     platform_id: str
     created_at: dt.datetime

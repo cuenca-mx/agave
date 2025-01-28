@@ -1,5 +1,6 @@
+import inspect
 import mimetypes
-from typing import Any, Optional
+from typing import Any, Optional, get_type_hints
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
@@ -12,7 +13,6 @@ except ImportError:
         "You can install it with: pip install agave[fastapi]"
     )
 
-
 from fastapi.responses import JSONResponse as Response, StreamingResponse
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, Field, ValidationError
@@ -20,6 +20,10 @@ from starlette_context import context
 
 from ..core.blueprints.decorators import copy_attributes
 from ..core.exc import NotFoundError, UnprocessableEntity
+from .middlewares import (
+    SENSITIVE_REQUEST_MODEL_FIELDS,
+    SENSITIVE_RESPONSE_MODEL_FIELDS,
+)
 
 SAMPLE_404 = {
     "summary": "Not found item",
@@ -108,6 +112,10 @@ class RestApiBlueprint(APIRouter):
                 response_model = cls.response_model
                 response_sample = response_model.schema().get('example')
 
+                # Get sensitive fields from response model
+                sensitive_fields = get_sensitive_fields(response_model)
+                SENSITIVE_RESPONSE_MODEL_FIELDS.extend(sensitive_fields)
+
             """ POST /resource
             Create a FastApi endpoint using the method "create"
 
@@ -116,6 +124,21 @@ class RestApiBlueprint(APIRouter):
             validates form data using `Resource.upload_validator`.
             """
             if hasattr(cls, 'create'):
+
+                # Get input model from create method's type hints
+                create_signature = inspect.signature(cls.create)
+                parameters = list(create_signature.parameters.values())
+                request_model = None
+
+                # Validate if the method has parameters
+                # First one must have a type annotation
+                if parameters:
+                    request_param = parameters[0]
+                    request_model = request_param.annotation
+                    # Get sensitive fields from request model
+                    sensitive_fields = get_sensitive_fields(request_model)
+                    SENSITIVE_REQUEST_MODEL_FIELDS.extend(sensitive_fields)
+
                 route = self.post(
                     path,
                     summary=f'{cls.__name__} - Create',
@@ -415,3 +438,22 @@ def json_openapi(code: int, description, samples: list[dict]) -> dict:
             'content': {'application/json': {'examples': examples}},
         },
     }
+
+
+def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
+    """
+    Analyzes a Pydantic model and returns a set of field names
+    marked as sensitive in their metadata.
+    """
+    sensitive_fields: set[str] = set()
+    hints = get_type_hints(model, include_extras=True)
+
+    for field_name, field_type in hints.items():
+        if hasattr(field_type, "__metadata__"):
+            for metadata in field_type.__metadata__:
+                if metadata.sensitive:
+                    sensitive_fields.add(
+                        f"{model.__name__}.{field_name}.{metadata.log_chars}"
+                    )
+
+    return sensitive_fields
