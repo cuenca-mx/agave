@@ -32,6 +32,7 @@ SENSITIVE_HEADERS = [
     SESSION_HEADER,
 ]
 
+EXCLUDED_HEADERS: list[str] = ['connection']
 SENSITIVE_RESPONSE_MODEL_FIELDS: list[str] = []
 SENSITIVE_REQUEST_MODEL_FIELDS: list[str] = []
 
@@ -40,6 +41,10 @@ def obfuscate_sensitive_headers(
     headers: dict[str, Any], sensitive_headers: list[str]
 ) -> dict[str, Any]:
     obfuscated_headers = headers.copy()
+
+    for header in EXCLUDED_HEADERS:
+        obfuscated_headers.pop(header.lower(), None)
+
     for header in sensitive_headers:
         if header.lower() in obfuscated_headers:
             header_value = obfuscated_headers[header.lower()]
@@ -130,13 +135,10 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
             request_info = {
                 "method": request.method,
                 "url": str(request.url),
+                "query_params": request.query_params,
                 "headers": obfuscated_headers,
                 "body": obfuscated_request_body,
             }
-
-            logger.info(
-                f"Request Info: {json.dumps(request_info, default=str)}"
-            )
 
             parsed_body = parse_body(response_body)
             obfuscated_response_body = None
@@ -153,8 +155,13 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
                 "body": obfuscated_response_body,
             }
 
+            completed_request_info = {
+                "request": request_info,
+                "response": response_info,
+            }
+
             logger.info(
-                f"Response Info: {json.dumps(response_info, default=str)}"
+                f"Info: {json.dumps(completed_request_info, default=str)}"
             )
 
             return new_response

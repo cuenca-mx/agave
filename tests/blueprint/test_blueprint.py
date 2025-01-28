@@ -658,6 +658,7 @@ def test_create_api_key(fastapi_client: TestClient) -> None:
         'X-Cuenca-LoginToken': 'My-secret-login-token',
         'Authorization': '123',
         'content-type': 'application/json',
+        'connection': 'keep-alive',
     }
     resp = fastapi_client.post('/api_keys', json=data, headers=headers)
     json_body = resp.json()
