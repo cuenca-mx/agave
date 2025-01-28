@@ -3,7 +3,7 @@ import mimetypes
 from typing import Any, Optional, get_type_hints
 from urllib.parse import urlencode
 
-from cuenca_validations.types import QueryParams
+from cuenca_validations.types import Metadata, QueryParams
 
 try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
@@ -451,9 +451,12 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
     for field_name, field_type in hints.items():
         if hasattr(field_type, "__metadata__"):
             for metadata in field_type.__metadata__:
-                if metadata.sensitive:
-                    sensitive_fields.add(
-                        f"{model.__name__}.{field_name}.{metadata.log_chars}"
-                    )
+                if isinstance(metadata, Metadata):
+                    if metadata.sensitive:
+                        sensitive_fields.add(
+                            f"{model.__name__}."
+                            f"{field_name}."
+                            f"{metadata.log_chars}"
+                        )
 
     return sensitive_fields

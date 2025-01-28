@@ -23,6 +23,7 @@ class ApiKey:
             user_id=app.current_user_id,
             platform_id=app.current_platform_id,
             secret='My-super-secret-key',
+            another_field='12345678',
         )
         await ak.async_save()
 

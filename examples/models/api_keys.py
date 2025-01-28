@@ -13,3 +13,4 @@ class ApiKey(BaseModel, AsyncDocument):
     platform_id = StringField(required=True)
     created_at = DateTimeField()
     deactivated_at = DateTimeField()
+    another_field = StringField(required=True)

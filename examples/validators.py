@@ -2,7 +2,7 @@ import datetime as dt
 from typing import Annotated, Optional
 
 from cuenca_validations.types import Metadata, QueryParams
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, Field
 
 
 class AccountQuery(QueryParams):
@@ -56,6 +56,16 @@ class ApiKeyResponse(BaseModel):
     platform_id: str
     created_at: dt.datetime
     deactivated_at: Optional[dt.datetime] = None
+    another_field: Annotated[
+        str,
+        Field(
+            min_length=5,
+            max_length=10,
+            description=(
+                'Any str with at least 5 characters, maximum 10 characters'
+            ),
+        ),
+    ]
 
 
 class FileQuery(QueryParams):
