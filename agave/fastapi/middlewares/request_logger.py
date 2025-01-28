@@ -39,13 +39,15 @@ SENSITIVE_REQUEST_MODEL_FIELDS: list[str] = []
 def obfuscate_sensitive_headers(
     headers: dict[str, Any], sensitive_headers: list[str]
 ) -> dict[str, Any]:
-    result = headers.copy()
+    obfuscated_headers = headers.copy()
     for header in sensitive_headers:
-        if header.lower() in result:
-            value = result[header.lower()]
-            if len(value) > 4:
-                result[header.lower()] = '*' * 5 + value[-4:]
-    return result
+        if header.lower() in obfuscated_headers:
+            header_value = obfuscated_headers[header.lower()]
+            if len(header_value) > 4:
+                obfuscated_headers[header.lower()] = (
+                    '*' * 5 + header_value[-4:]
+                )
+    return obfuscated_headers
 
 
 def obfuscate_sensitive_body(
@@ -53,18 +55,22 @@ def obfuscate_sensitive_body(
     model_name: str,
     sensitive_fields: list[str],
 ) -> dict[str, Any]:
-    result = body.copy()
-    for long_name_field in sensitive_fields:
-        log_chars = int(long_name_field.split('.')[-1])
-        field = long_name_field.split('.')[1]
-        real_name_field = f"{model_name}.{field}.{log_chars}"
-        if real_name_field in sensitive_fields and field in result:
-            value = result[field]
+    obfuscated_body = body.copy()
+    for field_spec in sensitive_fields:
+        parts = field_spec.split('.')
+        _, field_name, log_chars_str = parts
+        log_chars = int(log_chars_str)
+        full_field_name = f"{model_name}.{field_name}.{log_chars}"
+        if (
+            full_field_name in sensitive_fields
+            and field_name in obfuscated_body
+        ):
+            value = obfuscated_body[field_name]
             if log_chars > 0:
-                result[field] = '*' * 5 + value[-log_chars:]
+                obfuscated_body[field_name] = '*' * 5 + value[-log_chars:]
             else:
-                result[field] = '*' * 5
-    return result
+                obfuscated_body[field_name] = '*' * 5
+    return obfuscated_body
 
 
 def parse_body(body: bytes) -> Union[dict, None]:
@@ -153,6 +159,6 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
 
             return new_response
 
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             logger.error(f"Error in FastAgaveRequestLogger: {str(e)}")
             raise

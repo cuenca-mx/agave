@@ -52,7 +52,7 @@ class ApiKeyResponse(BaseModel):
     secret: Annotated[str, Metadata(sensitive=True, log_chars=4)]
     user: str
     password: Annotated[str, Metadata(sensitive=True, log_chars=4)]
-    user_id: str
+    user_id: Annotated[str, Metadata(sensitive=False)]
     platform_id: str
     created_at: dt.datetime
     deactivated_at: Optional[dt.datetime] = None
