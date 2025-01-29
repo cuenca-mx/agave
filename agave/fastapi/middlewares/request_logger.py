@@ -40,19 +40,15 @@ SENSITIVE_REQUEST_MODEL_FIELDS: list[str] = []
 def obfuscate_sensitive_headers(
     headers: dict[str, Any], sensitive_headers: list[str]
 ) -> dict[str, Any]:
-    obfuscated_headers = headers.copy()
-
-    for header in EXCLUDED_HEADERS:
-        obfuscated_headers.pop(header.lower(), None)
+    obfuscated = {
+        k: v for k, v in headers.items() if k.lower() not in EXCLUDED_HEADERS
+    }
 
     for header in sensitive_headers:
-        if header.lower() in obfuscated_headers:
-            header_value = obfuscated_headers[header.lower()]
-            if len(header_value) > 4:
-                obfuscated_headers[header.lower()] = (
-                    '*' * 5 + header_value[-4:]
-                )
-    return obfuscated_headers
+        if (value := obfuscated.get(header.lower())) and len(value) > 4:
+            obfuscated[header.lower()] = f"{'*' * 5}{value[-4:]}"
+
+    return obfuscated
 
 
 def obfuscate_sensitive_body(
@@ -60,22 +56,27 @@ def obfuscate_sensitive_body(
     model_name: str,
     sensitive_fields: list[str],
 ) -> dict[str, Any]:
-    obfuscated_body = body.copy()
+    obfuscated = body.copy()
+
     for field_spec in sensitive_fields:
-        parts = field_spec.split('.')
-        _, field_name, log_chars_str = parts
-        log_chars = int(log_chars_str)
-        full_field_name = f"{model_name}.{field_name}.{log_chars}"
+
+        _, field_name, log_chars_str = field_spec.split('.')
+        full_field_name = f"{model_name}.{field_name}.{log_chars_str}"
+
         if (
-            full_field_name in sensitive_fields
-            and field_name in obfuscated_body
+            full_field_name not in sensitive_fields
+            or field_name not in obfuscated
         ):
-            value = obfuscated_body[field_name]
-            if log_chars > 0:
-                obfuscated_body[field_name] = '*' * 5 + value[-log_chars:]
-            else:
-                obfuscated_body[field_name] = '*' * 5
-    return obfuscated_body
+            continue
+
+        value = obfuscated[field_name]
+        log_chars = int(log_chars_str)
+
+        obfuscated[field_name] = (
+            '*' * 5 + value[-log_chars:] if log_chars > 0 else '*' * 5
+        )
+
+    return obfuscated
 
 
 def parse_body(body: bytes) -> Union[dict, None]:
@@ -110,24 +111,38 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
 
             # Get request and response models
             route = request.scope.get("route")
-            response_model = ""
-            request_model = ""
-            if isinstance(route, APIRoute) and hasattr(
-                route.response_model, "__name__"
-            ):  # pragma: no cover
-                response_model = route.response_model.__name__
-                for dep in route.dependant.body_params:
-                    if isinstance(dep.type_, type) and issubclass(
-                        dep.type_, BaseModel
-                    ):  # pragma: no cover
-                        request_model = dep.type_.__name__
+
+            response_model = (
+                route.response_model.__name__
+                if isinstance(route, APIRoute)
+                and hasattr(route.response_model, "__name__")
+                else ""
+            )
+
+            request_model = (
+                next(
+                    (
+                        dep.type_.__name__
+                        for dep in route.dependant.body_params
+                        if isinstance(dep.type_, type)
+                        and issubclass(dep.type_, BaseModel)
+                    ),
+                    "",
+                )
+                if isinstance(route, APIRoute)
+                else ""
+            )
 
             body_decoded = parse_body(body)
-            obfuscated_request_body = None
-            if body_decoded:
-                obfuscated_request_body = obfuscate_sensitive_body(
+
+            obfuscated_request_body = (
+                obfuscate_sensitive_body(
                     body_decoded, request_model, SENSITIVE_REQUEST_MODEL_FIELDS
                 )
+                if body_decoded
+                else None
+            )
+
             obfuscated_headers = obfuscate_sensitive_headers(
                 headers, SENSITIVE_HEADERS
             )
@@ -141,13 +156,16 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
             }
 
             parsed_body = parse_body(response_body)
-            obfuscated_response_body = None
-            if parsed_body and isinstance(parsed_body, dict):
-                obfuscated_response_body = obfuscate_sensitive_body(
+
+            obfuscated_response_body = (
+                obfuscate_sensitive_body(
                     parsed_body,
                     response_model,
                     SENSITIVE_RESPONSE_MODEL_FIELDS,
                 )
+                if parsed_body and isinstance(parsed_body, dict)
+                else None
+            )
 
             response_info = {
                 "status_code": response.status_code,

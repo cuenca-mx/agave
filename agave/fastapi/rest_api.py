@@ -1,9 +1,10 @@
 import inspect
 import mimetypes
-from typing import Any, Optional, get_type_hints
+from typing import Any, Optional
 from urllib.parse import urlencode
 
-from cuenca_validations.types import Metadata, QueryParams
+from cuenca_validations.types import QueryParams
+from cuenca_validations.types.helpers import get_log_config
 
 try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
@@ -445,18 +446,13 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
     Analyzes a Pydantic model and returns a set of field names
     marked as sensitive in their metadata.
     """
-    sensitive_fields: set[str] = set()
-    hints = get_type_hints(model, include_extras=True)
-
-    for field_name, field_type in hints.items():
-        if hasattr(field_type, "__metadata__"):
-            for metadata in field_type.__metadata__:
-                if isinstance(metadata, Metadata):
-                    if metadata.sensitive:
-                        sensitive_fields.add(
-                            f"{model.__name__}."
-                            f"{field_name}."
-                            f"{metadata.log_chars}"
-                        )
-
+    sensitive_fields = set()
+    for field_name, field in model.model_fields.items():
+        log_config = get_log_config(field)
+        if log_config and log_config.masked:
+            sensitive_fields.add(
+                f"{model.__name__}."
+                f"{field_name}."
+                f"{log_config.unmasked_chars_length}"
+            )
     return sensitive_fields
