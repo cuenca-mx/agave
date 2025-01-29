@@ -90,100 +90,92 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         headers = dict(request.headers)
 
-        try:
+        body = await request.body()
+        response = await call_next(request)
 
-            body = await request.body()
-            response = await call_next(request)
+        # Get response body
+        response_body = b""
+        async for chunk in response.body_iterator:
+            response_body += chunk
 
-            # Get response body
-            response_body = b""
-            async for chunk in response.body_iterator:
-                response_body += chunk
+        # Create new response with the same content
+        # This is necessary because we consumed the original response
+        new_response = Response(
+            content=response_body,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+        )
 
-            # Create new response with the same content
-            # This is necessary because we consumed the original response
-            new_response = Response(
-                content=response_body,
-                status_code=response.status_code,
-                headers=dict(response.headers),
-                media_type=response.media_type,
+        # Get request and response models
+        route = request.scope.get("route")
+
+        response_model = (
+            route.response_model.__name__
+            if isinstance(route, APIRoute)
+            and hasattr(route.response_model, "__name__")
+            else ""
+        )
+
+        request_model = (
+            next(
+                (
+                    dep.type_.__name__
+                    for dep in route.dependant.body_params
+                    if isinstance(dep.type_, type)
+                    and issubclass(dep.type_, BaseModel)
+                ),
+                "",
             )
+            if isinstance(route, APIRoute)
+            else ""
+        )
 
-            # Get request and response models
-            route = request.scope.get("route")
+        body_decoded = parse_body(body) if body else None
 
-            response_model = (
-                route.response_model.__name__
-                if isinstance(route, APIRoute)
-                and hasattr(route.response_model, "__name__")
-                else ""
+        obfuscated_request_body = (
+            obfuscate_sensitive_body(
+                body_decoded, request_model, SENSITIVE_REQUEST_MODEL_FIELDS
             )
+            if body_decoded
+            else None
+        )
 
-            request_model = (
-                next(
-                    (
-                        dep.type_.__name__
-                        for dep in route.dependant.body_params
-                        if isinstance(dep.type_, type)
-                        and issubclass(dep.type_, BaseModel)
-                    ),
-                    "",
-                )
-                if isinstance(route, APIRoute)
-                else ""
+        obfuscated_headers = obfuscate_sensitive_headers(
+            headers, SENSITIVE_HEADERS
+        )
+
+        request_info = {
+            "method": request.method,
+            "url": str(request.url),
+            "query_params": request.query_params,
+            "headers": obfuscated_headers,
+            "body": obfuscated_request_body,
+        }
+
+        parsed_body = parse_body(response_body) if response_body else None
+
+        obfuscated_response_body = (
+            obfuscate_sensitive_body(
+                parsed_body,
+                response_model,
+                SENSITIVE_RESPONSE_MODEL_FIELDS,
             )
+            if parsed_body and isinstance(parsed_body, dict)
+            else None
+        )
 
-            body_decoded = parse_body(body)
+        response_info = {
+            "status_code": response.status_code,
+            "headers": dict(response.headers),
+            "body": obfuscated_response_body,
+        }
 
-            obfuscated_request_body = (
-                obfuscate_sensitive_body(
-                    body_decoded, request_model, SENSITIVE_REQUEST_MODEL_FIELDS
-                )
-                if body_decoded
-                else None
-            )
+        completed_request_info = {
+            "request": request_info,
+            "response": response_info,
+        }
 
-            obfuscated_headers = obfuscate_sensitive_headers(
-                headers, SENSITIVE_HEADERS
-            )
+        logger.info(f"Info: {json.dumps(completed_request_info, default=str)}")
 
-            request_info = {
-                "method": request.method,
-                "url": str(request.url),
-                "query_params": request.query_params,
-                "headers": obfuscated_headers,
-                "body": obfuscated_request_body,
-            }
-
-            parsed_body = parse_body(response_body)
-
-            obfuscated_response_body = (
-                obfuscate_sensitive_body(
-                    parsed_body,
-                    response_model,
-                    SENSITIVE_RESPONSE_MODEL_FIELDS,
-                )
-                if parsed_body and isinstance(parsed_body, dict)
-                else None
-            )
-
-            response_info = {
-                "status_code": response.status_code,
-                "headers": dict(response.headers),
-                "body": obfuscated_response_body,
-            }
-
-            completed_request_info = {
-                "request": request_info,
-                "response": response_info,
-            }
-
-            logger.info(
-                f"Info: {json.dumps(completed_request_info, default=str)}"
-            )
-
-            return new_response
-
-        except Exception as e:  # pragma: no cover
-            logger.error(f"Error in FastAgaveRequestLogger: {str(e)}")
-            raise
+        return new_response
