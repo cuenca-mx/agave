@@ -11,6 +11,8 @@ from agave.core.utilis.loggers import (
     get_sensitive_fields,
 )
 
+from .middlewares.loggin_route import LoggingRoute
+
 try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 except ImportError:
@@ -101,6 +103,11 @@ class RestApiBlueprint(APIRouter):
         GET /my_resource/id
         GET /my_resource
         """
+
+        """
+        Add logging to the endpoints
+        """
+        self.route_class = LoggingRoute
 
         def wrapper_resource_class(cls):
             """Wrapper for resource class

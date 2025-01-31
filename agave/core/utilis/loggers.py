@@ -1,5 +1,6 @@
+import json
 from inspect import Signature, signature
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from cuenca_validations.types.helpers import get_log_config
 from pydantic import BaseModel
@@ -81,3 +82,10 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
                 f"{log_config.unmasked_chars_length}"
             )
     return sensitive_fields
+
+
+def parse_body(body: bytes) -> Union[dict, None]:
+    try:
+        return json.loads(body.decode("utf-8"))
+    except Exception:
+        return None
