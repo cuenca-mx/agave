@@ -43,21 +43,24 @@ EXCLUDED_HEADERS.update(
 
 
 class LoggingRoute(APIRoute):
+    def _get_request_model_name(self) -> str:
+        if not self.body_field or not hasattr(
+            self.body_field.type_, '__name__'
+        ):
+            return ''
+        return self.body_field.type_.__name__
+
+    def _get_response_model_name(self) -> str:
+        if not hasattr(self.response_model, '__name__'):
+            return ''
+        return self.response_model.__name__
+
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
 
         async def logging_route_handler(request: Request) -> Response:
-            request_model = (
-                self.body_field.type_.__name__
-                if self.body_field
-                and hasattr(self.body_field.type_, '__name__')
-                else ''
-            )
-            response_model = (
-                self.response_model.__name__
-                if hasattr(self.response_model, '__name__')
-                else ''
-            )
+            request_model = self._get_request_model_name()
+            response_model = self._get_response_model_name()
 
             request_body = await request.body()
             request_json_body = parse_body(request_body)
