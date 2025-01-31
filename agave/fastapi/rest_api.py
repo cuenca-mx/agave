@@ -1,10 +1,15 @@
-import inspect
 import mimetypes
 from typing import Any, Optional
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
-from cuenca_validations.types.helpers import get_log_config
+
+from agave.core.utilis.loggers import (
+    SENSITIVE_REQUEST_MODEL_FIELDS,
+    SENSITIVE_RESPONSE_MODEL_FIELDS,
+    get_request_model,
+    get_sensitive_fields,
+)
 
 try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
@@ -21,10 +26,6 @@ from starlette_context import context
 
 from ..core.blueprints.decorators import copy_attributes
 from ..core.exc import NotFoundError, UnprocessableEntity
-from .middlewares import (
-    SENSITIVE_REQUEST_MODEL_FIELDS,
-    SENSITIVE_RESPONSE_MODEL_FIELDS,
-)
 
 SAMPLE_404 = {
     "summary": "Not found item",
@@ -115,7 +116,7 @@ class RestApiBlueprint(APIRouter):
 
                 # Get sensitive fields from response model
                 sensitive_fields = get_sensitive_fields(response_model)
-                SENSITIVE_RESPONSE_MODEL_FIELDS.extend(sensitive_fields)
+                SENSITIVE_RESPONSE_MODEL_FIELDS.update(sensitive_fields)
 
             """ POST /resource
             Create a FastApi endpoint using the method "create"
@@ -126,19 +127,14 @@ class RestApiBlueprint(APIRouter):
             """
             if hasattr(cls, 'create'):
 
-                # Get input model from create method's type hints
-                create_signature = inspect.signature(cls.create)
-                parameters = list(create_signature.parameters.values())
-                request_model = None
-
-                # Validate if the method has parameters
-                # First one must have a type annotation
-                if parameters:
-                    request_param = parameters[0]
-                    request_model = request_param.annotation
-                    # Get sensitive fields from request model
-                    sensitive_fields = get_sensitive_fields(request_model)
-                    SENSITIVE_REQUEST_MODEL_FIELDS.extend(sensitive_fields)
+                # Get input model and sensitive fields from create method
+                request_model = get_request_model(cls.create)
+                sensitive_fields = (
+                    get_sensitive_fields(request_model)
+                    if request_model
+                    else set()
+                )
+                SENSITIVE_REQUEST_MODEL_FIELDS.update(sensitive_fields)
 
                 route = self.post(
                     path,
@@ -439,20 +435,3 @@ def json_openapi(code: int, description, samples: list[dict]) -> dict:
             'content': {'application/json': {'examples': examples}},
         },
     }
-
-
-def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
-    """
-    Analyzes a Pydantic model and returns a set of field names
-    marked as sensitive in their metadata.
-    """
-    sensitive_fields = set()
-    for field_name, field in model.model_fields.items():
-        log_config = get_log_config(field)
-        if log_config and log_config.masked:
-            sensitive_fields.add(
-                f"{model.__name__}."
-                f"{field_name}."
-                f"{log_config.unmasked_chars_length}"
-            )
-    return sensitive_fields

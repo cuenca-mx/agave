@@ -1,13 +1,22 @@
 import json
 import logging
 import sys
-from typing import Any, Union
+from typing import Union
 
 from fastapi import Request
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
+
+from agave.core.utilis.loggers import (
+    EXCLUDED_HEADERS,
+    SENSITIVE_HEADERS,
+    SENSITIVE_REQUEST_MODEL_FIELDS,
+    SENSITIVE_RESPONSE_MODEL_FIELDS,
+    obfuscate_sensitive_body,
+    obfuscate_sensitive_headers,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,65 +27,21 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-AUTH_HEADER = 'authorization'
-JWT_HEADER = 'X-Cuenca-Token'
-LOGIN_HEADER = 'X-Cuenca-LoginId'
-LOGIN_TOKEN_HEADER = 'X-Cuenca-LoginToken'
-SESSION_HEADER = 'X-Cuenca-SessionId'
-
-SENSITIVE_HEADERS = [
-    AUTH_HEADER,
-    JWT_HEADER,
-    LOGIN_HEADER,
-    LOGIN_TOKEN_HEADER,
-    SESSION_HEADER,
-]
-
-EXCLUDED_HEADERS: list[str] = ['connection']
-SENSITIVE_RESPONSE_MODEL_FIELDS: list[str] = []
-SENSITIVE_REQUEST_MODEL_FIELDS: list[str] = []
-
-
-def obfuscate_sensitive_headers(
-    headers: dict[str, Any], sensitive_headers: list[str]
-) -> dict[str, Any]:
-    obfuscated = {
-        k: v for k, v in headers.items() if k.lower() not in EXCLUDED_HEADERS
+SENSITIVE_HEADERS.update(
+    {
+        'authorization',
+        'X-Cuenca-Token',
+        'X-Cuenca-LoginId',
+        'X-Cuenca-LoginToken',
+        'X-Cuenca-SessionId',
     }
+)
 
-    for header in sensitive_headers:
-        if (value := obfuscated.get(header.lower())) and len(value) > 4:
-            obfuscated[header.lower()] = f"{'*' * 5}{value[-4:]}"
-
-    return obfuscated
-
-
-def obfuscate_sensitive_body(
-    body: dict[str, Any],
-    model_name: str,
-    sensitive_fields: list[str],
-) -> dict[str, Any]:
-    obfuscated = body.copy()
-
-    for field_spec in sensitive_fields:
-
-        _, field_name, log_chars_str = field_spec.split('.')
-        full_field_name = f"{model_name}.{field_name}.{log_chars_str}"
-
-        if (
-            full_field_name not in sensitive_fields
-            or field_name not in obfuscated
-        ):
-            continue
-
-        value = obfuscated[field_name]
-        log_chars = int(log_chars_str)
-
-        obfuscated[field_name] = (
-            '*' * 5 + value[-log_chars:] if log_chars > 0 else '*' * 5
-        )
-
-    return obfuscated
+EXCLUDED_HEADERS.update(
+    {
+        'connection',
+    }
+)
 
 
 def parse_body(body: bytes) -> Union[dict, None]:
@@ -141,9 +106,7 @@ class AgaveRequestLogger(BaseHTTPMiddleware):
             else None
         )
 
-        obfuscated_headers = obfuscate_sensitive_headers(
-            headers, SENSITIVE_HEADERS
-        )
+        obfuscated_headers = obfuscate_sensitive_headers(headers)
 
         request_info = {
             "method": request.method,
