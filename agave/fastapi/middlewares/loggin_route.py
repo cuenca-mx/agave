@@ -44,16 +44,10 @@ EXCLUDED_HEADERS.update(
 
 class LoggingRoute(APIRoute):
     def _get_request_model_name(self) -> str:
-        if not self.body_field or not hasattr(
-            self.body_field.type_, '__name__'
-        ):
-            return ''
-        return self.body_field.type_.__name__
+        return getattr(getattr(self.body_field, 'type_', None), '__name__', '')
 
     def _get_response_model_name(self) -> str:
-        if not hasattr(self.response_model, '__name__'):
-            return ''
-        return self.response_model.__name__
+        return getattr(self.response_model, '__name__', '')
 
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
