@@ -43,64 +43,68 @@ EXCLUDED_HEADERS.update(
 
 
 class LoggingRoute(APIRoute):
-    def _get_request_model_name(self) -> str:
+    @property
+    def request_model_name(self) -> str:
         return getattr(getattr(self.body_field, 'type_', None), '__name__', '')
 
-    def _get_response_model_name(self) -> str:
+    @property
+    def response_model_name(self) -> str:
         return getattr(self.response_model, '__name__', '')
+
+    def _generate_request_info(
+        self, request: Request, request_body: bytes
+    ) -> dict:
+        request_json_body = parse_body(request_body)
+        return {
+            'method': request.method,
+            'url': str(request.url),
+            'query_params': dict(request.query_params),
+            'headers': obfuscate_sensitive_headers(dict(request.headers)),
+            'body': (
+                obfuscate_sensitive_body(
+                    request_json_body,
+                    self.request_model_name,
+                    SENSITIVE_REQUEST_MODEL_FIELDS,
+                )
+                if request_json_body
+                else None
+            ),
+        }
+
+    def _generate_response_info(self, response: Response) -> dict:
+        response_body = (
+            parse_body(response.body) if hasattr(response, 'body') else None
+        )
+        return {
+            'status_code': response.status_code,
+            'headers': dict(response.headers),
+            'body': (
+                obfuscate_sensitive_body(
+                    response_body,
+                    self.response_model_name,
+                    SENSITIVE_RESPONSE_MODEL_FIELDS,
+                )
+                if response_body and isinstance(response_body, dict)
+                else None
+            ),
+        }
 
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
 
         async def logging_route_handler(request: Request) -> Response:
-            request_model = self._get_request_model_name()
-            response_model = self._get_response_model_name()
-
             request_body = await request.body()
-            request_json_body = parse_body(request_body)
-            response: Response = await original_route_handler(request)
-            response_body = (
-                parse_body(response.body)
-                if hasattr(response, 'body')
-                else None
+            request_info = self._generate_request_info(request, request_body)
+            logger.info(
+                'Request Info: %s',
+                json.dumps({'request': request_info}, default=str),
             )
 
-            request_info = {
-                "method": request.method,
-                "url": str(request.url),
-                "query_params": request.query_params,
-                "headers": obfuscate_sensitive_headers(dict(request.headers)),
-                "body": (
-                    obfuscate_sensitive_body(
-                        request_json_body,
-                        request_model,
-                        SENSITIVE_REQUEST_MODEL_FIELDS,
-                    )
-                    if request_json_body
-                    else None
-                ),
-            }
-
-            response_info = {
-                "status_code": response.status_code,
-                "headers": dict(response.headers),
-                "body": (
-                    obfuscate_sensitive_body(
-                        response_body,
-                        response_model,
-                        SENSITIVE_RESPONSE_MODEL_FIELDS,
-                    )
-                    if response_body and isinstance(response_body, dict)
-                    else None
-                ),
-            }
-
+            response: Response = await original_route_handler(request)
+            response_info = self._generate_response_info(response)
             logger.info(
-                "Info: %s",
-                json.dumps(
-                    {"request": request_info, "response": response_info},
-                    default=str,
-                ),
+                'Response Info: %s',
+                json.dumps({'response': response_info}, default=str),
             )
 
             return response
