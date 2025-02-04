@@ -3,6 +3,7 @@ import logging
 import sys
 from typing import Callable
 
+from cuenca_validations.errors import CuencaError
 from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -99,6 +100,8 @@ class LoggingRoute(APIRoute):
             return 422, str(exc.errors())
         if isinstance(exc, AgaveError):
             return exc.status_code, str(exc.error)
+        if isinstance(exc, CuencaError):
+            return exc.status_code, str(exc)
         return 500, 'Internal Server Error'
 
     def _log_request_response(

@@ -246,7 +246,6 @@ def test_logger_internal_server_error(fastapi_client: TestClient) -> None:
     """
     Test that verifies:
     - A request that causes a 500 error is logged.
-    - The request is logged correctly.
     """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -278,7 +277,6 @@ def test_logger_bad_request(fastapi_client: TestClient) -> None:
     """
     Test that verifies:
     - A request that causes a 400 error is logged.
-    - The request is logged correctly.
     """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -300,6 +298,37 @@ def test_logger_bad_request(fastapi_client: TestClient) -> None:
         )
         assert log_data['request']['method'] == 'POST'
         assert log_data['request']['url'].endswith('/simulate_400')
+        assert log_data['request']['body'] == request_data
+
+    finally:
+        logger.handlers = original_handlers
+
+
+def test_logger_unauthorized(fastapi_client: TestClient) -> None:
+    """
+    Test that verifies:
+    - A request that causes a 401 error is logged.
+    """
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    original_handlers = logger.handlers
+    log_stream = StringIO()
+    log_handler = logging.StreamHandler(log_stream)
+    logger.handlers = [log_handler]
+
+    try:
+        request_data = {'some_field': 'some value'}
+        response = fastapi_client.post('/simulate_401', json=request_data)
+        assert response.status_code == 401
+
+        log_output = log_stream.getvalue()
+        log_data = extract_log_data(
+            log_output,
+            r"Info: (\{.*\})",
+            "Info not found in logs",
+        )
+        assert log_data['request']['method'] == 'POST'
+        assert log_data['request']['url'].endswith('/simulate_401')
         assert log_data['request']['body'] == request_data
 
     finally:

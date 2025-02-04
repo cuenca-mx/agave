@@ -1,6 +1,7 @@
 import asyncio
 
 import mongomock as mongomock
+from cuenca_validations.errors import NoPasswordFoundError
 from fastapi import APIRouter, FastAPI, HTTPException
 from mongoengine import connect
 
@@ -41,6 +42,12 @@ def simulate_bad_request():
 def simulate_internal_error():
     """Simulated endpoint that raises an internal server error (500)."""
     raise RuntimeError("Intentional server error")
+
+
+@router.post("/simulate_401")
+def simulate_unauthorized():
+    """Simulated endpoint that raises an unauthorized error (401)."""
+    raise NoPasswordFoundError('Password not set')
 
 
 app.include_router(router)
