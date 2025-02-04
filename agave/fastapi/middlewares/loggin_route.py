@@ -132,7 +132,7 @@ class LoggingRoute(APIRoute):
                 }
 
                 response = JSONResponse(
-                    content={'detail': detail},
+                    content={'error': detail},
                     status_code=status_code,
                 )
 
