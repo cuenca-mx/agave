@@ -44,24 +44,17 @@ def test_logger_retrieve_resource(
 
         # Extract and validate logger output
         log_output = log_stream.getvalue()
-        log_data_request = extract_log_data(
+        log_data = extract_log_data(
             log_output,
-            r"Request Info: (\{.*\})",
-            "Request Info not found in logs",
-        )
-        log_data_response = extract_log_data(
-            log_output,
-            r"Response Info: (\{.*\})",
-            "Response Info not found in logs",
+            r"Info: (\{.*\})",
+            "Info not found in logs",
         )
 
-        assert log_data_request['request']['method'] == 'GET'
-        assert log_data_request['request']['url'].endswith(
-            f'/accounts/{account.id}'
-        )
+        assert log_data['request']['method'] == 'GET'
+        assert log_data['request']['url'].endswith(f'/accounts/{account.id}')
 
-        assert log_data_response['response']['status_code'] == 200
-        assert log_data_response['response']['body'] == response_body
+        assert log_data['response']['status_code'] == 200
+        assert log_data['response']['body'] == response_body
     finally:
         logger.handlers = original_handlers
 
@@ -88,13 +81,14 @@ def test_logger_create_resource_bad_request(
 
         # Extract and validate logger output
         log_output = log_stream.getvalue()
-        log_data_request = extract_log_data(
+        log_data = extract_log_data(
             log_output,
-            r"Request Info: (\{.*\})",
-            "Request Info not found in logs",
+            r"Info: (\{.*\})",
+            "Info not found in logs",
         )
 
-        assert log_data_request['request']['body'] == request_data
+        assert log_data['request']['body'] == request_data
+        assert log_data['response']['status_code'] == 422
     finally:
         logger.handlers = original_handlers
 
@@ -122,16 +116,14 @@ def test_logger_test_logger_retrieve_resource_not_found(
 
         # Extract and validate logger output
         log_output = log_stream.getvalue()
-        log_data_request = extract_log_data(
+        log_data = extract_log_data(
             log_output,
-            r"Request Info: (\{.*\})",
-            "Request Info not found in logs",
+            r"Info: (\{.*\})",
+            "Info not found in logs",
         )
 
-        assert log_data_request["request"]["method"] == "GET"
-        assert log_data_request["request"]["url"].endswith(
-            f"/accounts/{resource_id}"
-        )
+        assert log_data["request"]["method"] == "GET"
+        assert log_data["request"]["url"].endswith(f"/accounts/{resource_id}")
     finally:
         logger.handlers = original_handlers
 
@@ -167,8 +159,8 @@ def test_logger_upload_resource(fastapi_client: TestClient) -> None:
         log_output = log_stream.getvalue()
         log_data = extract_log_data(
             log_output,
-            r"Request Info: (\{.*\})",
-            "Request Info not found in logs",
+            r"Info: (\{.*\})",
+            "Info not found in logs",
         )
 
         assert log_data['request']['body'] is None
@@ -218,32 +210,27 @@ def test_logger_api_route(fastapi_client: TestClient) -> None:
 
         # Extract and validate logger output
         log_output = log_stream.getvalue()
-        log_data_request = extract_log_data(
+        log_data = extract_log_data(
             log_output,
-            r"Request Info: (\{.*\})",
-            "Request Info not found in logs",
-        )
-        log_data_response = extract_log_data(
-            log_output,
-            r"Response Info: (\{.*\})",
-            "Response Info not found in logs",
+            r"Info: (\{.*\})",
+            "Info not found in logs",
         )
 
         # Validate request headers masking
-        logged_headers = log_data_request['request']['headers']
+        logged_headers = log_data['request']['headers']
         assert logged_headers['x-cuenca-loginid'] == '*****n-id'
         assert logged_headers['x-cuenca-logintoken'] == '*****oken'
         assert logged_headers['authorization'] == '123'
         assert 'connection' not in logged_headers  # Ensuring it is removed
 
         # Validate request body masking
-        logged_request_body = log_data_request['request']['body']
+        logged_request_body = log_data['request']['body']
         assert logged_request_body['password'] == '*****'
         assert logged_request_body['user'] == 'user'
         assert logged_request_body['short_secret'] == '*****'
 
         # Validate response body masking
-        logged_response_body = log_data_response['response']['body']
+        logged_response_body = log_data['response']['body']
         assert logged_response_body['secret'] == '*****-key'
         assert logged_response_body['password'] == '*****word'
         assert logged_response_body['user_id'] == 'US123456789'
@@ -260,7 +247,6 @@ def test_logger_internal_server_error(fastapi_client: TestClient) -> None:
     Test that verifies:
     - A request that causes a 500 error is logged.
     - The request is logged correctly.
-    - The response is NOT logged, since the server crashed.
     """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -275,15 +261,46 @@ def test_logger_internal_server_error(fastapi_client: TestClient) -> None:
         assert response.status_code == 500
 
         log_output = log_stream.getvalue()
-
-        log_data_request = extract_log_data(
+        log_data = extract_log_data(
             log_output,
-            r"Request Info: (\{.*\})",
-            "Request Info not found in logs",
+            r"Info: (\{.*\})",
+            "Info not found in logs",
         )
-        assert log_data_request['request']['method'] == 'POST'
-        assert log_data_request['request']['url'].endswith('/simulate_500')
-        assert log_data_request['request']['body'] == request_data
+        assert log_data['request']['method'] == 'POST'
+        assert log_data['request']['url'].endswith('/simulate_500')
+        assert log_data['request']['body'] == request_data
+
+    finally:
+        logger.handlers = original_handlers
+
+
+def test_logger_bad_request(fastapi_client: TestClient) -> None:
+    """
+    Test that verifies:
+    - A request that causes a 400 error is logged.
+    - The request is logged correctly.
+    """
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    original_handlers = logger.handlers
+    log_stream = StringIO()
+    log_handler = logging.StreamHandler(log_stream)
+    logger.handlers = [log_handler]
+
+    try:
+        request_data = {'some_field': 'some value'}
+        response = fastapi_client.post('/simulate_400', json=request_data)
+        assert response.status_code == 400
+
+        log_output = log_stream.getvalue()
+        log_data = extract_log_data(
+            log_output,
+            r"Info: (\{.*\})",
+            "Info not found in logs",
+        )
+        assert log_data['request']['method'] == 'POST'
+        assert log_data['request']['url'].endswith('/simulate_400')
+        assert log_data['request']['body'] == request_data
 
     finally:
         logger.handlers = original_handlers

@@ -31,10 +31,16 @@ async def iam_healty() -> dict:
     return dict(greeting="I'm healthy!!!")
 
 
+@router.post("/simulate_400")
+def simulate_bad_request():
+    """Simulated endpoint that raises a bad request error (400)."""
+    raise HTTPException(status_code=400, detail="Intentional bad request")
+
+
 @router.post("/simulate_500")
 def simulate_internal_error():
     """Simulated endpoint that raises an internal server error (500)."""
-    raise HTTPException(status_code=500, detail="Intentional server error")
+    raise RuntimeError("Intentional server error")
 
 
 app.include_router(router)
