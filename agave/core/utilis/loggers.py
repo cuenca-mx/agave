@@ -76,6 +76,11 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
     marked as sensitive in their metadata.
     """
 
+    sensitive_fields: set[str] = set()
+
+    if not issubclass(model, BaseModel):
+        return sensitive_fields
+
     sensitive_fields = set()
     for field_name, field in model.model_fields.items():
         log_config = get_log_config(field)
