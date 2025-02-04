@@ -41,6 +41,10 @@ def obfuscate_sensitive_body(
         ):
             continue
 
+        if full_field_name.endswith('.excluded'):
+            del obfuscated[field_name]
+            continue
+
         value = obfuscated[field_name]
         log_chars = int(log_chars_str)
 
@@ -80,6 +84,10 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
                 f"{model.__name__}."
                 f"{field_name}."
                 f"{log_config.unmasked_chars_length}"
+            )
+        if log_config and log_config.excluded:
+            sensitive_fields.add(
+                f"{model.__name__}." f"{field_name}." f"excluded"
             )
     return sensitive_fields
 

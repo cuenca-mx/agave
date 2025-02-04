@@ -55,7 +55,9 @@ class ApiKeyResponse(BaseModel):
     user_id: Annotated[str, LogConfig(masked=False)]
     platform_id: str
     created_at: dt.datetime
-    deactivated_at: Optional[dt.datetime] = None
+    deactivated_at: Annotated[
+        Optional[dt.datetime], LogConfig(excluded=True)
+    ] = None
     another_field: Annotated[
         str,
         Field(

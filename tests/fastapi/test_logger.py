@@ -248,5 +248,8 @@ def test_logger_api_route(fastapi_client: TestClient) -> None:
         assert logged_response_body['password'] == '*****word'
         assert logged_response_body['user_id'] == 'US123456789'
         assert logged_response_body['platform_id'] == 'PT123456'
+        assert (
+            'deactivated_at' not in logged_response_body
+        )  # Ensuring it is removed
     finally:
         logger.handlers = original_handlers
