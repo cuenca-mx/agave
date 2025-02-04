@@ -11,6 +11,23 @@ SENSITIVE_RESPONSE_MODEL_FIELDS: set[str] = set()
 SENSITIVE_REQUEST_MODEL_FIELDS: set[str] = set()
 
 
+SENSITIVE_HEADERS.update(
+    {
+        'authorization',
+        'X-Cuenca-Token',
+        'X-Cuenca-LoginId',
+        'X-Cuenca-LoginToken',
+        'X-Cuenca-SessionId',
+    }
+)
+
+EXCLUDED_HEADERS.update(
+    {
+        'connection',
+    }
+)
+
+
 def obfuscate_sensitive_headers(headers: dict[str, Any]) -> dict[str, Any]:
     obfuscated = {
         k: v for k, v in headers.items() if k.lower() not in EXCLUDED_HEADERS

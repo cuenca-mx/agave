@@ -11,8 +11,6 @@ from fastapi.routing import APIRoute
 
 from agave.core.exc import AgaveError
 from agave.core.utilis.loggers import (
-    EXCLUDED_HEADERS,
-    SENSITIVE_HEADERS,
     SENSITIVE_REQUEST_MODEL_FIELDS,
     SENSITIVE_RESPONSE_MODEL_FIELDS,
     obfuscate_sensitive_body,
@@ -28,22 +26,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-SENSITIVE_HEADERS.update(
-    {
-        'authorization',
-        'X-Cuenca-Token',
-        'X-Cuenca-LoginId',
-        'X-Cuenca-LoginToken',
-        'X-Cuenca-SessionId',
-    }
-)
-
-EXCLUDED_HEADERS.update(
-    {
-        'connection',
-    }
-)
 
 
 class LoggingRoute(APIRoute):
