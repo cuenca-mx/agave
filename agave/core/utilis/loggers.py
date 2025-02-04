@@ -81,7 +81,6 @@ def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
     if not issubclass(model, BaseModel):
         return sensitive_fields
 
-    sensitive_fields = set()
     for field_name, field in model.model_fields.items():
         log_config = get_log_config(field)
         if log_config and log_config.masked:
