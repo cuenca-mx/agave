@@ -1,10 +1,11 @@
 import asyncio
 
 import mongomock as mongomock
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
 from mongoengine import connect
 
 from agave.fastapi.middlewares import AgaveErrorHandler
+from agave.fastapi.middlewares.loggin_route import LoggingRoute
 
 from ..tasks.task_example import dummy_task, task_validator
 from .middlewares import AuthedMiddleware
@@ -15,6 +16,9 @@ connect(
     mongo_client_class=mongomock.MongoClient,
 )
 app = FastAPI(title='example')
+
+router = APIRouter(route_class=LoggingRoute)
+
 app.include_router(resources)
 
 
@@ -25,6 +29,15 @@ app.add_middleware(AgaveErrorHandler)
 @app.get('/')
 async def iam_healty() -> dict:
     return dict(greeting="I'm healthy!!!")
+
+
+@router.post("/simulate_500")
+def simulate_internal_error():
+    """Simulated endpoint that raises an internal server error (500)."""
+    raise HTTPException(status_code=500, detail="Intentional server error")
+
+
+app.include_router(router)
 
 
 @app.on_event('startup')
