@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
 
-from agave.core.utilis.loggers import (
+from agave.core.loggers import (
     SENSITIVE_REQUEST_MODEL_FIELDS,
     SENSITIVE_RESPONSE_MODEL_FIELDS,
     get_request_model,

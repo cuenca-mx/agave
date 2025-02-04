@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 from agave.core.exc import AgaveError
-from agave.core.utilis.loggers import (
+from agave.core.loggers import (
     SENSITIVE_REQUEST_MODEL_FIELDS,
     SENSITIVE_RESPONSE_MODEL_FIELDS,
     obfuscate_sensitive_body,
