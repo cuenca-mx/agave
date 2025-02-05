@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 from typing import Any, Callable, Union
 
 from cuenca_validations.errors import CuencaError
