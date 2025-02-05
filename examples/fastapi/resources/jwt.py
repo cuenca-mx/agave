@@ -11,4 +11,4 @@ class Jwt:
 
     @staticmethod
     async def create(request: Request) -> Response:
-        return Response(content={}, status_code=201)
+        return Response(content={'id': '1234567890'}, status_code=201)

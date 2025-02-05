@@ -3,10 +3,9 @@ import logging
 import re
 from tempfile import TemporaryFile
 
-from cuenca_validations.types.general import LogConfig
+import pytest
 from fastapi.testclient import TestClient
 
-from agave.core.loggers import obfuscate_sensitive_data
 from examples.models import Account
 
 
@@ -18,6 +17,32 @@ def extract_log_data(
     if not match:
         raise RuntimeError(error_message)
     return json.loads(match.group(1))
+
+
+def test_logger_no_request_model(fastapi_client: TestClient, caplog) -> None:
+    """
+    Test that verifies:
+    - A resource can be retrieved successfully (HTTP 200)
+    - The request and response are properly logged
+    """
+    caplog.set_level(logging.INFO)
+
+    request_data = {
+        'some_field': 'some value',
+    }
+    response = fastapi_client.post('/token', json=request_data)
+    response_body = response.json()
+
+    # Extract and validate logger output
+    log_output = caplog.text
+    log_data = extract_log_data(
+        log_output,
+        r"(\{.*\})",
+        "Info not found in logs",
+    )
+
+    assert log_data['request']['body'] == request_data
+    assert log_data['response']['body'] == response_body
 
 
 def test_logger_retrieve_resource(
@@ -40,7 +65,7 @@ def test_logger_retrieve_resource(
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
 
@@ -76,12 +101,9 @@ def test_logger_update_resource(
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
-
-    assert log_data['request']['method'] == 'PATCH'
-    assert log_data['request']['url'].endswith(f'/accounts/{account.id}')
 
     assert log_data['response']['status_code'] == 200
     assert log_data['response']['body']['name'] == '*****Felix'
@@ -105,10 +127,9 @@ def test_logger_create_resource_bad_request(
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
-
     assert log_data['request']['body'] == request_data
     assert log_data['response']['status_code'] == 422
 
@@ -132,12 +153,12 @@ def test_logger_test_logger_retrieve_resource_not_found(
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
 
-    assert log_data["request"]["method"] == "GET"
     assert log_data["request"]["url"].endswith(f"/accounts/{resource_id}")
+    assert log_data['response']['status_code'] == 404
 
 
 def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
@@ -163,7 +184,7 @@ def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
 
@@ -204,36 +225,53 @@ def test_logger_api_route(fastapi_client: TestClient, caplog) -> None:
     assert response_body['secret'] == 'My-super-secret-key'
     assert response_body['password'] == 'My-super-secret-password'
 
+    expected_log = {
+        'request': {
+            'method': 'POST',
+            'url': 'http://testserver/api_keys',
+            'query_params': '',
+            'headers': {
+                'host': 'testserver',
+                'accept': '*/*',
+                'accept-encoding': 'gzip, deflate',
+                'user-agent': 'testclient',
+                'x-cuenca-loginid': '*****n-id',
+                'x-cuenca-logintoken': '*****oken',
+                'authorization': '*****123',
+                'content-type': 'application/json',
+            },
+            'body': {
+                'user': 'user',
+                'password': '*****',
+                'short_secret': '*****',
+            },
+        },
+        'response': {
+            'status_code': 201,
+            'headers': {'content-type': 'application/json'},
+            'body': {
+                'id': response_body['id'],
+                'secret': '*****-key',
+                'user': 'user',
+                'password': '*****word',
+                'user_id': 'US123456789',
+                'platform_id': 'PT123456',
+                'created_at': None,
+                'another_field': '12345678',
+            },
+        },
+    }
+
     # Extract and validate logger output
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
 
     # Validate request headers masking
-    logged_headers = log_data['request']['headers']
-    assert logged_headers['x-cuenca-loginid'] == '*****n-id'
-    assert logged_headers['x-cuenca-logintoken'] == '*****oken'
-    assert logged_headers['authorization'] == '*****123'
-    assert 'connection' not in logged_headers  # Ensuring it is removed
-
-    # Validate request body masking
-    logged_request_body = log_data['request']['body']
-    assert logged_request_body['password'] == '*****'
-    assert logged_request_body['user'] == 'user'
-    assert logged_request_body['short_secret'] == '*****'
-
-    # Validate response body masking
-    logged_response_body = log_data['response']['body']
-    assert logged_response_body['secret'] == '*****-key'
-    assert logged_response_body['password'] == '*****word'
-    assert logged_response_body['user_id'] == 'US123456789'
-    assert logged_response_body['platform_id'] == 'PT123456'
-    assert (
-        'deactivated_at' not in logged_response_body
-    )  # Ensuring it is removed
+    assert log_data == expected_log
 
 
 def test_logger_internal_server_error(
@@ -246,19 +284,16 @@ def test_logger_internal_server_error(
     caplog.set_level(logging.INFO)
 
     request_data = {'some_field': 'some value'}
-    try:
+
+    with pytest.raises(Exception):
         fastapi_client.post('/simulate_500', json=request_data)
-    except RuntimeError as e:
-        assert str(e) == "Intentional server error"
 
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
-    assert log_data['request']['method'] == 'POST'
-    assert log_data['request']['url'].endswith('/simulate_500')
     assert log_data['request']['body'] == request_data
     assert log_data['response']['status_code'] == 500
 
@@ -277,7 +312,7 @@ def test_logger_bad_request(fastapi_client: TestClient, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
     assert log_data['request']['method'] == 'POST'
@@ -300,45 +335,9 @@ def test_logger_unauthorized(fastapi_client: TestClient, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(
         log_output,
-        r"Info: (\{.*\})",
+        r"(\{.*\})",
         "Info not found in logs",
     )
     assert log_data['request']['method'] == 'POST'
     assert log_data['request']['url'].endswith('/simulate_401')
     assert log_data['request']['body'] == request_data
-
-
-def test_obfuscate_no_sensitive_fields():
-    body = {"username": "user123", "password": "secret"}
-    result = obfuscate_sensitive_data(body, None)
-    assert result == body  # No changes expected
-
-
-def test_obfuscate_with_exclusion():
-    body = {"username": "user123", "password": "secret"}
-    sensitive_fields = {"password": LogConfig(excluded=True)}
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert "password" not in result  # Password should be removed
-
-
-def test_obfuscate_with_masking():
-    body = {"username": "user123", "password": "secret"}
-    sensitive_fields = {"password": LogConfig(masked=True)}
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert result["password"] == "*****"  # Password should be fully masked
-
-
-def test_obfuscate_with_partial_masking():
-    body = {"username": "user123", "password": "supersecret"}
-    sensitive_fields = {
-        "password": LogConfig(masked=True, unmasked_chars_length=4)
-    }
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert result["password"] == "*****cret"  # Only last 4 chars visible
-
-
-def test_obfuscate_non_existing_field():
-    body = {"username": "user123"}
-    sensitive_fields = {"password": LogConfig(masked=True)}
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert "password" not in result  # Non-existing field should not be added

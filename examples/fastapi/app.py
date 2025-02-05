@@ -41,7 +41,7 @@ def simulate_bad_request():
 @router.post("/simulate_500")
 def simulate_internal_error():
     """Simulated endpoint that raises an internal server error (500)."""
-    raise RuntimeError("Intentional server error")
+    raise Exception("Intentional server error")
 
 
 @router.post("/simulate_401")

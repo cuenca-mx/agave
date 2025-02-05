@@ -1,5 +1,4 @@
-import json
-from inspect import Signature, signature
+from inspect import Parameter, Signature, signature
 from typing import Any, Optional, Type, Union
 
 from cuenca_validations.types.general import LogConfig
@@ -13,50 +12,50 @@ HEADERS_LOG_CONFIG = {
     'x-cuenca-logintoken': LogConfig(masked=True, unmasked_chars_length=4),
     'x-cuenca-sessionid': LogConfig(masked=True, unmasked_chars_length=4),
     'connection': LogConfig(excluded=True),
+    'content-length': LogConfig(excluded=True),
 }
 
 
 def obfuscate_sensitive_data(
     body: dict[str, Any],
-    sensitive_fields: Union[dict[str, LogConfig], None],
+    sensitive_fields: dict[str, LogConfig],
 ) -> dict[str, Any]:
-    obfuscated_body = body.copy()
 
-    if not sensitive_fields:
-        return obfuscated_body
-
+    ofuscated_body = body.copy()
     for field_name, log_config in sensitive_fields.items():
-        if field_name not in obfuscated_body:
+        if field_name not in ofuscated_body:
             continue
 
         if log_config.excluded:
-            del obfuscated_body[field_name]
+            del ofuscated_body[field_name]
         else:
-            value = obfuscated_body[field_name]
+            value = ofuscated_body[field_name]
             log_chars = log_config.unmasked_chars_length
-            obfuscated_body[field_name] = (
+            ofuscated_body[field_name] = (
                 '*****' + value[-log_chars:] if log_chars > 0 else '*****'
             )
 
-    return obfuscated_body
+    return ofuscated_body
 
 
 def get_request_model(method: Any) -> Optional[Type[BaseModel]]:
     """
-    Analyzes a method's parameters to extract request model.
+    Analyzes a method's parameters to extract the first parameter
+    that inherits from pydantic.BaseModel.
+    If none inherits from pydantic.BaseModel, returns None.
     """
     create_signature: Signature = signature(method)
     parameters = create_signature.parameters.values()
 
-    for param in parameters:
-        if param.name == 'request':
-            return (
-                param.annotation
-                if param.annotation is not param.empty
-                else None
-            )
-
-    return None
+    try:
+        return next(
+            param.annotation
+            for param in parameters
+            if param.annotation is not Parameter.empty
+            and issubclass(param.annotation, BaseModel)
+        )
+    except StopIteration:
+        return None
 
 
 def get_sensitive_fields(
@@ -86,10 +85,3 @@ def get_sensitive_fields(
             sensitive_fields[field_name] = log_config
 
     return sensitive_fields
-
-
-def parse_body(body: bytes) -> Union[dict, None]:
-    try:
-        return json.loads(body.decode("utf-8"))
-    except Exception:
-        return None

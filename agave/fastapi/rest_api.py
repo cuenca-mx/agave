@@ -31,6 +31,10 @@ SAMPLE_404 = {
 
 
 class RestApiBlueprint(APIRouter):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(route_class=LoggingRoute, *args, **kwargs)
+
     @property
     def current_user_id(self) -> str:
         return context['user_id']
@@ -98,11 +102,6 @@ class RestApiBlueprint(APIRouter):
         GET /my_resource/id
         GET /my_resource
         """
-
-        """
-        Add logging to the endpoints
-        """
-        self.route_class = LoggingRoute
 
         def wrapper_resource_class(cls):
             """Wrapper for resource class
