@@ -79,8 +79,6 @@ class LoggingRoute(APIRoute):
                         )
                     except AttributeError:
                         ofuscated_response_body = json.loads(response.body)
-                    except JSONDecodeError:
-                        ofuscated_response_body = None
                 else:
                     ofuscated_response_body = None
 
