@@ -30,15 +30,15 @@ class AccountRequest(BaseModel):
 
 class AccountResponse(BaseModel):
     id: str
-    name: str
-    user_id: str
+    name: Annotated[str, LogConfig(masked=True, unmasked_chars_length=5)]
+    user_id: Annotated[str, LogConfig(masked=False)]
     platform_id: str
     created_at: dt.datetime
     deactivated_at: Optional[dt.datetime] = None
 
 
 class AccountUpdateRequest(BaseModel):
-    name: str
+    name: Annotated[str, LogConfig(masked=True, unmasked_chars_length=5)]
 
 
 class ApiKeyRequest(BaseModel):

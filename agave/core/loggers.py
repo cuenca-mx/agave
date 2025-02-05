@@ -1,115 +1,85 @@
 import json
 from inspect import Signature, signature
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
 
+from cuenca_validations.types.general import LogConfig
 from cuenca_validations.types.helpers import get_log_config
 from pydantic import BaseModel
 
-EXCLUDED_HEADERS: set[str] = set()
-SENSITIVE_HEADERS: set[str] = set()
-SENSITIVE_RESPONSE_MODEL_FIELDS: set[str] = set()
-SENSITIVE_REQUEST_MODEL_FIELDS: set[str] = set()
+HEADERS_LOG_CONFIG = {
+    'authorization': LogConfig(masked=True, unmasked_chars_length=4),
+    'x-cuenca-token': LogConfig(masked=True, unmasked_chars_length=4),
+    'x-cuenca-loginid': LogConfig(masked=True, unmasked_chars_length=4),
+    'x-cuenca-logintoken': LogConfig(masked=True, unmasked_chars_length=4),
+    'x-cuenca-sessionid': LogConfig(masked=True, unmasked_chars_length=4),
+    'connection': LogConfig(excluded=True),
+}
 
 
-SENSITIVE_HEADERS.update(
-    {
-        'authorization',
-        'X-Cuenca-Token',
-        'X-Cuenca-LoginId',
-        'X-Cuenca-LoginToken',
-        'X-Cuenca-SessionId',
-    }
-)
-
-EXCLUDED_HEADERS.update(
-    {
-        'connection',
-    }
-)
-
-
-def obfuscate_sensitive_headers(headers: dict[str, Any]) -> dict[str, Any]:
-    obfuscated = {
-        k: v for k, v in headers.items() if k.lower() not in EXCLUDED_HEADERS
-    }
-
-    for header in SENSITIVE_HEADERS:
-        if (value := obfuscated.get(header.lower())) and len(value) > 4:
-            obfuscated[header.lower()] = f"{'*' * 5}{value[-4:]}"
-
-    return obfuscated
-
-
-def obfuscate_sensitive_body(
+def obfuscate_sensitive_data(
     body: dict[str, Any],
-    model_name: str,
-    sensitive_fields: set[str],
+    sensitive_fields: Union[dict[str, LogConfig], None],
 ) -> dict[str, Any]:
-    obfuscated = body.copy()
+    obfuscated_body = body.copy()
 
-    for field_spec in sensitive_fields:
+    if not sensitive_fields:
+        return obfuscated_body
 
-        _, field_name, log_chars_str = field_spec.split('.')
-        full_field_name = f"{model_name}.{field_name}.{log_chars_str}"
-
-        if (
-            full_field_name not in sensitive_fields
-            or field_name not in obfuscated
-        ):
+    for field_name, log_config in sensitive_fields.items():
+        if field_name not in obfuscated_body:
             continue
 
-        if full_field_name.endswith('.excluded'):
-            del obfuscated[field_name]
-            continue
+        if log_config.excluded:
+            del obfuscated_body[field_name]
+        else:
+            value = obfuscated_body[field_name]
+            log_chars = log_config.unmasked_chars_length
+            obfuscated_body[field_name] = (
+                '*****' + value[-log_chars:] if log_chars > 0 else '*****'
+            )
 
-        value = obfuscated[field_name]
-        log_chars = int(log_chars_str)
-
-        obfuscated[field_name] = (
-            '*' * 5 + value[-log_chars:] if log_chars > 0 else '*' * 5
-        )
-
-    return obfuscated
+    return obfuscated_body
 
 
-def get_request_model(method: Any) -> Optional[type[BaseModel]]:
+def get_request_model(method: Any) -> Optional[Type[BaseModel]]:
     """
     Analyzes a method's parameters to extract request model.
     """
     create_signature: Signature = signature(method)
-    parameters = list(create_signature.parameters.values())
-    request_model = None
+    parameters = create_signature.parameters.values()
 
-    if parameters:
-        request_param = parameters[0]
-        request_model = request_param.annotation
+    for param in parameters:
+        if param.name == 'request':
+            return (
+                param.annotation
+                if param.annotation is not param.empty
+                else None
+            )
 
-    return request_model
+    return None
 
 
-def get_sensitive_fields(model: type[BaseModel]) -> set[str]:
+def get_sensitive_fields(
+    model: Optional[type[Union[BaseModel, Any]]]
+) -> dict[str, Any]:
     """
     Analyzes a Pydantic model and returns a set of field names
     marked as sensitive in their metadata.
     """
+    sensitive_fields: dict[str, Any] = {}
 
-    sensitive_fields: set[str] = set()
-
-    if not issubclass(model, BaseModel):
+    if not model or not issubclass(model, BaseModel):
         return sensitive_fields
 
     for field_name, field in model.model_fields.items():
         log_config = get_log_config(field)
-        if log_config and log_config.masked:
-            sensitive_fields.add(
-                f"{model.__name__}."
-                f"{field_name}."
-                f"{log_config.unmasked_chars_length}"
-            )
-        if log_config and log_config.excluded:
-            sensitive_fields.add(
-                f"{model.__name__}." f"{field_name}." f"excluded"
-            )
+
+        if not log_config:
+            continue
+
+        if log_config.masked or log_config.excluded:
+            sensitive_fields[field_name] = log_config
+
     return sensitive_fields
 
 

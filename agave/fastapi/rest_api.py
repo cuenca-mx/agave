@@ -4,12 +4,7 @@ from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
 
-from agave.core.loggers import (
-    SENSITIVE_REQUEST_MODEL_FIELDS,
-    SENSITIVE_RESPONSE_MODEL_FIELDS,
-    get_request_model,
-    get_sensitive_fields,
-)
+from agave.core.loggers import get_request_model, get_sensitive_fields
 
 from .middlewares.loggin_route import LoggingRoute
 
@@ -121,10 +116,6 @@ class RestApiBlueprint(APIRouter):
                 response_model = cls.response_model
                 response_sample = response_model.schema().get('example')
 
-                # Get sensitive fields from response model
-                sensitive_fields = get_sensitive_fields(response_model)
-                SENSITIVE_RESPONSE_MODEL_FIELDS.update(sensitive_fields)
-
             """ POST /resource
             Create a FastApi endpoint using the method "create"
 
@@ -133,16 +124,6 @@ class RestApiBlueprint(APIRouter):
             validates form data using `Resource.upload_validator`.
             """
             if hasattr(cls, 'create'):
-
-                # Get input model and sensitive fields from create method
-                request_model = get_request_model(cls.create)
-                sensitive_fields = (
-                    get_sensitive_fields(request_model)
-                    if request_model
-                    else set()
-                )
-                SENSITIVE_REQUEST_MODEL_FIELDS.update(sensitive_fields)
-
                 route = self.post(
                     path,
                     summary=f'{cls.__name__} - Create',
@@ -150,6 +131,16 @@ class RestApiBlueprint(APIRouter):
                     status_code=status.HTTP_201_CREATED,
                     include_in_schema=include_in_schema,
                 )
+
+                request_model = get_request_model(cls.create)
+                cls.create.request_model = request_model
+                cls.create.request_log_config_fields = get_sensitive_fields(
+                    request_model
+                )
+                cls.create.response_log_config_fields = get_sensitive_fields(
+                    response_model
+                )
+
                 route(cls.create)
             elif hasattr(cls, 'upload'):
 
@@ -207,6 +198,15 @@ class RestApiBlueprint(APIRouter):
             completely your responsibility.
             """
             if hasattr(cls, 'update'):
+
+                request_model = get_request_model(cls.update)
+                cls.update.request_model = request_model
+                cls.update.request_log_config_fields = get_sensitive_fields(
+                    request_model
+                )
+                cls.update.response_log_config_fields = get_sensitive_fields(
+                    response_model
+                )
 
                 @self.patch(
                     path + '/{id}',
@@ -282,6 +282,10 @@ class RestApiBlueprint(APIRouter):
                     result = obj.to_dict()
 
                 return result
+
+            retrieve.response_log_config_fields = get_sensitive_fields(
+                response_model
+            )
 
             """ GET /resource?param=value
             Use GET method to fetch and count filtered objects

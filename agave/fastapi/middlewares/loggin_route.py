@@ -6,15 +6,12 @@ from typing import Callable
 from cuenca_validations.errors import CuencaError
 from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
 from agave.core.exc import AgaveError
 from agave.core.loggers import (
-    SENSITIVE_REQUEST_MODEL_FIELDS,
-    SENSITIVE_RESPONSE_MODEL_FIELDS,
-    obfuscate_sensitive_body,
-    obfuscate_sensitive_headers,
+    HEADERS_LOG_CONFIG,
+    obfuscate_sensitive_data,
     parse_body,
 )
 
@@ -29,52 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 class LoggingRoute(APIRoute):
-    @property
-    def request_model_name(self) -> str:
-        return getattr(getattr(self.body_field, 'type_', None), '__name__', '')
-
-    @property
-    def response_model_name(self) -> str:
-        return getattr(self.response_model, '__name__', '')
-
-    def _generate_request_info(
-        self, request: Request, request_body: bytes
-    ) -> dict:
-        request_json_body = parse_body(request_body)
-        return {
-            'method': request.method,
-            'url': str(request.url),
-            'query_params': dict(request.query_params),
-            'headers': obfuscate_sensitive_headers(dict(request.headers)),
-            'body': (
-                obfuscate_sensitive_body(
-                    request_json_body,
-                    self.request_model_name,
-                    SENSITIVE_REQUEST_MODEL_FIELDS,
-                )
-                if request_json_body
-                else None
-            ),
-        }
-
-    def _generate_response_info(self, response: Response) -> dict:
-        response_body = (
-            parse_body(response.body) if hasattr(response, 'body') else None
-        )
-        return {
-            'status_code': response.status_code,
-            'headers': dict(response.headers),
-            'body': (
-                obfuscate_sensitive_body(
-                    response_body,
-                    self.response_model_name,
-                    SENSITIVE_RESPONSE_MODEL_FIELDS,
-                )
-                if response_body and isinstance(response_body, dict)
-                else None
-            ),
-        }
-
     def _get_error_details(self, exc: Exception) -> tuple[int, str]:
         if isinstance(exc, HTTPException):
             return exc.status_code, str(exc.detail)
@@ -86,42 +37,83 @@ class LoggingRoute(APIRoute):
             return exc.status_code, str(exc)
         return 500, 'Internal Server Error'
 
-    def _log_request_response(
-        self, request_info: dict, response_info: dict
-    ) -> None:
-        logger.info(
-            'Info: %s',
-            json.dumps(
-                {'request': request_info, 'response': response_info},
-                default=str,
-            ),
-        )
-
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
 
         async def logging_route_handler(request: Request) -> Response:
+
+            request_handler = request.scope['route_handler']
+            request_fields_config = getattr(
+                request_handler.endpoint, 'request_log_config_fields', None
+            )
+            response_fields_config = getattr(
+                request_handler.endpoint, 'response_log_config_fields', None
+            )
+
             request_body = await request.body()
-            request_info = self._generate_request_info(request, request_body)
+            request_json_body = parse_body(request_body)
+
+            log_data = {
+                'request': {
+                    'method': request.method,
+                    'url': str(request.url),
+                    'query_params': dict(request.query_params),
+                    'headers': obfuscate_sensitive_data(
+                        dict(request.headers),
+                        HEADERS_LOG_CONFIG,
+                    ),
+                    'body': (
+                        obfuscate_sensitive_data(
+                            request_json_body,
+                            request_fields_config,
+                        )
+                        if request_json_body
+                        else None
+                    ),
+                }
+            }
+
             response: Response
 
             try:
                 response = await original_route_handler(request)
-                response_info = self._generate_response_info(response)
             except Exception as exc:
                 status_code, detail = self._get_error_details(exc)
 
-                response_info = {
+                log_data['response'] = {
                     'status_code': status_code,
                     'detail': detail,
                 }
-
-                response = JSONResponse(
-                    content={'error': detail},
-                    status_code=status_code,
+                raise
+            else:
+                response_body = (
+                    parse_body(response.body)
+                    if hasattr(response, 'body')
+                    else None
                 )
 
-            self._log_request_response(request_info, response_info)
+                log_data['response'] = {
+                    'status_code': response.status_code,
+                    'headers': dict(response.headers),
+                    'body': (
+                        obfuscate_sensitive_data(
+                            response_body,
+                            response_fields_config,
+                        )
+                        if response_body and isinstance(response_body, dict)
+                        else None
+                    ),
+                }
+
+            finally:
+                logger.info(
+                    'Info: %s',
+                    json.dumps(
+                        log_data,
+                        default=str,
+                    ),
+                )
+
             return response
 
         return logging_route_handler

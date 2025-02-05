@@ -24,7 +24,6 @@ def test_logger_retrieve_resource(
     """
     Test that verifies:
     - A resource can be retrieved successfully (HTTP 200)
-    - The response body matches the expected resource data
     - The request and response are properly logged
     """
     caplog.set_level(logging.INFO)
@@ -47,7 +46,43 @@ def test_logger_retrieve_resource(
     assert log_data['request']['url'].endswith(f'/accounts/{account.id}')
 
     assert log_data['response']['status_code'] == 200
-    assert log_data['response']['body'] == response_body
+    assert log_data['response']['body']['name'] == '*****Kahlo'
+
+
+def test_logger_update_resource(
+    fastapi_client: TestClient, account: Account, caplog
+) -> None:
+    """
+    Test that verifies:
+    - A resource can be updated successfully (HTTP 200)
+    - The request and response are properly logged
+    """
+    caplog.set_level(logging.INFO)
+
+    resp = fastapi_client.patch(
+        f'/accounts/{account.id}',
+        json=dict(name='Maria Felix'),
+    )
+    json_body = resp.json()
+    status_code = resp.status_code
+    account.reload()
+    assert json_body['name'] == 'Maria Felix'
+    assert account.name == 'Maria Felix'
+    assert status_code == 200
+
+    # Extract and validate logger output
+    log_output = caplog.text
+    log_data = extract_log_data(
+        log_output,
+        r"Info: (\{.*\})",
+        "Info not found in logs",
+    )
+
+    assert log_data['request']['method'] == 'PATCH'
+    assert log_data['request']['url'].endswith(f'/accounts/{account.id}')
+
+    assert log_data['response']['status_code'] == 200
+    assert log_data['response']['body']['name'] == '*****Felix'
 
 
 def test_logger_create_resource_bad_request(
@@ -179,7 +214,7 @@ def test_logger_api_route(fastapi_client: TestClient, caplog) -> None:
     logged_headers = log_data['request']['headers']
     assert logged_headers['x-cuenca-loginid'] == '*****n-id'
     assert logged_headers['x-cuenca-logintoken'] == '*****oken'
-    assert logged_headers['authorization'] == '123'
+    assert logged_headers['authorization'] == '*****123'
     assert 'connection' not in logged_headers  # Ensuring it is removed
 
     # Validate request body masking
@@ -209,8 +244,10 @@ def test_logger_internal_server_error(
     caplog.set_level(logging.INFO)
 
     request_data = {'some_field': 'some value'}
-    response = fastapi_client.post('/simulate_500', json=request_data)
-    assert response.status_code == 500
+    try:
+        fastapi_client.post('/simulate_500', json=request_data)
+    except RuntimeError as e:
+        assert str(e) == "Intentional server error"
 
     log_output = caplog.text
     log_data = extract_log_data(
@@ -221,6 +258,7 @@ def test_logger_internal_server_error(
     assert log_data['request']['method'] == 'POST'
     assert log_data['request']['url'].endswith('/simulate_500')
     assert log_data['request']['body'] == request_data
+    assert log_data['response']['status_code'] == 500
 
 
 def test_logger_bad_request(fastapi_client: TestClient, caplog) -> None:
