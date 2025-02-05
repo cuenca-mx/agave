@@ -3,8 +3,10 @@ import logging
 import re
 from tempfile import TemporaryFile
 
+from cuenca_validations.types.general import LogConfig
 from fastapi.testclient import TestClient
 
+from agave.core.loggers import obfuscate_sensitive_data
 from examples.models import Account
 
 
@@ -304,3 +306,39 @@ def test_logger_unauthorized(fastapi_client: TestClient, caplog) -> None:
     assert log_data['request']['method'] == 'POST'
     assert log_data['request']['url'].endswith('/simulate_401')
     assert log_data['request']['body'] == request_data
+
+
+def test_obfuscate_no_sensitive_fields():
+    body = {"username": "user123", "password": "secret"}
+    result = obfuscate_sensitive_data(body, None)
+    assert result == body  # No changes expected
+
+
+def test_obfuscate_with_exclusion():
+    body = {"username": "user123", "password": "secret"}
+    sensitive_fields = {"password": LogConfig(excluded=True)}
+    result = obfuscate_sensitive_data(body, sensitive_fields)
+    assert "password" not in result  # Password should be removed
+
+
+def test_obfuscate_with_masking():
+    body = {"username": "user123", "password": "secret"}
+    sensitive_fields = {"password": LogConfig(masked=True)}
+    result = obfuscate_sensitive_data(body, sensitive_fields)
+    assert result["password"] == "*****"  # Password should be fully masked
+
+
+def test_obfuscate_with_partial_masking():
+    body = {"username": "user123", "password": "supersecret"}
+    sensitive_fields = {
+        "password": LogConfig(masked=True, unmasked_chars_length=4)
+    }
+    result = obfuscate_sensitive_data(body, sensitive_fields)
+    assert result["password"] == "*****cret"  # Only last 4 chars visible
+
+
+def test_obfuscate_non_existing_field():
+    body = {"username": "user123"}
+    sensitive_fields = {"password": LogConfig(masked=True)}
+    result = obfuscate_sensitive_data(body, sensitive_fields)
+    assert "password" not in result  # Non-existing field should not be added

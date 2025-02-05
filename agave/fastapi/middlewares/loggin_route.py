@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from typing import Callable
+from typing import Any, Callable, Union
 
 from cuenca_validations.errors import CuencaError
 from fastapi import HTTPException, Request, Response
@@ -52,6 +52,10 @@ class LoggingRoute(APIRoute):
 
             request_body = await request.body()
             request_json_body = parse_body(request_body)
+
+            log_data: dict[
+                str, dict[str, Union[int, str, None, dict[str, Any]]]
+            ] = {}
 
             log_data = {
                 'request': {
