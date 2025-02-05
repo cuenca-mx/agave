@@ -68,8 +68,13 @@ def get_sensitive_fields(
     """
     sensitive_fields: dict[str, Any] = {}
 
-    if not model or not issubclass(model, BaseModel):
-        return sensitive_fields
+    if (
+        not model
+        or model is Any
+        or not isinstance(model, type)
+        or not issubclass(model, BaseModel)
+    ):
+        return {}
 
     for field_name, field in model.model_fields.items():
         log_config = get_log_config(field)
