@@ -1,33 +1,38 @@
+import pytest
 from cuenca_validations.types.general import LogConfig
 
 from agave.core.loggers import obfuscate_sensitive_data
 
 
-def test_obfuscate_with_exclusion():
-    body = {"username": "user123", "password": "secret"}
-    sensitive_fields = {"password": LogConfig(excluded=True)}
+@pytest.mark.parametrize(
+    "body, sensitive_fields, expected_result",
+    [
+        # Test 1: Obfuscate with exclusion
+        (
+            {"username": "user123", "password": "secret"},
+            {"password": LogConfig(excluded=True)},
+            {"username": "user123"},
+        ),
+        # Test 2: Obfuscate with masking
+        (
+            {"username": "user123", "password": "secret"},
+            {"password": LogConfig(masked=True)},
+            {"username": "user123", "password": "*****"},
+        ),
+        # Test 3: Obfuscate with partial masking
+        (
+            {"username": "user123", "password": "supersecret"},
+            {"password": LogConfig(masked=True, unmasked_chars_length=4)},
+            {"username": "user123", "password": "*****cret"},
+        ),
+        # Test 4: Obfuscate non-existing field
+        (
+            {"username": "user123"},
+            {"password": LogConfig(masked=True)},
+            {"username": "user123"},
+        ),
+    ],
+)
+def test_obfuscate_sensitive_data(body, sensitive_fields, expected_result):
     result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert "password" not in result  # Password should be removed
-
-
-def test_obfuscate_with_masking():
-    body = {"username": "user123", "password": "secret"}
-    sensitive_fields = {"password": LogConfig(masked=True)}
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert result["password"] == "*****"  # Password should be fully masked
-
-
-def test_obfuscate_with_partial_masking():
-    body = {"username": "user123", "password": "supersecret"}
-    sensitive_fields = {
-        "password": LogConfig(masked=True, unmasked_chars_length=4)
-    }
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert result["password"] == "*****cret"  # Only last 4 chars visible
-
-
-def test_obfuscate_non_existing_field():
-    body = {"username": "user123"}
-    sensitive_fields = {"password": LogConfig(masked=True)}
-    result = obfuscate_sensitive_data(body, sensitive_fields)
-    assert "password" not in result  # Non-existing field should not be added
+    assert result == expected_result
