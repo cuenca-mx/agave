@@ -4,8 +4,7 @@ from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
 
-from agave.core.loggers import get_request_model, get_sensitive_fields
-
+from ..core.loggers import get_request_model, get_sensitive_fields
 from .middlewares.loggin_route import LoggingRoute
 
 try:
@@ -33,7 +32,7 @@ SAMPLE_404 = {
 class RestApiBlueprint(APIRouter):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(route_class=LoggingRoute, *args, **kwargs)
+        super().__init__(*args, route_class=LoggingRoute, **kwargs)
 
     @property
     def current_user_id(self) -> str:
