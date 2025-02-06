@@ -15,7 +15,7 @@ def extract_log_data(
     """Extracts JSON data from log output using a regex pattern."""
     match = re.search(pattern, log_output)
     if not match:
-        raise RuntimeError(error_message)
+        raise Exception(error_message)
     return json.loads(match.group(1))
 
 
@@ -224,7 +224,7 @@ def test_logger_headers_case_insensitive(
         'user-agent': 'testclient',
         'x-cuenca-loginid': '*****n-id',
         'x-cuenca-logintoken': '*****oken',
-        'authorization': '*****123',
+        'authorization': '*****',
         'content-type': 'application/json',
     }
 
@@ -282,7 +282,7 @@ def test_logger_api_route(fastapi_client: TestClient, caplog) -> None:
                 'user-agent': 'testclient',
                 'x-cuenca-loginid': '*****n-id',
                 'x-cuenca-logintoken': '*****oken',
-                'authorization': '*****123',
+                'authorization': '*****',
                 'content-type': 'application/json',
             },
             'body': {

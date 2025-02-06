@@ -1,12 +1,10 @@
 import asyncio
 
 import mongomock as mongomock
-from cuenca_validations.errors import NoPasswordFoundError
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import FastAPI
 from mongoengine import connect
 
 from agave.fastapi.middlewares import AgaveErrorHandler
-from agave.fastapi.middlewares.loggin_route import LoggingRoute
 
 from ..tasks.task_example import dummy_task, task_validator
 from .middlewares import AuthedMiddleware
@@ -18,8 +16,6 @@ connect(
 )
 app = FastAPI(title='example')
 
-router = APIRouter(route_class=LoggingRoute)
-
 app.include_router(resources)
 
 
@@ -30,27 +26,6 @@ app.add_middleware(AgaveErrorHandler)
 @app.get('/')
 async def iam_healty() -> dict:
     return dict(greeting="I'm healthy!!!")
-
-
-@router.post("/simulate_400")
-def simulate_bad_request():
-    """Simulated endpoint that raises a bad request error (400)."""
-    raise HTTPException(status_code=400, detail="Intentional bad request")
-
-
-@router.post("/simulate_500")
-def simulate_internal_error():
-    """Simulated endpoint that raises an internal server error (500)."""
-    raise Exception("Intentional server error")
-
-
-@router.post("/simulate_401")
-def simulate_unauthorized():
-    """Simulated endpoint that raises an unauthorized error (401)."""
-    raise NoPasswordFoundError('Password not set')
-
-
-app.include_router(router)
 
 
 @app.on_event('startup')

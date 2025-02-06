@@ -6,7 +6,7 @@ from cuenca_validations.types.helpers import get_log_config
 from pydantic import BaseModel
 
 HEADERS_LOG_CONFIG = {
-    'authorization': LogConfig(masked=True, unmasked_chars_length=4),
+    'authorization': LogConfig(masked=True),
     'x-cuenca-token': LogConfig(masked=True, unmasked_chars_length=4),
     'x-cuenca-loginid': LogConfig(masked=True, unmasked_chars_length=4),
     'x-cuenca-logintoken': LogConfig(masked=True, unmasked_chars_length=4),
