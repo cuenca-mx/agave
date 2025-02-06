@@ -192,6 +192,53 @@ def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
     )
 
 
+def test_logger_headers_case_insensitive(
+    fastapi_client: TestClient, caplog
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    request_data = {
+        'user': 'user',
+        'password': 'My-super-secret-password',
+        'short_secret': '123',
+    }
+
+    request_headers = {
+        'x-cuenca-loginid': 'My-secret-login-id',
+        'X-CUENCA-LOGINTOKEN': 'My-secret-login-token',
+        'AUTHORIZATION': '123',
+        'Content-Type': 'application/json',
+        'connection': 'keep-alive',
+    }
+
+    response = fastapi_client.post(
+        '/api_keys', json=request_data, headers=request_headers
+    )
+
+    assert response.status_code == 201
+
+    expected_log_headers = {
+        'host': 'testserver',
+        'accept': '*/*',
+        'accept-encoding': 'gzip, deflate',
+        'user-agent': 'testclient',
+        'x-cuenca-loginid': '*****n-id',
+        'x-cuenca-logintoken': '*****oken',
+        'authorization': '*****123',
+        'content-type': 'application/json',
+    }
+
+    # Extract and validate logger output
+    log_output = caplog.text
+    log_data = extract_log_data(
+        log_output,
+        r"(\{.*\})",
+        "Info not found in logs",
+    )
+
+    assert log_data['request']['headers'] == expected_log_headers
+
+
 def test_logger_api_route(fastapi_client: TestClient, caplog) -> None:
     """
     Test that verifies the logger properly masks sensitive data in:
