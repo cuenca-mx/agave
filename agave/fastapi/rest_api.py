@@ -4,6 +4,9 @@ from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
 
+from ..core.loggers import get_request_model, get_sensitive_fields
+from .middlewares.loggin_route import LoggingRoute
+
 try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 except ImportError:
@@ -11,7 +14,6 @@ except ImportError:
         "You must install agave with [fastapi] option.\n"
         "You can install it with: pip install agave[fastapi]"
     )
-
 
 from fastapi.responses import JSONResponse as Response, StreamingResponse
 from mongoengine import DoesNotExist, Q
@@ -28,6 +30,10 @@ SAMPLE_404 = {
 
 
 class RestApiBlueprint(APIRouter):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, route_class=LoggingRoute, **kwargs)
+
     @property
     def current_user_id(self) -> str:
         return context['user_id']
@@ -123,6 +129,16 @@ class RestApiBlueprint(APIRouter):
                     status_code=status.HTTP_201_CREATED,
                     include_in_schema=include_in_schema,
                 )
+
+                request_model = get_request_model(cls.create)
+                cls.create.request_model = request_model
+                cls.create.request_log_config_fields = get_sensitive_fields(
+                    request_model
+                )
+                cls.create.response_log_config_fields = get_sensitive_fields(
+                    response_model
+                )
+
                 route(cls.create)
             elif hasattr(cls, 'upload'):
 
@@ -180,6 +196,15 @@ class RestApiBlueprint(APIRouter):
             completely your responsibility.
             """
             if hasattr(cls, 'update'):
+
+                request_model = get_request_model(cls.update)
+                cls.update.request_model = request_model
+                cls.update.request_log_config_fields = get_sensitive_fields(
+                    request_model
+                )
+                cls.update.response_log_config_fields = get_sensitive_fields(
+                    response_model
+                )
 
                 @self.patch(
                     path + '/{id}',
@@ -255,6 +280,10 @@ class RestApiBlueprint(APIRouter):
                     result = obj.to_dict()
 
                 return result
+
+            retrieve.response_log_config_fields = get_sensitive_fields(
+                response_model
+            )
 
             """ GET /resource?param=value
             Use GET method to fetch and count filtered objects

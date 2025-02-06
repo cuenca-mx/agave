@@ -1,8 +1,8 @@
 import datetime as dt
-from typing import Optional
+from typing import Annotated, Optional
 
-from cuenca_validations.types import QueryParams
-from pydantic import BaseModel, SecretStr
+from cuenca_validations.types import LogConfig, QueryParams
+from pydantic import BaseModel, Field
 
 
 class AccountQuery(QueryParams):
@@ -30,32 +30,44 @@ class AccountRequest(BaseModel):
 
 class AccountResponse(BaseModel):
     id: str
-    name: str
-    user_id: str
+    name: Annotated[str, LogConfig(masked=True, unmasked_chars_length=5)]
+    user_id: Annotated[str, LogConfig(masked=False)]
     platform_id: str
     created_at: dt.datetime
     deactivated_at: Optional[dt.datetime] = None
 
 
 class AccountUpdateRequest(BaseModel):
-    name: str
+    name: Annotated[str, LogConfig(masked=True, unmasked_chars_length=5)]
 
 
 class ApiKeyRequest(BaseModel):
     user: str
-    password: SecretStr
-    short_secret: SecretStr
+    password: Annotated[str, LogConfig(masked=True)]
+    short_secret: Annotated[str, LogConfig(masked=True)]
 
 
 class ApiKeyResponse(BaseModel):
     id: str
-    secret: SecretStr
+    secret: Annotated[str, LogConfig(masked=True, unmasked_chars_length=4)]
     user: str
-    password: SecretStr
-    user_id: str
+    password: Annotated[str, LogConfig(masked=True, unmasked_chars_length=4)]
+    user_id: Annotated[str, LogConfig(masked=False)]
     platform_id: str
     created_at: dt.datetime
-    deactivated_at: Optional[dt.datetime] = None
+    deactivated_at: Annotated[
+        Optional[dt.datetime], LogConfig(excluded=True)
+    ] = None
+    another_field: Annotated[
+        str,
+        Field(
+            min_length=5,
+            max_length=10,
+            description=(
+                'Any str with at least 5 characters, maximum 10 characters'
+            ),
+        ),
+    ]
 
 
 class FileQuery(QueryParams):

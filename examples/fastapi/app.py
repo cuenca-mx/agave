@@ -15,6 +15,7 @@ connect(
     mongo_client_class=mongomock.MongoClient,
 )
 app = FastAPI(title='example')
+
 app.include_router(resources)
 
 

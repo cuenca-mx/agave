@@ -19,10 +19,11 @@ class ApiKey:
     async def create(request: ApiKeyRequest) -> Response:
         ak = ApiKeyModel(
             user=request.user,
-            password=request.password.get_secret_value(),
+            password=request.password,
             user_id=app.current_user_id,
             platform_id=app.current_platform_id,
             secret='My-super-secret-key',
+            another_field='12345678',
         )
         await ak.async_save()
 
