@@ -8,8 +8,8 @@ from fastapi import HTTPException, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 
-from agave.core.exc import AgaveError
-from agave.core.loggers import HEADERS_LOG_CONFIG, obfuscate_sensitive_data
+from ...core.exc import AgaveError
+from ...core.loggers import HEADERS_LOG_CONFIG, obfuscate_sensitive_data
 
 logging.basicConfig(level=logging.INFO)
 
