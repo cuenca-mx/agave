@@ -14,3 +14,4 @@ pytest-asyncio==0.18.*
 requests==2.32.3
 httpx==0.28.1
 typing_extensions==4.12.2
+setuptools==75.8.0
