@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 from functools import wraps
 from itertools import count
@@ -11,6 +12,15 @@ from aiobotocore.session import get_session
 from pydantic import validate_call
 
 from ..core.exc import RetryTask
+from ..core.loggers import (
+    get_request_model,
+    get_sensitive_fields,
+    obfuscate_sensitive_data,
+)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 AWS_DEFAULT_REGION = os.getenv('AWS_DEFAULT_REGION', '')
 
@@ -27,8 +37,23 @@ async def run_task(
     max_retries: int,
 ) -> None:
     delete_message = True
+    request_model = get_request_model(task_func)
+    log_config_fields = get_sensitive_fields(request_model)
+    ofuscated_request_body = obfuscate_sensitive_data(
+        body,
+        log_config_fields,
+    )
+    log_data = {
+        'task_func': task_func.__name__,
+        'queue_url': queue_url,
+        'message_receive_count': message_receive_count,
+        'max_retries': max_retries,
+        'body': ofuscated_request_body,
+        'status': 'success',
+    }
     try:
-        await task_func(body)
+        resp = await task_func(body)
+        log_data['response'] = resp
     except RetryTask as retry:
         delete_message = message_receive_count >= max_retries + 1
         if not delete_message and retry.countdown and retry.countdown > 0:
@@ -37,12 +62,15 @@ async def run_task(
                 ReceiptHandle=receipt_handle,
                 VisibilityTimeout=retry.countdown,
             )
+        log_data['delete_message'] = delete_message
+        log_data['status'] = 'failed'
     finally:
         if delete_message:
             await sqs.delete_message(
                 QueueUrl=queue_url,
                 ReceiptHandle=receipt_handle,
             )
+        logger.info(json.dumps(log_data, default=str))
 
 
 async def message_consumer(

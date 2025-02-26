@@ -3,6 +3,8 @@ import functools
 import json
 import os
 from functools import partial
+import logging
+import re
 from typing import Callable, Generator
 
 import aiobotocore
@@ -23,6 +25,8 @@ from examples.config import (
     TEST_SECOND_USER_ID,
 )
 from examples.models import Account, Biller, Card, File, User
+
+CORE_QUEUE_REGION = 'us-east-1'
 
 FuncDecorator = Callable[..., Generator]
 
@@ -319,3 +323,23 @@ async def sqs_client():
         sqs.queue_url = resp['QueueUrl']
         yield sqs
         await sqs.purge_queue(QueueUrl=resp['QueueUrl'])
+@pytest.fixture(autouse=True)
+def set_log_level(caplog):
+    """
+    Automatically set logging level to INFO for all tests.
+    """
+    caplog.set_level(logging.INFO)
+
+
+def extract_log_data(
+    log_output: str, pattern: str, error_message: str
+) -> list[dict]:
+    """
+    Extracts JSON data from log output using a regex
+    pattern and returns a list of matches.
+    """
+    matches = re.findall(pattern, log_output)
+    if not matches:
+        raise Exception(error_message)
+
+    return [json.loads(match) for match in matches]

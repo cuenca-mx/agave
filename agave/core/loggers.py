@@ -1,5 +1,5 @@
 from inspect import Parameter, Signature, signature
-from typing import Any, Optional, Type, Union
+from typing import Any, Optional, Type, Union, get_args, get_origin
 
 from cuenca_validations.types.general import LogConfig
 from cuenca_validations.types.helpers import get_log_config
@@ -38,50 +38,60 @@ def obfuscate_sensitive_data(
     return ofuscated_body
 
 
-def get_request_model(method: Any) -> Optional[Type[BaseModel]]:
+def get_request_model(
+    method: Any,
+) -> Optional[Union[list[Type[BaseModel]], Type[BaseModel]]]:
     """
-    Analyzes a method's parameters to extract the first parameter
-    that inherits from pydantic.BaseModel.
-    If none inherits from pydantic.BaseModel, returns None.
+    Extracts the first parameter from a method that is a
+    BaseModel or Union of BaseModels.
     """
+
     create_signature: Signature = signature(method)
     parameters = create_signature.parameters.values()
 
     try:
-        return next(
+        param_annotation = next(
             param.annotation
             for param in parameters
             if param.annotation is not Parameter.empty
-            and issubclass(param.annotation, BaseModel)
         )
+
+        if get_origin(param_annotation) is Union:
+            union_types = get_args(param_annotation)
+            base_model_types = [
+                t for t in union_types if issubclass(t, BaseModel)
+            ]
+            return base_model_types if base_model_types else None
+        elif issubclass(param_annotation, BaseModel):
+            return param_annotation
+        else:
+            return None
+
     except StopIteration:
         return None
 
 
 def get_sensitive_fields(
-    model: Optional[type[Union[BaseModel, Any]]]
+    models: Optional[Union[list[type[BaseModel]], type[BaseModel]]],
 ) -> dict[str, Any]:
     """
-    Analyzes a Pydantic model and returns a set of field names
-    marked as sensitive in their metadata.
+    Analyzes a list of Pydantic models and returns
+    a set of field names marked as sensitive in their metadata.
     """
     sensitive_fields: dict[str, Any] = {}
 
-    if (
-        not model
-        or model is Any
-        or not isinstance(model, type)
-        or not issubclass(model, BaseModel)
-    ):
-        return {}
+    if models is None or models is Any:
+        return sensitive_fields
 
-    for field_name, field in model.model_fields.items():
-        log_config = get_log_config(field)
+    if not isinstance(models, list):
+        models = [models]
 
-        if not log_config:
-            continue
-
-        if log_config.masked or log_config.excluded:
-            sensitive_fields[field_name] = log_config
+    for m in models:
+        for field_name, field in m.model_fields.items():
+            log_config = get_log_config(field)
+            if not log_config:
+                continue
+            if log_config.masked or log_config.excluded:
+                sensitive_fields[field_name] = log_config
 
     return sensitive_fields
