@@ -12,6 +12,3 @@ click==8.1.8
 moto[server]==5.0.26
 pytest-vcr==1.0.2
 pytest-asyncio==0.18.*
-requests==2.32.3
-httpx==0.28.1
-setuptools==75.8.0
