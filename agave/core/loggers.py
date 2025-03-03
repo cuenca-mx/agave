@@ -1,5 +1,5 @@
 from inspect import Parameter, Signature, signature
-from typing import Any, Optional, Type, Union, get_args, get_origin
+from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
 
 from cuenca_validations.types.general import LogConfig
 from cuenca_validations.types.helpers import get_log_config
@@ -39,14 +39,14 @@ def obfuscate_sensitive_data(
 
 
 def get_request_model(
-    method: Any,
+    function: Callable[..., Any],
 ) -> Optional[Union[list[Type[BaseModel]], Type[BaseModel]]]:
     """
-    Extracts the first parameter from a method that is a
+    Extracts the first parameter from a function that is a
     BaseModel or Union of BaseModels.
     """
 
-    create_signature: Signature = signature(method)
+    create_signature: Signature = signature(function)
     parameters = create_signature.parameters.values()
 
     try:
