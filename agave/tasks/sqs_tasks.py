@@ -68,7 +68,11 @@ async def run_task(
         log_data['delete_message'] = delete_message
         log_data['status'] = 'retrying'
     else:
-        log_data['response'] = resp
+        try:
+            json.dumps(resp)
+            log_data['response'] = resp
+        except (TypeError, JSONDecodeError) as exc:
+            log_data['response'] = f'<Non-serializable response: {str(exc)}>'
     finally:
         if delete_message:
             await sqs.delete_message(
