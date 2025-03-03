@@ -49,26 +49,24 @@ def get_request_model(
     create_signature: Signature = signature(function)
     parameters = create_signature.parameters.values()
 
+    param_annotation = None
     try:
         param_annotation = next(
             param.annotation
             for param in parameters
             if param.annotation is not Parameter.empty
         )
-
-        if get_origin(param_annotation) is Union:
-            union_types = get_args(param_annotation)
-            base_model_types = [
-                t for t in union_types if issubclass(t, BaseModel)
-            ]
-            return base_model_types if base_model_types else None
-        elif issubclass(param_annotation, BaseModel):
-            return param_annotation
-        else:
-            return None
-
     except StopIteration:
         return None
+
+    if get_origin(param_annotation) is Union:
+        union_types = get_args(param_annotation)
+        base_model_types = [t for t in union_types if issubclass(t, BaseModel)]
+        return base_model_types if base_model_types else None
+    elif issubclass(param_annotation, BaseModel):
+        return param_annotation
+
+    return None
 
 
 def get_sensitive_fields(
