@@ -66,7 +66,7 @@ async def run_task(
                 VisibilityTimeout=retry.countdown,
             )
         log_data['delete_message'] = delete_message
-        log_data['status'] = 'failed'
+        log_data['status'] = 'retrying'
     else:
         log_data['response'] = resp
     finally:
