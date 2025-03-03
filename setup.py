@@ -32,7 +32,8 @@ setup(
             'chalice>=1.30.0,<2.0.0',
         ],
         'fastapi': [
-            'fastapi>=0.115.0,<0.115.10',
+            'fastapi>=0.115.0,<1.0.0',
+            'starlette>=0.45.0,<0.46.0',
             'starlette-context>=0.3.2,<0.4.0',
         ],
         'tasks': [
