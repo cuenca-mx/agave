@@ -30,6 +30,7 @@ BACKGROUND_TASKS = set()
 async def run_task(
     task_func: Callable,
     body: dict,
+    message: dict,
     sqs,
     queue_url: str,
     receipt_handle: str,
@@ -45,10 +46,13 @@ async def run_task(
     )
     log_data = {
         'task_func': task_func.__name__,
+        'task_module': task_func.__module__,
         'queue_url': queue_url,
         'message_receive_count': message_receive_count,
         'max_retries': max_retries,
         'body': ofuscated_request_body,
+        'message_id': message['MessageId'],
+        'message_attributes': message.get('Attributes', {}),
         'status': 'success',
     }
     try:
@@ -157,6 +161,7 @@ def task(
                             run_task(
                                 task_with_validators,
                                 body,
+                                message,
                                 sqs,
                                 queue_url,
                                 message['ReceiptHandle'],
