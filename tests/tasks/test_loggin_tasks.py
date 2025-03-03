@@ -7,7 +7,8 @@ from pydantic import BaseModel
 
 from agave.core.exc import RetryTask
 from agave.tasks.sqs_tasks import task
-from tests.conftest import CORE_QUEUE_REGION, extract_log_data
+
+from ..utils import CORE_QUEUE_REGION, extract_log_data
 
 
 async def test_execute_tasks_logger(sqs_client, caplog) -> None:
@@ -32,11 +33,7 @@ async def test_execute_tasks_logger(sqs_client, caplog) -> None:
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['task_func'] == my_task_with_logger.__name__
     assert log_data[0]['body'] == test_message
@@ -72,11 +69,7 @@ async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['task_func'] == my_task.__name__
     assert log_data[0]['body'] == expected_message
@@ -144,11 +137,7 @@ async def test_execute_tasks_with_union_validator_logger(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['body'] == expected_message_user
     assert log_data[1]['body'] == expected_message_company
@@ -178,11 +167,7 @@ async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['task_func'] == my_task_with_logger.__name__
     assert log_data[0]['body'] == test_message
@@ -218,11 +203,7 @@ async def test_retry_tasks_default_max_retries_logger(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['task_func'] == my_task.__name__
     assert log_data[0]['body'] == test_message
