@@ -57,7 +57,6 @@ async def run_task(
     }
     try:
         resp = await task_func(body)
-        log_data['response'] = resp
     except RetryTask as retry:
         delete_message = message_receive_count >= max_retries + 1
         if not delete_message and retry.countdown and retry.countdown > 0:
@@ -68,6 +67,8 @@ async def run_task(
             )
         log_data['delete_message'] = delete_message
         log_data['status'] = 'failed'
+    else:
+        log_data['response'] = resp
     finally:
         if delete_message:
             await sqs.delete_message(
