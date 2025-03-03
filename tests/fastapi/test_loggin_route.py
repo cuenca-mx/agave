@@ -5,7 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from examples.models import Account
-from tests.conftest import extract_log_data
+
+from ..utils import extract_log_data
 
 
 def test_logger_no_request_model(fastapi_client: TestClient, caplog) -> None:
@@ -24,11 +25,7 @@ def test_logger_no_request_model(fastapi_client: TestClient, caplog) -> None:
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['body'] == request_data
     assert log_data[0]['response']['body'] == response_body
@@ -50,11 +47,7 @@ def test_logger_retrieve_resource(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
     assert log_data[0]['request']['url'].endswith(f'/accounts/{account.id}')
     assert log_data[0]['response']['status_code'] == 200
     assert log_data[0]['response']['body']['name'] == '*****Kahlo'
@@ -80,11 +73,7 @@ def test_logger_update_resource(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['response']['status_code'] == 200
     assert log_data[0]['response']['body']['name'] == '*****Felix'
@@ -104,11 +93,7 @@ def test_logger_create_resource_bad_request(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['body'] == request_data
     assert log_data[0]['response']['status_code'] == 422
@@ -129,11 +114,7 @@ def test_logger_test_logger_retrieve_resource_not_found(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['url'].endswith(f"/accounts/{resource_id}")
     assert log_data[0]['response']['status_code'] == 404
@@ -158,11 +139,7 @@ def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['body'] is None
     assert log_data[0]['request']['headers']['content-type'].startswith(
@@ -206,11 +183,7 @@ def test_logger_headers_case_insensitive(
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['headers'] == expected_log_headers
 
@@ -283,11 +256,7 @@ def test_logger_api_route(fastapi_client: TestClient, caplog) -> None:
 
     # Extract and validate logger output
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0] == expected_log
 
@@ -305,11 +274,7 @@ def test_logger_internal_server_error(
         fastapi_client.post('/simulate_500', json=request_data)
 
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['body'] == request_data
     assert log_data[0]['response']['status_code'] == 500
@@ -325,11 +290,7 @@ def test_logger_bad_request(fastapi_client: TestClient, caplog) -> None:
     assert response.status_code == 400
 
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['body'] == request_data
 
@@ -344,10 +305,6 @@ def test_logger_unauthorized(fastapi_client: TestClient, caplog) -> None:
     assert response.status_code == 401
 
     log_output = caplog.text
-    log_data = extract_log_data(
-        log_output,
-        r"(\{.*\})",
-        "Info not found in logs",
-    )
+    log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['body'] == request_data

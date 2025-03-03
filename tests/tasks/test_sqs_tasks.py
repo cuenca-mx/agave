@@ -15,7 +15,8 @@ from agave.tasks.sqs_tasks import (
     get_running_fast_agave_tasks,
     task,
 )
-from tests.conftest import CORE_QUEUE_REGION
+
+from ..utils import CORE_QUEUE_REGION
 
 
 async def test_execute_tasks(sqs_client) -> None:
