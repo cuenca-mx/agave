@@ -175,6 +175,42 @@ async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
     assert log_data[0]['response'] == dict(response='my_custom_response')
 
 
+async def test_execute_tasks_with_response_non_serializable(
+    sqs_client, caplog
+) -> None:
+
+    class NonSerializableResponse:
+        def __init__(self, value):
+            self.value = value
+
+    test_message = dict(foo='bar')
+
+    await sqs_client.send_message(
+        MessageBody=json.dumps(test_message),
+        MessageGroupId='1234',
+    )
+    async_mock_function = AsyncMock()
+
+    async def my_task(data: dict) -> NonSerializableResponse:
+        await async_mock_function(data)
+        return NonSerializableResponse('test_value')
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+    )(my_task)()
+    async_mock_function.assert_called_with(test_message)
+
+    # Extract and validate logger output
+    log_output = caplog.text
+    log_data = extract_log_data(log_output)
+
+    assert log_data[0]['status'] == 'success'
+    assert 'Non-serializable response' in log_data[0]['response']
+
+
 async def test_retry_tasks_default_max_retries_logger(
     sqs_client, caplog
 ) -> None:
@@ -209,9 +245,9 @@ async def test_retry_tasks_default_max_retries_logger(
     assert log_data[0]['body'] == test_message
 
     # For the first execution
-    assert log_data[0]['status'] == 'failed'
+    assert log_data[0]['status'] == 'retrying'
     assert log_data[0]['message_receive_count'] == 1
 
     # For the second execution
-    assert log_data[1]['status'] == 'failed'
+    assert log_data[1]['status'] == 'retrying'
     assert log_data[1]['message_receive_count'] == 2
