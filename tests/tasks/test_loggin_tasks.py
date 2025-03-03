@@ -35,6 +35,7 @@ async def test_execute_tasks_logger(sqs_client, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
+    assert len(log_data) == 1  # one log entry for the task
     assert log_data[0]['task_func'] == my_task_with_logger.__name__
     assert log_data[0]['body'] == test_message
     assert log_data[0]['status'] == 'success'
@@ -139,6 +140,7 @@ async def test_execute_tasks_with_union_validator_logger(
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
+    assert len(log_data) == 2  # two log entries for the task
     assert log_data[0]['body'] == expected_message_user
     assert log_data[1]['body'] == expected_message_company
 
@@ -231,15 +233,18 @@ async def test_retry_tasks_default_max_retries_logger(
         region_name=CORE_QUEUE_REGION,
         wait_time_seconds=1,
         visibility_timeout=1,
+        max_retries=2,
     )(my_task)()
 
-    expected_calls = [call(test_message)] * 2
+    expected_calls = [call(test_message)] * 3
     async_mock_function.assert_has_calls(expected_calls)
     assert async_mock_function.call_count == len(expected_calls)
 
     # Extract and validate logger output
     log_output = caplog.text
     log_data = extract_log_data(log_output)
+
+    assert len(log_data) == 3  # 3 log entries for the task
 
     assert log_data[0]['task_func'] == my_task.__name__
     assert log_data[0]['body'] == test_message
@@ -251,3 +256,7 @@ async def test_retry_tasks_default_max_retries_logger(
     # For the second execution
     assert log_data[1]['status'] == 'retrying'
     assert log_data[1]['message_receive_count'] == 2
+
+    # For the third execution
+    assert log_data[2]['status'] == 'retrying'
+    assert log_data[2]['message_receive_count'] == 3
