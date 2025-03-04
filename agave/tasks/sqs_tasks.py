@@ -33,7 +33,6 @@ async def run_task(
     message: dict,
     sqs,
     queue_url: str,
-    receipt_handle: str,
     message_receive_count: int,
     max_retries: int,
 ) -> None:
@@ -53,6 +52,7 @@ async def run_task(
         'body': ofuscated_request_body,
         'message_id': message['MessageId'],
         'message_attributes': message.get('Attributes', {}),
+        'receipt_handle': message['ReceiptHandle'],
         'status': 'success',
     }
     try:
@@ -62,7 +62,7 @@ async def run_task(
         if not delete_message and retry.countdown and retry.countdown > 0:
             await sqs.change_message_visibility(
                 QueueUrl=queue_url,
-                ReceiptHandle=receipt_handle,
+                ReceiptHandle=message['ReceiptHandle'],
                 VisibilityTimeout=retry.countdown,
             )
         log_data['delete_message'] = delete_message
@@ -77,7 +77,7 @@ async def run_task(
         if delete_message:
             await sqs.delete_message(
                 QueueUrl=queue_url,
-                ReceiptHandle=receipt_handle,
+                ReceiptHandle=message['ReceiptHandle'],
             )
         logger.info(json.dumps(log_data, default=str))
 
@@ -169,7 +169,6 @@ def task(
                                 message,
                                 sqs,
                                 queue_url,
-                                message['ReceiptHandle'],
                                 message_receive_count,
                                 max_retries,
                             ),
