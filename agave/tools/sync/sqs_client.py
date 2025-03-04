@@ -23,7 +23,12 @@ class SqsClient:
         self.start()
         return self
 
-    def __exit__(self, exc_type: Optional[type], exc_value: Optional[Exception], traceback: Optional[object]) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_value: Optional[Exception],
+        traceback: Optional[object],
+    ) -> None:
         # allow this class to support context manager
         ...
 
