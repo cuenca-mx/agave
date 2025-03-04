@@ -13,4 +13,4 @@ pytest-vcr==1.0.2
 pytest-asyncio==0.18.*
 requests==2.32.3
 httpx==0.28.1
-typing_extensions==4.9.0
+typing_extensions==4.12.2

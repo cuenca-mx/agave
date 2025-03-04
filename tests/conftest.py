@@ -4,7 +4,6 @@ import json
 import os
 from functools import partial
 from typing import Callable, Generator
-from typing_extensions import deprecated
 
 import aiobotocore
 import boto3
@@ -14,6 +13,7 @@ from aiobotocore.session import AioSession
 from chalice.test import Client as OriginalChaliceClient
 from fastapi.testclient import TestClient as FastAPIClient
 from mongoengine import Document
+from typing_extensions import deprecated
 
 from agave.tasks import sqs_tasks
 from examples.config import (
