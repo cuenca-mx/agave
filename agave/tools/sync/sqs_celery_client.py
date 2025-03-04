@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from agave.tools.celery import build_celery_message
-from agave.tools.sync.sqs_client import SqsClient
+from ..celery import build_celery_message
+from .sqs_client import SqsClient
 
 
 @dataclass
