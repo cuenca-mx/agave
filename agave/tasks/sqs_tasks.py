@@ -44,16 +44,20 @@ async def run_task(
         log_config_fields,
     )
     log_data = {
-        'task_func': task_func.__name__,
-        'task_module': task_func.__module__,
-        'queue_url': queue_url,
-        'message_receive_count': message_receive_count,
-        'max_retries': max_retries,
-        'body': ofuscated_request_body,
-        'message_id': message['MessageId'],
-        'message_attributes': message.get('Attributes', {}),
-        'receipt_handle': message['ReceiptHandle'],
-        'status': 'success',
+        'request': {
+            'task_func': task_func.__name__,
+            'task_module': task_func.__module__,
+            'queue_url': queue_url,
+            'message_receive_count': message_receive_count,
+            'max_retries': max_retries,
+            'body': ofuscated_request_body,
+            'message_id': message['MessageId'],
+            'message_attributes': message.get('Attributes', {}),
+            'receipt_handle': message['ReceiptHandle'],
+        },
+        'response': {
+            'status': 'success',
+        },
     }
     try:
         resp = await task_func(body)
@@ -65,14 +69,10 @@ async def run_task(
                 ReceiptHandle=message['ReceiptHandle'],
                 VisibilityTimeout=retry.countdown,
             )
-        log_data['delete_message'] = delete_message
-        log_data['status'] = 'retrying'
+        log_data['response']['delete_message'] = delete_message
+        log_data['response']['status'] = 'retrying'
     else:
-        try:
-            json.dumps(resp)
-            log_data['response'] = resp
-        except (TypeError, JSONDecodeError) as exc:
-            log_data['response'] = f'<Non-serializable response: {str(exc)}>'
+        log_data['response']['body'] = resp
     finally:
         if delete_message:
             await sqs.delete_message(

@@ -36,10 +36,10 @@ async def test_execute_tasks_logger(sqs_client, caplog) -> None:
     log_data = extract_log_data(log_output)
 
     assert len(log_data) == 1  # one log entry for the task
-    assert log_data[0]['task_func'] == my_task_with_logger.__name__
-    assert log_data[0]['body'] == test_message
-    assert log_data[0]['status'] == 'success'
-    assert log_data[0]['response'] is None
+    assert log_data[0]['request']['task_func'] == my_task_with_logger.__name__
+    assert log_data[0]['request']['body'] == test_message
+    assert log_data[0]['response']['status'] == 'success'
+    assert log_data[0]['response']['body'] is None
 
 
 async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
@@ -72,10 +72,10 @@ async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['task_func'] == my_task.__name__
-    assert log_data[0]['body'] == expected_message
-    assert log_data[0]['status'] == 'success'
-    assert log_data[0]['response'] is None
+    assert log_data[0]['request']['task_func'] == my_task.__name__
+    assert log_data[0]['request']['body'] == expected_message
+    assert log_data[0]['response']['status'] == 'success'
+    assert log_data[0]['response']['body'] is None
 
 
 async def test_execute_tasks_with_union_validator_logger(
@@ -141,8 +141,8 @@ async def test_execute_tasks_with_union_validator_logger(
     log_data = extract_log_data(log_output)
 
     assert len(log_data) == 2  # two log entries for the task
-    assert log_data[0]['body'] == expected_message_user
-    assert log_data[1]['body'] == expected_message_company
+    assert log_data[0]['request']['body'] == expected_message_user
+    assert log_data[1]['request']['body'] == expected_message_company
 
 
 async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
@@ -171,10 +171,12 @@ async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['task_func'] == my_task_with_logger.__name__
-    assert log_data[0]['body'] == test_message
-    assert log_data[0]['status'] == 'success'
-    assert log_data[0]['response'] == dict(response='my_custom_response')
+    assert log_data[0]['request']['task_func'] == my_task_with_logger.__name__
+    assert log_data[0]['request']['body'] == test_message
+    assert log_data[0]['response']['status'] == 'success'
+    assert log_data[0]['response']['body'] == dict(
+        response='my_custom_response'
+    )
 
 
 async def test_execute_tasks_with_response_non_serializable(
@@ -209,8 +211,10 @@ async def test_execute_tasks_with_response_non_serializable(
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['status'] == 'success'
-    assert 'Non-serializable response' in log_data[0]['response']
+    assert log_data[0]['response']['status'] == 'success'
+    assert (
+        'NonSerializableResponse object at' in log_data[0]['response']['body']
+    )
 
 
 async def test_retry_tasks_default_max_retries_logger(
@@ -246,17 +250,17 @@ async def test_retry_tasks_default_max_retries_logger(
 
     assert len(log_data) == 3  # 3 log entries for the task
 
-    assert log_data[0]['task_func'] == my_task.__name__
-    assert log_data[0]['body'] == test_message
+    assert log_data[0]['request']['task_func'] == my_task.__name__
+    assert log_data[0]['request']['body'] == test_message
 
     # For the first execution
-    assert log_data[0]['status'] == 'retrying'
-    assert log_data[0]['message_receive_count'] == 1
+    assert log_data[0]['response']['status'] == 'retrying'
+    assert log_data[0]['request']['message_receive_count'] == 1
 
     # For the second execution
-    assert log_data[1]['status'] == 'retrying'
-    assert log_data[1]['message_receive_count'] == 2
+    assert log_data[1]['response']['status'] == 'retrying'
+    assert log_data[1]['request']['message_receive_count'] == 2
 
     # For the third execution
-    assert log_data[2]['status'] == 'retrying'
-    assert log_data[2]['message_receive_count'] == 3
+    assert log_data[2]['response']['status'] == 'retrying'
+    assert log_data[2]['request']['message_receive_count'] == 3
