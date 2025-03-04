@@ -107,7 +107,7 @@ class RestApiBlueprint(APIRouter):
             :param cls: Resoucre class
             :return:
             """
-            response_model = None
+            response_model = Any
             response_sample = {}
             include_in_schema = getattr(cls, 'include_in_schema', True)
             if hasattr(cls, 'response_model'):
@@ -311,9 +311,6 @@ class RestApiBlueprint(APIRouter):
             )
 
             # Build dynamically types for query response
-            if response_model is None:
-                response_model = Any
-
             class QueryResponse(BaseModel):
                 items: Optional[list[response_model]] = Field(
                     [],

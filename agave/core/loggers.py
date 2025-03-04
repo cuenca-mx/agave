@@ -78,7 +78,7 @@ def get_sensitive_fields(
     """
     sensitive_fields: dict[str, Any] = {}
 
-    if models is None:
+    if models is None or models is Any:
         return sensitive_fields
 
     if not isinstance(models, list):
