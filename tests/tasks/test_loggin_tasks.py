@@ -43,19 +43,30 @@ async def test_execute_tasks_logger(sqs_client, caplog) -> None:
 
 
 async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
-    class Validator(BaseModel):
+    class ValidatorRequest(BaseModel):
         id: str
         secret: Annotated[str, LogConfig(masked=True, unmasked_chars_length=3)]
 
+    class ValidatorResponse(BaseModel):
+        id: str
+        api_key: Annotated[
+            str, LogConfig(masked=True, unmasked_chars_length=3)
+        ]
+        status: str
+
     async_mock_function = AsyncMock(return_value=None)
 
-    async def my_task(data: Validator) -> None:
+    async def my_task(data: ValidatorRequest) -> ValidatorResponse:
         await async_mock_function(data)
+        return ValidatorResponse(
+            id='abc123', api_key='1234567890', status='success'
+        )
 
     data = dict(id='abc123', secret='my-secret')
     expected_message = dict(id='abc123', secret='*****ret')
+    expected_response = dict(id='abc123', api_key='*****890', status='success')
 
-    test_message = Validator(**data)
+    test_message = ValidatorRequest(**data)
     await sqs_client.send_message(
         MessageBody=test_message.model_dump_json(),
         MessageGroupId='1234',
@@ -75,7 +86,7 @@ async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
     assert log_data[0]['request']['task_func'] == my_task.__name__
     assert log_data[0]['request']['body'] == expected_message
     assert log_data[0]['response']['status'] == 'success'
-    assert log_data[0]['response']['body'] is None
+    assert log_data[0]['response']['body'] == expected_response
 
 
 async def test_execute_tasks_with_union_validator_logger(

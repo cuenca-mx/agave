@@ -9,11 +9,12 @@ from typing import AsyncGenerator, Callable, Coroutine
 
 from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session
-from pydantic import validate_call
+from pydantic import BaseModel, validate_call
 
 from ..core.exc import RetryTask
 from ..core.loggers import (
     get_request_model,
+    get_response_model,
     get_sensitive_fields,
     obfuscate_sensitive_data,
 )
@@ -38,11 +39,13 @@ async def run_task(
 ) -> None:
     delete_message = True
     request_model = get_request_model(task_func)
-    log_config_fields = get_sensitive_fields(request_model)
+    request_log_config_fields = get_sensitive_fields(request_model)
     ofuscated_request_body = obfuscate_sensitive_data(
         body,
-        log_config_fields,
+        request_log_config_fields,
     )
+    response_model = get_response_model(task_func)
+    response_log_config_fields = get_sensitive_fields(response_model)
     log_data = {
         'request': {
             'task_func': task_func.__name__,
@@ -72,7 +75,14 @@ async def run_task(
         log_data['response']['delete_message'] = delete_message
         log_data['response']['status'] = 'retrying'
     else:
-        log_data['response']['body'] = resp
+        if isinstance(resp, BaseModel):
+            ofuscated_response_body = obfuscate_sensitive_data(
+                resp.model_dump(),
+                response_log_config_fields,
+            )
+        else:
+            ofuscated_response_body = resp
+        log_data['response']['body'] = ofuscated_response_body
     finally:
         if delete_message:
             await sqs.delete_message(
