@@ -9,9 +9,9 @@ async def test_send_message(sqs_client) -> None:
     data1 = dict(hola='mundo')
     data2 = dict(foo='bar')
 
-    with SqsClient(sqs_client.queue_url, CORE_QUEUE_REGION) as sqs:
-        sqs.send_message(data1)
-        sqs.send_message(data2, message_group_id='12345')
+    client = SqsClient(sqs_client.queue_url, CORE_QUEUE_REGION)
+    client.send_message(data1)
+    client.send_message(data2, message_group_id='12345')
 
     sqs_message = await sqs_client.receive_message()
     message_body = json.loads(sqs_message['Messages'][0]['Body'])

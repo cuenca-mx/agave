@@ -19,22 +19,8 @@ class SqsClient:
     region_name: str
     _sqs: Boto3SQSClient = field(init=False)
 
-    def __enter__(self) -> "SqsClient":
-        self.start()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[type],
-        exc_value: Optional[Exception],
-        traceback: Optional[object],
-    ) -> None:
-        # allow this class to support context manager
-        ...
-
-    def start(self):
-        session = boto3.Session()
-        self._sqs = session.client('sqs', region_name=self.region_name)
+    def __post_init__(self) -> None:
+        self._sqs = boto3.client('sqs', region_name=self.region_name)
 
     def send_message(
         self,
