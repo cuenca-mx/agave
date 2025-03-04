@@ -1,4 +1,3 @@
-from inspect import Parameter, Signature, signature
 from typing import (
     Any,
     Callable,
@@ -54,28 +53,19 @@ def get_request_model(
     Extracts the first parameter from a function that is a
     BaseModel or Union of BaseModels.
     """
+    hints = get_type_hints(function)
+    hints.pop('return', None)
 
-    create_signature: Signature = signature(function)
-    parameters = create_signature.parameters.values()
-
-    param_annotation = None
-    try:
-        param_annotation = next(
-            param.annotation
-            for param in parameters
-            if param.annotation is not Parameter.empty
-        )
-    except StopIteration:
-        return None
-
-    if get_origin(param_annotation) is Union:
-        union_types = get_args(param_annotation)
-        base_model_types = [t for t in union_types if issubclass(t, BaseModel)]
-        return base_model_types if base_model_types else None
-    elif issubclass(param_annotation, BaseModel):
-        return param_annotation
-    else:
-        return None
+    for param_type in hints.values():
+        origin = get_origin(param_type)
+        if origin is Union:
+            base_models = [
+                t for t in get_args(param_type) if issubclass(t, BaseModel)
+            ]
+            return base_models if base_models else None
+        elif issubclass(param_type, BaseModel):
+            return param_type
+    return None
 
 
 def get_response_model(
@@ -83,7 +73,7 @@ def get_response_model(
 ) -> Optional[Type[BaseModel]]:
     """
     Extracts the response model from the function's return type
-    if it is a Pydantic BaseModel or a Union of BaseModels.
+    if it is a Pydantic BaseModel.
     """
     hints = get_type_hints(function)
     return_annotation = hints.get('return', None)
