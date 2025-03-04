@@ -65,8 +65,8 @@ def get_request_model(
         return base_model_types if base_model_types else None
     elif issubclass(param_annotation, BaseModel):
         return param_annotation
-
-    return None
+    else:
+        return None
 
 
 def get_sensitive_fields(
