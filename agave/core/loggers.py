@@ -48,24 +48,32 @@ def obfuscate_sensitive_data(
 
 def get_request_model(
     function: Callable[..., Any],
-) -> Optional[Union[list[Type[BaseModel]], Type[BaseModel]]]:
+) -> Optional[list[Type[BaseModel]]]:
     """
     Extracts the first parameter from a function that is a
     BaseModel or Union of BaseModels.
     """
-    hints = get_type_hints(function)
-    hints.pop('return', None)
+    type_hints = get_type_hints(function)
+    type_hints.pop('return', None)
 
-    for param_type in hints.values():
+    extracted_types: list[type] = []
+    valid_types: list[type] = []
+
+    for param_type in type_hints.values():
         origin = get_origin(param_type)
         if origin is Union:
-            base_models = [
-                t for t in get_args(param_type) if issubclass(t, BaseModel)
-            ]
-            return base_models if base_models else None
-        elif issubclass(param_type, BaseModel):
-            return param_type
-    return None
+            extracted_types.extend(get_args(param_type))
+        else:
+            extracted_types.append(param_type)
+
+    for model_type in extracted_types:
+        try:
+            if issubclass(model_type, BaseModel):
+                valid_types.append(model_type)
+        except TypeError:
+            continue
+
+    return valid_types or None
 
 
 def get_response_model(
@@ -81,9 +89,12 @@ def get_response_model(
     if return_annotation is None:
         return None
 
-    if issubclass(return_annotation, BaseModel):
-        return return_annotation
-    else:
+    try:
+        if issubclass(return_annotation, BaseModel):
+            return return_annotation
+        else:
+            return None
+    except TypeError:
         return None
 
 
