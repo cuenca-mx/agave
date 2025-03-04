@@ -266,12 +266,12 @@ async def test_retry_tasks_default_max_retries_logger(
 
     # For the first execution
     assert log_data[0]['response']['status'] == 'retrying'
-    assert log_data[0]['request']['message_receive_count'] == 1
+    assert log_data[0]['request']['message_attributes']['ApproximateReceiveCount'] == '1'
 
     # For the second execution
     assert log_data[1]['response']['status'] == 'retrying'
-    assert log_data[1]['request']['message_receive_count'] == 2
+    assert log_data[1]['request']['message_attributes']['ApproximateReceiveCount'] == '2'
 
     # For the third execution
     assert log_data[2]['response']['status'] == 'retrying'
-    assert log_data[2]['request']['message_receive_count'] == 3
+    assert log_data[2]['request']['message_attributes']['ApproximateReceiveCount'] == '3'
