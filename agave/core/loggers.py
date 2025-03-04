@@ -1,5 +1,14 @@
 from inspect import Parameter, Signature, signature
-from typing import Any, Callable, Optional, Type, Union, get_args, get_origin
+from typing import (
+    Any,
+    Callable,
+    Optional,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from cuenca_validations.types.general import LogConfig
 from cuenca_validations.types.helpers import get_log_config
@@ -65,6 +74,25 @@ def get_request_model(
         return base_model_types if base_model_types else None
     elif issubclass(param_annotation, BaseModel):
         return param_annotation
+    else:
+        return None
+
+
+def get_response_model(
+    function: Callable[..., Any]
+) -> Optional[Type[BaseModel]]:
+    """
+    Extracts the response model from the function's return type
+    if it is a Pydantic BaseModel or a Union of BaseModels.
+    """
+    hints = get_type_hints(function)
+    return_annotation = hints.get('return', None)
+
+    if return_annotation is None:
+        return None
+
+    if issubclass(return_annotation, BaseModel):
+        return return_annotation
     else:
         return None
 
