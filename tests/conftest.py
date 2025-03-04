@@ -4,6 +4,7 @@ import json
 import os
 from functools import partial
 from typing import Callable, Generator
+from typing_extensions import deprecated
 
 import aiobotocore
 import boto3
@@ -225,6 +226,7 @@ def chalice_client() -> Generator[ChaliceClient, None, None]:
     yield client
 
 
+@deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture(scope='session')
 def aws_credentials() -> None:
     """Mocked AWS Credentials for moto."""
@@ -235,6 +237,7 @@ def aws_credentials() -> None:
     boto3.setup_default_session()
 
 
+@deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture(scope='session')
 def aws_endpoint_urls(
     aws_credentials,
@@ -262,6 +265,7 @@ def patch_tasks_count(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(sqs_tasks, 'count', one_loop)
 
 
+@deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture(autouse=True)
 def patch_aiobotocore_create_client(
     aws_endpoint_urls, monkeypatch: MonkeyPatch
@@ -277,6 +281,7 @@ def patch_aiobotocore_create_client(
     monkeypatch.setattr(AioSession, 'create_client', mock_create_client)
 
 
+@deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture(autouse=True)
 def patch_boto3_create_client(
     aws_endpoint_urls, monkeypatch: MonkeyPatch
@@ -292,6 +297,7 @@ def patch_boto3_create_client(
     monkeypatch.setattr(boto3.Session, 'client', mock_client)
 
 
+@deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture
 async def sqs_client():
     session = aiobotocore.session.get_session()
