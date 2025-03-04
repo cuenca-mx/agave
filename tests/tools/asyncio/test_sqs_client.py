@@ -1,6 +1,6 @@
 import json
 
-from agave.tasks.sqs_client import SqsClient
+from agave.tools.asyncio.sqs_client import SqsClient
 
 CORE_QUEUE_REGION = 'us-east-1'
 

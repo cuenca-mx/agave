@@ -2,8 +2,9 @@ import asyncio
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from agave.tasks.sqs_client import SqsClient
 from agave.tools.celery import build_celery_message
+
+from .sqs_client import SqsClient
 
 
 @dataclass

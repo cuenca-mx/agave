@@ -43,7 +43,7 @@ setup(
             'boto3>=1.34.106,<2.0.0',
             'types-boto3[sqs]>=1.34.106,<2.0.0',
         ],
-        'async_aws_tools': [
+        'asyncio_aws_tools': [
             'aiobotocore>=2.0.0,<3.0.0',
             'types-aiobotocore-sqs>=2.1.0,<3.0.0',
         ],

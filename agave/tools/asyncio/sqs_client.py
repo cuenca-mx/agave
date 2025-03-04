@@ -9,8 +9,8 @@ try:
     from types_aiobotocore_sqs import SQSClient
 except ImportError:
     raise ImportError(
-        "You must install agave with [fastapi, tasks] option.\n"
-        "You can install it with: pip install agave[fastapi, tasks]"
+        "You must install agave with [asyncio_aws_tools] option.\n"
+        "You can install it with: pip install agave[asyncio_aws_tools]"
     )
 
 
