@@ -284,3 +284,29 @@ async def test_retry_tasks_default_max_retries_logger(
         log_data[2]['request']['message_attributes']['ApproximateReceiveCount']
         == '3'
     )
+
+
+async def test_task_with_exception_logger(sqs_client, caplog) -> None:
+    test_message = dict(foo='bar')
+    await sqs_client.send_message(
+        MessageBody=json.dumps(test_message),
+        MessageGroupId='1234',
+    )
+
+    async def my_task_with_logger(data: dict) -> None:
+        raise Exception('test_exception')
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        max_retries=2,
+    )(my_task_with_logger)()
+
+    # Extract and validate logger output
+    log_output = caplog.text
+    log_data = extract_log_data(log_output)
+
+    assert log_data[0]['response']['status'] == 'failed'
+    assert log_data[0]['response']['error'] == 'test_exception'
