@@ -51,7 +51,6 @@ async def run_task(
             'task_func': task_func.__name__,
             'task_module': task_func.__module__,
             'queue_url': queue_url,
-            'message_receive_count': message_receive_count,
             'max_retries': max_retries,
             'body': ofuscated_request_body,
             'message_id': message['MessageId'],
