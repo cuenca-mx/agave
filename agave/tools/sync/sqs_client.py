@@ -19,11 +19,11 @@ class SqsClient:
     region_name: str
     _sqs: Boto3SQSClient = field(init=False)
 
-    def __enter__(self):
+    def __enter__(self) -> "SqsClient":
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type: Optional[type], exc_value: Optional[Exception], traceback: Optional[object]) -> None:
         # allow this class to support context manager
         ...
 
