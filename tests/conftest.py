@@ -1,9 +1,8 @@
 import datetime as dt
 import functools
-import json
+import logging
 import os
 from functools import partial
-import logging
 from typing import Callable, Generator
 
 import aiobotocore
@@ -11,7 +10,6 @@ import boto3
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from aiobotocore.session import AioSession
-from chalice.test import Client as OriginalChaliceClient
 from fastapi.testclient import TestClient as FastAPIClient
 from mongoengine import Document
 from typing_extensions import deprecated
@@ -278,6 +276,8 @@ async def sqs_client():
         sqs.queue_url = resp['QueueUrl']
         yield sqs
         await sqs.purge_queue(QueueUrl=resp['QueueUrl'])
+
+
 @pytest.fixture(autouse=True)
 def set_log_level(caplog):
     """
