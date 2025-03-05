@@ -1,14 +1,15 @@
-import asyncio
 import json
 from base64 import b64encode
-from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable
 from uuid import uuid4
 
-from agave.tasks.sqs_client import SqsClient
+
+def _b64_encode(value: str) -> str:
+    encoded = b64encode(bytes(value, 'utf-8'))
+    return encoded.decode('utf-8')
 
 
-def _build_celery_message(
+def build_celery_message(
     task_name: str, args_: Iterable, kwargs_: dict
 ) -> str:
     task_id = str(uuid4())
@@ -47,29 +48,3 @@ def _build_celery_message(
 
     encoded = _b64_encode(json.dumps(message))
     return encoded
-
-
-def _b64_encode(value: str) -> str:
-    encoded = b64encode(bytes(value, 'utf-8'))
-    return encoded.decode('utf-8')
-
-
-@dataclass
-class SqsCeleryClient(SqsClient):
-    async def send_task(
-        self,
-        name: str,
-        args: Optional[Iterable] = None,
-        kwargs: Optional[dict] = None,
-    ) -> None:
-        celery_message = _build_celery_message(name, args or (), kwargs or {})
-        await super().send_message(celery_message)
-
-    def send_background_task(
-        self,
-        name: str,
-        args: Optional[Iterable] = None,
-        kwargs: Optional[dict] = None,
-    ) -> asyncio.Task:
-        celery_message = _build_celery_message(name, args or (), kwargs or {})
-        return super().send_message_async(celery_message)

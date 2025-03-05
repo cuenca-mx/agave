@@ -1,7 +1,7 @@
 import base64
 import json
 
-from agave.tasks.sqs_celery_client import SqsCeleryClient
+from agave.tools.asyncio.sqs_celery_client import SqsCeleryClient
 
 CORE_QUEUE_REGION = 'us-east-1'
 
