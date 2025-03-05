@@ -16,7 +16,7 @@ from agave.tasks.sqs_tasks import (
     task,
 )
 
-CORE_QUEUE_REGION = 'us-east-1'
+from ..utils import CORE_QUEUE_REGION
 
 
 async def test_execute_tasks(sqs_client) -> None:

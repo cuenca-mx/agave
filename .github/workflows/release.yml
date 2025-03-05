@@ -1,6 +1,8 @@
 name: release
 
-on: push
+on:
+  release:
+    types: [published]
 
 jobs:
   publish-pypi:
@@ -12,11 +14,12 @@ jobs:
         with:
           python-version: 3.13
       - name: Install dependencies
-        run: pip install -qU setuptools wheel twine
+        run: |
+          make install-test
       - name: Generating distribution archives
-        run: python setup.py sdist bdist_wheel
+        run: |
+          python setup.py sdist
       - name: Publish distribution 📦 to PyPI
-        if: startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__

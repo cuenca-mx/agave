@@ -1,5 +1,13 @@
-from inspect import Parameter, Signature, signature
-from typing import Any, Optional, Type, Union
+from typing import (
+    Any,
+    Callable,
+    Optional,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from cuenca_validations.types.general import LogConfig
 from cuenca_validations.types.helpers import get_log_config
@@ -38,50 +46,79 @@ def obfuscate_sensitive_data(
     return ofuscated_body
 
 
-def get_request_model(method: Any) -> Optional[Type[BaseModel]]:
+def get_request_model(
+    function: Callable[..., Any],
+) -> Optional[list[Type[BaseModel]]]:
     """
-    Analyzes a method's parameters to extract the first parameter
-    that inherits from pydantic.BaseModel.
-    If none inherits from pydantic.BaseModel, returns None.
+    Extracts the first parameter from a function that is a
+    BaseModel or Union of BaseModels.
     """
-    create_signature: Signature = signature(method)
-    parameters = create_signature.parameters.values()
+    type_hints = get_type_hints(function)
+    type_hints.pop('return', None)
+
+    extracted_types: list[type] = []
+    valid_types: list[type] = []
+
+    for param_type in type_hints.values():
+        origin = get_origin(param_type)
+        if origin is Union:
+            extracted_types.extend(get_args(param_type))
+        else:
+            extracted_types.append(param_type)
+
+    for model_type in extracted_types:
+        try:
+            if issubclass(model_type, BaseModel):
+                valid_types.append(model_type)
+        except TypeError:
+            continue
+
+    return valid_types or None
+
+
+def get_response_model(
+    function: Callable[..., Any]
+) -> Optional[Type[BaseModel]]:
+    """
+    Extracts the response model from the function's return type
+    if it is a Pydantic BaseModel.
+    """
+    hints = get_type_hints(function)
+    return_annotation = hints.get('return', None)
+
+    if return_annotation is None:
+        return None
 
     try:
-        return next(
-            param.annotation
-            for param in parameters
-            if param.annotation is not Parameter.empty
-            and issubclass(param.annotation, BaseModel)
-        )
-    except StopIteration:
+        if issubclass(return_annotation, BaseModel):
+            return return_annotation
+        else:
+            return None
+    except TypeError:
         return None
 
 
 def get_sensitive_fields(
-    model: Optional[type[Union[BaseModel, Any]]]
+    models: Optional[Union[list[type[BaseModel]], type[BaseModel]]],
 ) -> dict[str, Any]:
     """
-    Analyzes a Pydantic model and returns a set of field names
-    marked as sensitive in their metadata.
+    Analyzes a list of Pydantic models and returns
+    a set of field names marked as sensitive in their metadata.
     """
     sensitive_fields: dict[str, Any] = {}
 
-    if (
-        not model
-        or model is Any
-        or not isinstance(model, type)
-        or not issubclass(model, BaseModel)
-    ):
-        return {}
+    if models is None or models is Any:
+        return sensitive_fields
 
-    for field_name, field in model.model_fields.items():
-        log_config = get_log_config(field)
+    if not isinstance(models, list):
+        models = [models]
 
-        if not log_config:
-            continue
-
-        if log_config.masked or log_config.excluded:
-            sensitive_fields[field_name] = log_config
+    for m in models:
+        for field_name, field in m.model_fields.items():
+            log_config = get_log_config(field)
+            if not log_config:
+                continue
+            if log_config.masked or log_config.excluded:
+                sensitive_fields[field_name] = log_config
 
     return sensitive_fields

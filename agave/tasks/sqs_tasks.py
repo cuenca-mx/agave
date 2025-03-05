@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 from functools import wraps
 from itertools import count
@@ -8,9 +9,19 @@ from typing import AsyncGenerator, Callable, Coroutine
 
 from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session
-from pydantic import validate_call
+from pydantic import BaseModel, validate_call
 
 from ..core.exc import RetryTask
+from ..core.loggers import (
+    get_request_model,
+    get_response_model,
+    get_sensitive_fields,
+    obfuscate_sensitive_data,
+)
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 AWS_DEFAULT_REGION = os.getenv('AWS_DEFAULT_REGION', '')
 
@@ -20,29 +31,67 @@ BACKGROUND_TASKS = set()
 async def run_task(
     task_func: Callable,
     body: dict,
+    message: dict,
     sqs,
     queue_url: str,
-    receipt_handle: str,
     message_receive_count: int,
     max_retries: int,
 ) -> None:
     delete_message = True
+    request_model = get_request_model(task_func)
+    request_log_config_fields = get_sensitive_fields(request_model)
+    ofuscated_request_body = obfuscate_sensitive_data(
+        body,
+        request_log_config_fields,
+    )
+    response_model = get_response_model(task_func)
+    response_log_config_fields = get_sensitive_fields(response_model)
+    log_data = {
+        'request': {
+            'task_func': task_func.__name__,
+            'task_module': task_func.__module__,
+            'queue_url': queue_url,
+            'max_retries': max_retries,
+            'body': ofuscated_request_body,
+            'message_id': message['MessageId'],
+            'message_attributes': message.get('Attributes', {}),
+            'receipt_handle': message['ReceiptHandle'],
+        },
+        'response': {
+            'status': 'success',
+        },
+    }
     try:
-        await task_func(body)
+        resp = await task_func(body)
     except RetryTask as retry:
         delete_message = message_receive_count >= max_retries + 1
         if not delete_message and retry.countdown and retry.countdown > 0:
             await sqs.change_message_visibility(
                 QueueUrl=queue_url,
-                ReceiptHandle=receipt_handle,
+                ReceiptHandle=message['ReceiptHandle'],
                 VisibilityTimeout=retry.countdown,
             )
+        log_data['response']['delete_message'] = delete_message
+        log_data['response']['status'] = 'retrying'
+    except Exception as exp:
+        log_data['response']['status'] = 'failed'
+        log_data['response']['error'] = str(exp)
+    else:
+        if isinstance(resp, BaseModel):
+            ofuscated_response_body = obfuscate_sensitive_data(
+                resp.model_dump(),
+                response_log_config_fields,
+            )
+        else:
+            ofuscated_response_body = resp
+        log_data['response']['body'] = ofuscated_response_body
     finally:
         if delete_message:
             await sqs.delete_message(
                 QueueUrl=queue_url,
-                ReceiptHandle=receipt_handle,
+                ReceiptHandle=message['ReceiptHandle'],
             )
+        logger.info(json.dumps(log_data, default=str))
 
 
 async def message_consumer(
@@ -129,9 +178,9 @@ def task(
                             run_task(
                                 task_with_validators,
                                 body,
+                                message,
                                 sqs,
                                 queue_url,
-                                message['ReceiptHandle'],
                                 message_receive_count,
                                 max_retries,
                             ),

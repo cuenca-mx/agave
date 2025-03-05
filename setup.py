@@ -33,6 +33,10 @@ setup(
         ],
         'fastapi': [
             'fastapi>=0.115.0,<1.0.0',
+            # TODO: Remove this once we upgrade to starlette:
+            # This is a temporary dependency to avoid breaking changes.
+            # https://github.com/cuenca-mx/agave/issues/158
+            'starlette>=0.45.0,<0.46.0',
             'starlette-context>=0.3.2,<0.4.0',
         ],
         'tasks': [
