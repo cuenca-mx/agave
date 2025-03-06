@@ -17,17 +17,20 @@ except ImportError:
 class SqsClient:
     queue_url: str
     region_name: str
-    _sqs: Boto3SQSClient = field(init=False)
+    _sqs: Optional[Boto3SQSClient] = field(init=False, default=None)
 
-    def __post_init__(self) -> None:
-        self._sqs = boto3.client('sqs', region_name=self.region_name)
+    def _get_client(self):
+        if self._sqs is None:
+            self._sqs = boto3.client('sqs', region_name=self.region_name)
+        return self._sqs
 
     def send_message(
         self,
         data: Union[str, dict],
         message_group_id: Optional[str] = None,
     ) -> None:
-        self._sqs.send_message(
+        sqs = self._get_client()
+        sqs.send_message(
             QueueUrl=self.queue_url,
             MessageBody=data if isinstance(data, str) else json.dumps(data),
             MessageGroupId=message_group_id or str(uuid4()),
