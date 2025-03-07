@@ -28,10 +28,12 @@ class SqsClient:
         self,
         data: Union[str, dict],
         message_group_id: Optional[str] = None,
+        message_deduplication_id: Optional[str] = None,
     ) -> None:
         sqs = self._get_client()
         sqs.send_message(
             QueueUrl=self.queue_url,
             MessageBody=data if isinstance(data, str) else json.dumps(data),
             MessageGroupId=message_group_id or str(uuid4()),
+            MessageDeduplicationId=message_deduplication_id or str(uuid4()),
         )
