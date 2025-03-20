@@ -72,6 +72,7 @@ class RestApiBlueprint(APIRouter):
             resource_class.model, 'user_id'
         ):
             query = query & Q(user_id=self.current_user_id)
+            print(f"query: {query}")
 
         try:
             data = await resource_class.model.objects.async_get(query)
