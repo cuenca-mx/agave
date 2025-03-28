@@ -31,7 +31,6 @@ ignore_error_codes = [
 
 
 def can_ignore_error(data: dict) -> bool:
-    can_ignore_error = (
-        'code' in data['error']
-        and data['error']['code'] in ignore_error_codes
+    return (
+        'code' in data['error'] and data['error']['code'] in ignore_error_codes
     )
