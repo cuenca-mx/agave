@@ -36,3 +36,24 @@ def test_fast_agave_error_handler_from_middleware(
     resp = fastapi_client.get('/you_shall_not_pass')
     assert resp.status_code == 401
     assert resp.json() == dict(error='come back to the shadows!')
+
+
+def test_get_ip(fastapi_client: TestClient) -> None:
+    resp = fastapi_client.get('/get_ip')
+    assert resp.status_code == 200
+    assert resp.json() == 'testclient'
+
+
+def test_get_ip_with_multiple_x_forwarded(fastapi_client: TestClient) -> None:
+    resp = fastapi_client.get(
+        '/get_ip',
+        headers={'X-Forwarded-For': '192.168.1.1,10.0.0.1, 10.0.0.2'},
+    )
+    assert resp.status_code == 200
+    assert resp.json() == '192.168.1.1'
+
+
+def test_get_ip_with_empty_x_forwarded(fastapi_client: TestClient) -> None:
+    resp = fastapi_client.get('/get_ip', headers={'X-Forwarded-For': ''})
+    assert resp.status_code == 200
+    assert resp.json() == 'testclient'
