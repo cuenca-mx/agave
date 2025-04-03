@@ -67,8 +67,11 @@ def get_request_model(
             extracted_types.append(param_type)
 
     for model_type in extracted_types:
-        if issubclass(model_type, BaseModel):
-            valid_types.append(model_type)
+        try:
+            if issubclass(model_type, BaseModel):
+                valid_types.append(model_type)
+        except TypeError:
+            continue
 
     return valid_types or None
 
@@ -86,11 +89,13 @@ def get_response_model(
     if return_annotation is None:
         return None
 
-    if isinstance(return_annotation, type) and issubclass(
-        return_annotation, BaseModel
-    ):
-        return return_annotation
-    return None
+    try:
+        if issubclass(return_annotation, BaseModel):
+            return return_annotation
+        else:
+            return None
+    except TypeError:
+        return None
 
 
 def get_sensitive_fields(
