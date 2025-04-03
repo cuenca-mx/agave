@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Optional, Union
+from typing import Optional, Union
 
 import pytest
 from cuenca_validations.types.general import LogConfig
