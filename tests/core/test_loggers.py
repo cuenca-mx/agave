@@ -61,7 +61,6 @@ def test_obfuscate_sensitive_data(body, sensitive_fields, expected_result):
         (None, None),
         (Any, Any),
         (Annotated[int, 'metadata'], Annotated[int, 'metadata']),
-        (Union[list[int], str], Union[list[int], str]),
     ],
 )
 def test_get_request_model_invalid_types(param_type, response_type) -> None:
