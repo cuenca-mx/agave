@@ -183,6 +183,14 @@ def chalice_client() -> Generator[ChaliceClient, None, None]:
     yield client
 
 
+@pytest.fixture
+def second_client() -> Generator[FastAPIClient, None, None]:
+    from examples.fastapi.app import app
+
+    client = FastAPIClient(app)
+    yield client
+
+
 @deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture(scope='session')
 def aws_credentials() -> None:

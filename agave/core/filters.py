@@ -21,3 +21,16 @@ def generic_query(query: QueryParams, excluded: list[str] = []) -> Q:
     if 'count' in fields:
         del fields['count']
     return filters & Q(**fields)
+
+
+ignore_error_codes = [
+    'ValidationError',
+    'DoesNotExist',
+    'InvalidQueryError',
+]
+
+
+def can_ignore_error(data: dict) -> bool:
+    return (
+        'code' in data['error'] and data['error']['code'] in ignore_error_codes
+    )
