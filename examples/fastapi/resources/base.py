@@ -1,8 +1,9 @@
 from cuenca_validations.errors import NoPasswordFoundError, WrongCredsError
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 
 from agave.core.exc import UnauthorizedError
 from agave.fastapi import RestApiBlueprint
+from agave.fastapi.middlewares.utils import get_source_ip
 
 app = RestApiBlueprint()
 
@@ -46,3 +47,8 @@ def simulate_internal_error():
 def simulate_unauthorized():
     """Simulated endpoint that raises an unauthorized error (401)."""
     raise NoPasswordFoundError('Password not set')
+
+
+@app.get("/get_ip")
+def get_ip(request: Request):
+    return get_source_ip(request)
