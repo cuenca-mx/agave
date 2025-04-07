@@ -23,6 +23,7 @@ class Account:
             name=request.name,
             user_id=app.current_user_id,
             platform_id=app.current_platform_id,
+            api_key_id=app.current_api_key_id,
         )
         account.save()
         return Response(account.to_dict(), status_code=201)

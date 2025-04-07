@@ -33,6 +33,7 @@ class AccountResponse(BaseModel):
     name: Annotated[str, LogConfig(masked=True, unmasked_chars_length=5)]
     user_id: Annotated[str, LogConfig(masked=False)]
     platform_id: str
+    api_key_id: str
     created_at: dt.datetime
     deactivated_at: Optional[dt.datetime] = None
 

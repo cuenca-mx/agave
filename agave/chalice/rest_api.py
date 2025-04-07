@@ -38,6 +38,10 @@ class RestApiBlueprint(Blueprint):
     def current_platform_id(self):
         return self.current_request.platform_id
 
+    @property
+    def current_api_key_id(self):
+        return self.current_request.api_key_id
+
     def user_id_filter_required(self):
         """
         This method is required to be implemented with your own business logic.
