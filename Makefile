@@ -19,7 +19,7 @@ install:
 
 .PHONY: install-test
 install-test: install
-	pip install -U -r requirements-test.txt
+	pip install -qU -r requirements-test.txt
 
 .PHONY: test
 test: clean install-test lint
