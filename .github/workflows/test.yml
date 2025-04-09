@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: |
         # corregir https://github.com/cuenca-mx/agave/issues/169
-        pip install --upgrade pip setuptools wheel
+        pip install -qU pip setuptools wheel
         make install-test
     - name: Run tests
       run: pytest
