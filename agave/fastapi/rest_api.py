@@ -42,6 +42,10 @@ class RestApiBlueprint(APIRouter):
     def current_platform_id(self) -> str:
         return context['platform_id']
 
+    @property
+    def current_api_key_id(self) -> str:
+        return context['api_key_id']
+
     def user_id_filter_required(self) -> bool:
         return context['user_id_filter_required']
 

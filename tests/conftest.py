@@ -16,6 +16,7 @@ from typing_extensions import deprecated
 
 from agave.tasks import sqs_tasks
 from examples.config import (
+    TEST_DEFAULT_API_KEY_ID,
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
@@ -51,36 +52,42 @@ def accounts() -> list[Account]:
             name='Frida Kahlo',
             user_id=TEST_DEFAULT_USER_ID,
             platform_id=TEST_DEFAULT_PLATFORM_ID,
+            api_key_id=TEST_DEFAULT_API_KEY_ID,
             created_at=dt.datetime(2020, 1, 1, 0),
         ),
         Account(
             name='Sor Juana Inés',
             user_id=TEST_DEFAULT_USER_ID,
             platform_id=TEST_DEFAULT_PLATFORM_ID,
+            api_key_id=TEST_DEFAULT_API_KEY_ID,
             created_at=dt.datetime(2020, 2, 1, 0),
         ),
         Account(
             name='Eulalia Guzmán',
             user_id='US222222',
             platform_id=TEST_DEFAULT_PLATFORM_ID,
+            api_key_id='AK222222',
             created_at=dt.datetime(2020, 2, 1, 1),
         ),
         Account(
             name='Matilde Montoya',
             user_id='US222222',
             platform_id=TEST_DEFAULT_PLATFORM_ID,
+            api_key_id='AK222222',
             created_at=dt.datetime(2020, 2, 1, 2),
         ),
         Account(
             name='Leona Vicario',
             user_id=TEST_DEFAULT_USER_ID,
             platform_id=TEST_DEFAULT_PLATFORM_ID,
+            api_key_id='AK333333',
             created_at=dt.datetime(2020, 3, 1, 0),
         ),
         Account(
             name='Remedios Varo',
             user_id=TEST_SECOND_USER_ID,
             platform_id=TEST_SECOND_PLATFORM_ID,
+            api_key_id='AK444444',
             created_at=dt.datetime(2020, 4, 1, 0),
         ),
     ]

@@ -4,7 +4,11 @@ from starlette.responses import Response
 from starlette_context import _request_scope_context_storage
 from starlette_context.middleware import ContextMiddleware
 
-from ...config import TEST_DEFAULT_PLATFORM_ID, TEST_DEFAULT_USER_ID
+from ...config import (
+    TEST_DEFAULT_API_KEY_ID,
+    TEST_DEFAULT_PLATFORM_ID,
+    TEST_DEFAULT_USER_ID,
+)
 
 
 class AuthedMiddleware(ContextMiddleware):
@@ -38,6 +42,7 @@ class AuthedMiddleware(ContextMiddleware):
             dict(
                 user_id=TEST_DEFAULT_USER_ID,
                 platform_id=TEST_DEFAULT_PLATFORM_ID,
+                api_key_id=TEST_DEFAULT_API_KEY_ID,
             )
         )
 

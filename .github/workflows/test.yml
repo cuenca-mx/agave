@@ -28,7 +28,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: make install-test
+      run: |
+        # corregir https://github.com/cuenca-mx/agave/issues/169
+        pip install -qU pip setuptools wheel
+        make install-test
     - name: Run tests
       run: pytest
 

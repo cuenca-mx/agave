@@ -7,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from examples.config import (
+    TEST_DEFAULT_API_KEY_ID,
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
@@ -90,6 +91,7 @@ def test_retrieve_resource(
     status_code = resp.status_code
     assert status_code == 200
     assert json_body == account.to_dict()
+    assert account.api_key_id == TEST_DEFAULT_API_KEY_ID
 
 
 @pytest.mark.parametrize(
