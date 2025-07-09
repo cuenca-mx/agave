@@ -12,6 +12,7 @@ class SqsCeleryClient(SqsClient):
         name: str,
         args: Optional[Iterable] = None,
         kwargs: Optional[dict] = None,
+        message_group_id: Optional[str] = None,
     ) -> None:
         celery_message = build_celery_message(name, args or (), kwargs or {})
-        self.send_message(celery_message)
+        self.send_message(celery_message, message_group_id)
