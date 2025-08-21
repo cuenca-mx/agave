@@ -15,7 +15,7 @@ class SqsCeleryClient(SqsClient):
         kwargs: Optional[dict] = None,
     ) -> None:
         celery_message = build_celery_message(name, args or (), kwargs or {})
-        await super().send_message(celery_message)
+        await self.send_message(celery_message)
 
     def send_background_task(
         self,
@@ -24,4 +24,4 @@ class SqsCeleryClient(SqsClient):
         kwargs: Optional[dict] = None,
     ) -> asyncio.Task:
         celery_message = build_celery_message(name, args or (), kwargs or {})
-        return super().send_message_async(celery_message)
+        return self.send_message_async(celery_message)
