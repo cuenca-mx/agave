@@ -34,9 +34,13 @@ class AuthedBlueprint(Blueprint):
             def authed_handler(*args, **kwargs):
                 # your authentication logic goes here
                 # before execute `user_handler` function.
-                self.current_request.user_id = TEST_DEFAULT_USER_ID
-                self.current_request.platform_id = TEST_DEFAULT_PLATFORM_ID
-                self.current_request.api_key_id = TEST_DEFAULT_API_KEY_ID
+                self.current_request.context['user_id'] = TEST_DEFAULT_USER_ID
+                self.current_request.context['platform_id'] = (
+                    TEST_DEFAULT_PLATFORM_ID
+                )
+                self.current_request.context['api_key_id'] = (
+                    TEST_DEFAULT_API_KEY_ID
+                )
                 return user_handler(*args, **kwargs)
 
             self._register_handler(  # type: ignore

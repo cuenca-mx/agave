@@ -32,15 +32,15 @@ class RestApiBlueprint(Blueprint):
 
     @property
     def current_user_id(self):
-        return self.current_request.user_id
+        return self.current_request.context['user_id']
 
     @property
     def current_platform_id(self):
-        return self.current_request.platform_id
+        return self.current_request.context['platform_id']
 
     @property
     def current_api_key_id(self):
-        return self.current_request.api_key_id
+        return self.current_request.context['api_key_id']
 
     def user_id_filter_required(self):
         """
