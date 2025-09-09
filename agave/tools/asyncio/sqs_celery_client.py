@@ -13,15 +13,17 @@ class SqsCeleryClient(SqsClient):
         name: str,
         args: Optional[Iterable] = None,
         kwargs: Optional[dict] = None,
+        message_group_id: Optional[str] = None,
     ) -> None:
         celery_message = build_celery_message(name, args or (), kwargs or {})
-        await self.send_message(celery_message)
+        await self.send_message(celery_message, message_group_id)
 
     def send_background_task(
         self,
         name: str,
         args: Optional[Iterable] = None,
         kwargs: Optional[dict] = None,
+        message_group_id: Optional[str] = None,
     ) -> asyncio.Task:
         celery_message = build_celery_message(name, args or (), kwargs or {})
-        return self.send_message_async(celery_message)
+        return self.send_message_async(celery_message, message_group_id)
