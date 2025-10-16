@@ -28,6 +28,18 @@ def get_status_code_exception(exc: Exception) -> int:
     return 500
 
 
+def get_error_detail(exc: Exception) -> str:
+    if isinstance(exc, HTTPException):
+        return str(exc.detail)
+    if isinstance(exc, RequestValidationError):
+        return str(exc.errors())
+    if isinstance(exc, AgaveError):
+        return str(exc.error)
+    if isinstance(exc, CuencaError):
+        return str(exc)
+    return str(exc)
+
+
 class LoggingRoute(APIRoute):
 
     def get_route_handler(self) -> Callable:
@@ -66,7 +78,8 @@ class LoggingRoute(APIRoute):
                 response = await original_route_handler(request)
             except Exception as exc:
                 log_data['response'] = {
-                    'status_code': get_status_code_exception(exc)
+                    'status_code': get_status_code_exception(exc),
+                    'error': get_error_detail(exc),
                 }
                 raise
             else:
