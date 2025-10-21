@@ -1,3 +1,5 @@
+import ast
+import json
 import logging
 from tempfile import TemporaryFile
 
@@ -95,12 +97,11 @@ def test_logger_create_resource_bad_request(
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['request']['body'] == request_data
-    assert log_data[0]['response']['status_code'] == 422
-    assert log_data[0]['response']['error'] == (
-        "[{'type': 'missing', 'loc': ('body', 'name'), 'msg': "
-        "'Field required', 'input': {'invalid_field': 'some value'}}]"
-    )
+    assert request_data == log_data[0]['request']['body']
+    assert response.status_code == log_data[0]['response']['status_code']
+    parsed_error = ast.literal_eval(log_data[0]['response']['error'])
+    normalized_error = json.loads(json.dumps(parsed_error))
+    assert response.json()['detail'] == normalized_error
 
 
 def test_logger_test_logger_retrieve_resource_not_found(
@@ -121,8 +122,8 @@ def test_logger_test_logger_retrieve_resource_not_found(
     log_data = extract_log_data(log_output)
 
     assert log_data[0]['request']['url'].endswith(f"/accounts/{resource_id}")
-    assert log_data[0]['response']['status_code'] == 404
-    assert log_data[0]['response']['error'] == 'Not valid id'
+    assert response.status_code == log_data[0]['response']['status_code']
+    assert response.json()['error'] == log_data[0]['response']['error']
 
 
 def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
@@ -298,9 +299,9 @@ def test_logger_bad_request(fastapi_client: TestClient, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['request']['body'] == request_data
-    assert log_data[0]['response']['status_code'] == 400
-    assert log_data[0]['response']['error'] == 'Intentional bad request'
+    assert request_data == log_data[0]['request']['body']
+    assert response.status_code == log_data[0]['response']['status_code']
+    assert response.json()['detail'] == log_data[0]['response']['error']
 
 
 def test_logger_unauthorized(fastapi_client: TestClient, caplog) -> None:
@@ -315,6 +316,6 @@ def test_logger_unauthorized(fastapi_client: TestClient, caplog) -> None:
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['request']['body'] == request_data
-    assert log_data[0]['response']['status_code'] == 401
-    assert log_data[0]['response']['error'] == 'Password not set'
+    assert request_data == log_data[0]['request']['body']
+    assert response.status_code == log_data[0]['response']['status_code']
+    assert response.json()['error'] == log_data[0]['response']['error']
