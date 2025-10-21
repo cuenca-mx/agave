@@ -16,16 +16,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_status_code_exception(exc: Exception) -> int:
+def get_exception_status_and_detail(exc: Exception) -> tuple[int, str]:
     if isinstance(exc, HTTPException):
-        return exc.status_code
+        return exc.status_code, str(exc.detail)
     if isinstance(exc, RequestValidationError):
-        return 422
+        return 422, str(exc.errors())
     if isinstance(exc, AgaveError):
-        return exc.status_code
+        return exc.status_code, str(exc.error)
     if isinstance(exc, CuencaError):
-        return exc.status_code
-    return 500
+        return exc.status_code, str(exc)
+    return 500, str(exc)
 
 
 class LoggingRoute(APIRoute):
@@ -65,8 +65,12 @@ class LoggingRoute(APIRoute):
             try:
                 response = await original_route_handler(request)
             except Exception as exc:
+                status_code, error_detail = get_exception_status_and_detail(
+                    exc
+                )
                 log_data['response'] = {
-                    'status_code': get_status_code_exception(exc)
+                    'status_code': status_code,
+                    'error': error_detail,
                 }
                 raise
             else:
