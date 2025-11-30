@@ -111,7 +111,7 @@ class RestApiBlueprint(APIRouter):
             :param cls: Resoucre class
             :return:
             """
-            response_model: type[BaseModel] = None
+            response_model = Any
             response_sample = {}
             include_in_schema = getattr(cls, 'include_in_schema', True)
             if hasattr(cls, 'response_model'):

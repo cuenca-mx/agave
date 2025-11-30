@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Any, Callable, NoReturn, Optional, Type, cast
+from typing import Any, Callable, Optional, Type, cast
 from urllib.parse import urlencode
 
 try:
