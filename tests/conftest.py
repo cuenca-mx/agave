@@ -222,7 +222,7 @@ def aws_endpoint_urls(
 
 @pytest.fixture(autouse=True)
 def patch_tasks_count(monkeypatch: MonkeyPatch) -> None:
-    def one_loop(*_, **__):
+    def one_loop(*_, **__) -> None:
         # Para pruebas solo unos cuantos ciclos
         for i in range(5):
             yield i
@@ -237,7 +237,7 @@ def patch_aiobotocore_create_client(
 ) -> None:
     create_client = AioSession.create_client
 
-    def mock_create_client(*args, **kwargs):
+    def mock_create_client(*args, **kwargs) -> Any:
         service_name = next(a for a in args if type(a) is str)
         kwargs['endpoint_url'] = aws_endpoint_urls[service_name]
 
@@ -253,7 +253,7 @@ def patch_boto3_create_client(
 ) -> None:
     create_client = boto3.Session.client
 
-    def mock_client(*args, **kwargs):
+    def mock_client(*args, **kwargs) -> Any:
         service_name = next(a for a in args if type(a) is str)
         if service_name in aws_endpoint_urls:
             kwargs['endpoint_url'] = aws_endpoint_urls[service_name]

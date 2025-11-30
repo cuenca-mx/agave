@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Any, Callable, Optional, Type, cast
+from typing import Any, Callable, Optional, cast
 from urllib.parse import urlencode
 
 try:
@@ -81,7 +81,7 @@ class RestApiBlueprint(Blueprint):
             raise NotFoundError('Not valid id')
         return data
 
-    def validate(self, validation_type: Type[BaseModel]) -> Callable:
+    def validate(self, validation_type: type[BaseModel]) -> Callable:
         """This decorator validate the request body using a
         custom pydantyc model. If validation fails return a
         BadRequest response with details
@@ -91,8 +91,8 @@ class RestApiBlueprint(Blueprint):
             ...
         """
 
-        def decorator(func):
-            def wrapper(*args, **kwargs):
+        def decorator(func) -> Callable:
+            def wrapper(*args, **kwargs) -> Any:
                 try:
                     request = validation_type(**self.current_request.json_body)
                 except ValidationError as e:
@@ -125,7 +125,7 @@ class RestApiBlueprint(Blueprint):
         GET /my_resource
         """
 
-        def wrapper_resource_class(cls):
+        def wrapper_resource_class(cls) -> type:
             """Wrapper for resource class
             :param cls: Resoucre class
             :return:
@@ -148,8 +148,8 @@ class RestApiBlueprint(Blueprint):
                 route = self.delete(path + '/{id}')
 
                 @copy_attributes(cls)
-                def delete(id: str):
-                    model = self.retrieve_object(cls, id)
+                def delete(resource_id: str) -> Any:
+                    model = self.retrieve_object(cls, resource_id)
                     return cls.delete(model)
 
                 route(delete)
@@ -163,33 +163,33 @@ class RestApiBlueprint(Blueprint):
                 route = self.patch(path + '/{id}')
 
                 @copy_attributes(cls)
-                def update(id: str):
+                def update(resource_id: str) -> Any:
                     params = self.current_request.json_body or {}
                     try:
                         data = cls.update_validator(**params)
                     except ValidationError as e:
                         return Response(e.json(), status_code=400)
 
-                    model = self.retrieve_object(cls, id)
+                    model = self.retrieve_object(cls, resource_id)
                     return cls.update(model, data)
 
                 route(update)
 
             @self.get(path + '/{id}')
             @copy_attributes(cls)
-            def retrieve(id: str):
-                """GET /resource/{id}
-                :param id: Object Id
+            def retrieve(resource_id: str) -> Any:
+                """GET /resource/{resource_id}
+                :param resource_id: Object Id
                 :return: Model object
 
                 If exists "retrieve" method return the result of that, else
-                use "id" param to retrieve the object of type "model" defined
+                use "resource_id" param to retrieve the object of type "model" defined
                 in the decorated class.
 
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
-                obj = self.retrieve_object(cls, id)
+                obj = self.retrieve_object(cls, resource_id)
 
                 # This case is when the return is not an application/$
                 # but can be some type of file such as image, xml, zip or pdf
@@ -219,7 +219,7 @@ class RestApiBlueprint(Blueprint):
 
             @self.get(path)
             @copy_attributes(cls)
-            def query():
+            def query() -> Any:
                 """GET /resource
                 Method for queries in resource. Use "query_validator" type
                 defined in decorated class to validate the params.
@@ -270,11 +270,11 @@ class RestApiBlueprint(Blueprint):
                     result = _all(query_params, filters)
                 return result
 
-            def _count(filters: Q):
+            def _count(filters: Q) -> dict[str, int]:
                 count = cls.model.objects.filter(filters).count()
                 return {'count': count}
 
-            def _all(query: QueryParams, filters: Q):
+            def _all(query: QueryParams, filters: Q) -> dict[str, Any]:
                 if query.limit:
                     limit = min(query.limit, query.page_size)
                     query.limit = max(0, query.limit - limit)  # type: ignore

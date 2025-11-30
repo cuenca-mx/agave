@@ -1,7 +1,7 @@
-from typing import Any, Callable, Type
+from typing import Any, Callable
 
 
-def copy_attributes(resource: Type[Any]) -> Callable:
+def copy_attributes(resource: type[Any]) -> Callable:
     """
     Copy every attached property from resource methods definition to the
     real function handler.
@@ -9,7 +9,7 @@ def copy_attributes(resource: Type[Any]) -> Callable:
     :return: wrapper function
     """
 
-    def wrapper(func: Callable):
+    def wrapper(func: Callable) -> Callable:
         try:
             original_func = getattr(resource, func.__name__)
         except AttributeError:

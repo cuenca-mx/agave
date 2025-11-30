@@ -2,7 +2,6 @@ from typing import (
     Any,
     Callable,
     Optional,
-    Type,
     Union,
     get_args,
     get_origin,
@@ -47,7 +46,7 @@ def obfuscate_sensitive_data(
 
 def get_request_model(
     function: Callable[..., Any],
-) -> Optional[list[Type[BaseModel]]]:
+) -> Optional[list[type[BaseModel]]]:
     """
     Extracts the first parameter from a function that is a
     BaseModel or Union of BaseModels.
@@ -77,7 +76,7 @@ def get_request_model(
 
 def get_response_model(
     function: Callable[..., Any],
-) -> Optional[Type[BaseModel]]:
+) -> Optional[type[BaseModel]]:
     """
     Extracts the response model from the function's return type
     if it is a Pydantic BaseModel.

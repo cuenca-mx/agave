@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable
 
 from chalice import Blueprint
 
@@ -29,9 +29,9 @@ class AuthedBlueprint(Blueprint):
         :return:
         """
 
-        def decorator(user_handler: Callable):
+        def decorator(user_handler: Callable) -> Callable:
             @wraps(user_handler)
-            def authed_handler(*args, **kwargs):
+            def authed_handler(*args, **kwargs) -> Any:
                 # your authentication logic goes here
                 # before execute `user_handler` function.
                 self.current_request.context['user_id'] = TEST_DEFAULT_USER_ID

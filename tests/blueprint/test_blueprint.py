@@ -631,7 +631,10 @@ def test_upload_resource(fastapi_client: TestClient) -> None:
         file_body = f.read()
     resp = fastapi_client.post(
         '/files',
-        files={'file': (None, file_body), 'file_name': (None, 'test_file.txt')},
+        files={
+            'file': (None, file_body),
+            'file_name': (None, 'test_file.txt'),
+        },
     )
     assert resp.status_code == 201
     json = resp.json()

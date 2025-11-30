@@ -19,7 +19,7 @@ class SqsClient:
     region_name: str
     _sqs: Optional[Boto3SQSClient] = field(init=False, default=None)
 
-    def _get_client(self):
+    def _get_client(self) -> Boto3SQSClient:
         if self._sqs is None:
             self._sqs = boto3.client('sqs', region_name=self.region_name)
         return self._sqs

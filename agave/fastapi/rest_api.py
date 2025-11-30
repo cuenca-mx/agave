@@ -106,7 +106,7 @@ class RestApiBlueprint(APIRouter):
         GET /my_resource
         """
 
-        def wrapper_resource_class(cls):
+        def wrapper_resource_class(cls) -> type:
             """Wrapper for resource class
             :param cls: Resoucre class
             :return:
@@ -164,7 +164,7 @@ class RestApiBlueprint(APIRouter):
                 @copy_attributes(cls)
                 async def upload(
                     request: Request, background_tasks: BackgroundTasks
-                ):
+                ) -> Any:
                     form = await request.form()
                     try:
                         upload_params = cls.upload_validator(**form)
@@ -190,8 +190,8 @@ class RestApiBlueprint(APIRouter):
                     include_in_schema=include_in_schema,
                 )
                 @copy_attributes(cls)
-                async def delete(id: str, request: Request):
-                    obj = await self.retrieve_object(cls, id)
+                async def delete(resource_id: str, request: Request) -> Any:
+                    obj = await self.retrieve_object(cls, resource_id)
                     return await cls.delete(obj, request)
 
             """ PATCH /resource/{id}
@@ -221,11 +221,11 @@ class RestApiBlueprint(APIRouter):
                 )
                 @copy_attributes(cls)
                 async def update(
-                    id: str,
+                    resource_id: str,
                     update_params: cls.update_validator,  # type: ignore
                     request: Request,
-                ):
-                    obj = await self.retrieve_object(cls, id)
+                ) -> Any:
+                    obj = await self.retrieve_object(cls, resource_id)
                     try:
                         return await cls.update(obj, update_params, request)
                     except TypeError:
@@ -247,19 +247,19 @@ class RestApiBlueprint(APIRouter):
                 include_in_schema=include_in_schema,
             )
             @copy_attributes(cls)
-            async def retrieve(id: str, request: Request):
-                """GET /resource/{id}
-                :param id: Object Id
+            async def retrieve(resource_id: str, request: Request) -> Any:
+                """GET /resource/{resource_id}
+                :param resource_id: Object Id
                 :return: Model object
 
                 If exists "retrieve" method return the result of that, else
-                use "id" param to retrieve the object of type "model" defined
+                use "resource_id" param to retrieve the object of type "model" defined
                 in the decorated class.
 
                 The most of times this implementation is enough and is not
                 necessary define a custom "retrieve" method
                 """
-                obj = await self.retrieve_object(cls, id)
+                obj = await self.retrieve_object(cls, resource_id)
 
                 # This case is when the return is not an application/$
                 # but can be some type of file such as image, xml, zip or pdf
@@ -353,7 +353,7 @@ class RestApiBlueprint(APIRouter):
                 },
             ]
 
-            def validate_params(request: Request):
+            def validate_params(request: Request) -> Any:
                 try:
                     return cls.query_validator(**request.query_params)
                 except ValidationError as e:
@@ -372,7 +372,7 @@ class RestApiBlueprint(APIRouter):
                 query_params: cls.query_validator = Depends(  # type: ignore
                     validate_params
                 ),
-            ):
+            ) -> Any:
                 """GET /resource"""
                 if self.platform_id_filter_required() and hasattr(
                     cls.model, 'platform_id'
@@ -397,11 +397,13 @@ class RestApiBlueprint(APIRouter):
                     result = await _all(query_params, filters, path)
                 return result
 
-            async def _count(filters: Q):
+            async def _count(filters: Q) -> dict[str, int]:
                 count = await cls.model.objects.filter(filters).async_count()
                 return {'count': count}
 
-            async def _all(query: QueryParams, filters: Q, resource_path: str):
+            async def _all(
+                query: QueryParams, filters: Q, resource_path: str
+            ) -> dict[str, Any]:
                 if query.limit:
                     limit = min(query.limit, query.page_size)
                     query.limit = max(0, query.limit - limit)

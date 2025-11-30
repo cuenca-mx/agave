@@ -136,7 +136,10 @@ def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
         file_body = f.read()
     response = fastapi_client.post(
         '/files',
-        files={'file': (None, file_body), 'file_name': (None, 'test_file.txt')},
+        files={
+            'file': (None, file_body),
+            'file_name': (None, 'test_file.txt'),
+        },
     )
 
     assert response.status_code == 201

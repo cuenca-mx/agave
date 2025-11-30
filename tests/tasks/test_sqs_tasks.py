@@ -2,7 +2,7 @@ import asyncio
 import datetime as dt
 import json
 import uuid
-from typing import Union
+from typing import Any, Union
 from unittest.mock import AsyncMock, call, patch
 
 import aiobotocore.client
@@ -184,7 +184,7 @@ async def test_http_client_error_tasks(sqs_client) -> None:
     # Esta función hace un patch de la función `receive_message` para simular
     # un error de conexión, la recuperación de la conexión y posteriores
     # recepciones de mensajes sin body del queue.
-    async def mock_create_client(*args, **kwargs):
+    async def mock_create_client(*args, **kwargs) -> Any:
         client = await original_create_client(*args, **kwargs)
         client.receive_message = AsyncMock(
             side_effect=[
@@ -349,7 +349,7 @@ async def test_retry_tasks_with_countdown(sqs_client) -> None:
 
     async_mock_function = AsyncMock(side_effect=RetryTask(countdown=2))
 
-    async def countdown_tester(data: dict):
+    async def countdown_tester(data: dict) -> None:
         await async_mock_function(data, dt.datetime.now())
 
     await task(

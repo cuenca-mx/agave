@@ -37,7 +37,10 @@ def build_celery_message(
                     args_,
                     kwargs_,
                     {
-                        'callbacks': None, 'errbacks': None, 'chain': None, 'chord': None
+                        'callbacks': None,
+                        'errbacks': None,
+                        'chain': None,
+                        'chord': None,
                     },
                 )
             )

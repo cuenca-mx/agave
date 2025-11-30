@@ -64,7 +64,11 @@ async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
 
     data = {'id': 'abc123', 'secret': 'my-secret'}
     expected_message = {'id': 'abc123', 'secret': '*****ret'}
-    expected_response = {'id': 'abc123', 'api_key': '*****890', 'status': 'success'}
+    expected_response = {
+        'id': 'abc123',
+        'api_key': '*****890',
+        'status': 'success',
+    }
 
     test_message = ValidatorRequest(**data)
     await sqs_client.send_message(
@@ -115,10 +119,14 @@ async def test_execute_tasks_with_union_validator_logger(
         'visibility_timeout': 1,
     }
     test_message = {
-        'id': 'ID123', 'name': 'Sor Juana Inés de la Cruz', 'secret': 'my-secret'
+        'id': 'ID123',
+        'name': 'Sor Juana Inés de la Cruz',
+        'secret': 'my-secret',
     }
     expected_message_user = {
-        'id': 'ID123', 'name': 'Sor Juana Inés de la Cruz', 'secret': '*****ret'
+        'id': 'ID123',
+        'name': 'Sor Juana Inés de la Cruz',
+        'secret': '*****ret',
     }
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),

@@ -6,7 +6,7 @@ from collections.abc import AsyncGenerator, Coroutine
 from functools import wraps
 from itertools import count
 from json import JSONDecodeError
-from typing import Any, Callable, List
+from typing import Any, Callable
 
 from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session
@@ -121,7 +121,7 @@ async def message_consumer(
             yield message
 
 
-async def get_running_fast_agave_tasks() -> List[Any]:
+async def get_running_fast_agave_tasks() -> list[Any]:
     return [
         t
         for t in asyncio.all_tasks()
@@ -137,7 +137,7 @@ def task(
     max_retries: int = 1,
     max_concurrent_tasks: int = 5,
 ) -> Callable:
-    def task_builder(task_func: Callable):
+    def task_builder(task_func: Callable) -> Callable:
         @wraps(task_func)
         async def start_task(*args, **kwargs) -> None:
             can_read = asyncio.Event()
