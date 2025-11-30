@@ -24,7 +24,7 @@ async def test_execute_tasks(sqs_client) -> None:
     Happy path: Se obtiene el mensaje y se ejecuta el task exitosamente.
     El mensaje debe ser eliminado automáticamente del queue
     """
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -60,15 +60,15 @@ async def test_execute_tasks_with_validator(sqs_client) -> None:
     async def my_task(data: Validator) -> None:
         await async_mock_function(data)
 
-    task_params = dict(
-        queue_url=sqs_client.queue_url,
-        region_name=CORE_QUEUE_REGION,
-        wait_time_seconds=1,
-        visibility_timeout=1,
-    )
+    task_params = {
+        'queue_url': sqs_client.queue_url,
+        'region_name': CORE_QUEUE_REGION,
+        'wait_time_seconds': 1,
+        'visibility_timeout': 1,
+    }
     # Invalid body, not execute function
     await sqs_client.send_message(
-        MessageBody=json.dumps(dict(foo='bar')),
+        MessageBody=json.dumps({'foo': 'bar'}),
         MessageGroupId='4321',
     )
     await task(**task_params)(my_task)()
@@ -106,14 +106,14 @@ async def test_execute_tasks_with_union_validator(sqs_client) -> None:
     async def my_task(data: Union[User, Company]) -> None:
         await async_mock_function(data.model_dump())
 
-    task_params = dict(
-        queue_url=sqs_client.queue_url,
-        region_name=CORE_QUEUE_REGION,
-        wait_time_seconds=1,
-        visibility_timeout=1,
-    )
+    task_params = {
+        'queue_url': sqs_client.queue_url,
+        'region_name': CORE_QUEUE_REGION,
+        'wait_time_seconds': 1,
+        'visibility_timeout': 1,
+    }
     # Invalid body, not execute function
-    test_message = dict(id='ID123', name='Sor Juana Inés de la Cruz')
+    test_message = {'id': 'ID123', 'name': 'Sor Juana Inés de la Cruz'}
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='4321',
@@ -127,7 +127,7 @@ async def test_execute_tasks_with_union_validator(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
     async_mock_function.reset_mock()
-    test_message = dict(id='ID123', legal_name='FastAgave', rfc='FA')
+    test_message = {'id': 'ID123', 'legal_name': 'FastAgave', 'rfc': 'FA'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -172,7 +172,7 @@ async def test_http_client_error_tasks(sqs_client) -> None:
     se rompe inesperadamente.
     """
 
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -190,9 +190,9 @@ async def test_http_client_error_tasks(sqs_client) -> None:
             side_effect=[
                 HTTPClientError(error='[Errno 104] Connection reset by peer'),
                 await sqs_client.receive_message(),
-                dict(),
-                dict(),
-                dict(),
+                {},
+                {},
+                {},
             ]
         )
         return client
@@ -226,7 +226,7 @@ async def test_retry_tasks_default_max_retries(sqs_client) -> None:
     Se ejecuta este número de veces para ser consistentes con la lógica
     de reintentos de Celery
     """
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -261,7 +261,7 @@ async def test_retry_tasks_custom_max_retries(sqs_client) -> None:
     En este caso el task debe ejecutarse 3 veces
     (la ejecución normal + max_retries)
     """
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='1234',
@@ -297,7 +297,7 @@ async def test_does_not_retry_on_unhandled_exceptions(sqs_client) -> None:
     Dentro de task deben manejarse las excepciones esperadas (como desconexión
     de la red). Véase los ejemplos de cómo aplicar este tipo de reintentos
     """
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='1234',
@@ -340,7 +340,7 @@ async def test_retry_tasks_with_countdown(sqs_client) -> None:
 
     El parámetro es similar a `self.retry(exc, countdown=10)` en celery
     """
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -370,7 +370,7 @@ async def test_concurrency_controller(
     sqs_client,
 ) -> None:
     message_id = str(uuid.uuid4())
-    test_message = dict(id=message_id, name='fast-agave')
+    test_message = {'id': message_id, 'name': 'fast-agave'}
     for i in range(5):
         await sqs_client.send_message(
             MessageBody=json.dumps(test_message),

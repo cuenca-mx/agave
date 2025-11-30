@@ -25,7 +25,7 @@ app.add_middleware(AgaveErrorHandler)
 
 @app.get('/')
 async def iam_healty() -> dict:
-    return dict(greeting="I'm healthy!!!")
+    return {'greeting': "I'm healthy!!!"}
 
 
 @app.on_event('startup')

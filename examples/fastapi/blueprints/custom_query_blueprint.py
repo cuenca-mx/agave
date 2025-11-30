@@ -11,9 +11,9 @@ class CustomQueryBlueprint(RestApiBlueprint):
         return context['custom']
 
     def property_filter_required(self) -> bool:
-        return context.get('custom_filter_required')
+        return bool(context.get('custom_filter_required'))
 
-    def custom_filter_required(self, query_params: Any, model: any) -> None:
+    def custom_filter_required(self, query_params: Any, model: Any) -> None:
         if self.property_filter_required() and hasattr(model, 'custom'):
             query_params.custom = self.custom
 

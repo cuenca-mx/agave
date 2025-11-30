@@ -8,7 +8,7 @@ CORE_QUEUE_REGION = 'us-east-1'
 
 async def test_send_task(sqs_client) -> None:
     args = [10, 'foo']
-    kwargs = dict(hola='mundo')
+    kwargs = {'hola': 'mundo'}
     client = SqsCeleryClient(sqs_client.queue_url, CORE_QUEUE_REGION)
 
     client.send_task('some.task', args=args, kwargs=kwargs)

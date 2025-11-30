@@ -6,8 +6,8 @@ CORE_QUEUE_REGION = 'us-east-1'
 
 
 async def test_send_message(sqs_client) -> None:
-    data1 = dict(hola='mundo')
-    data2 = dict(foo='bar')
+    data1 = {'hola': 'mundo'}
+    data2 = {'foo': 'bar'}
 
     async with SqsClient(sqs_client.queue_url, CORE_QUEUE_REGION) as sqs:
         await sqs.send_message(data1)
@@ -23,7 +23,7 @@ async def test_send_message(sqs_client) -> None:
 
 
 async def test_send_message_async(sqs_client) -> None:
-    data1 = dict(hola='mundo')
+    data1 = {'hola': 'mundo'}
 
     async with SqsClient(sqs_client.queue_url, CORE_QUEUE_REGION) as sqs:
         task = sqs.send_message_async(data1)

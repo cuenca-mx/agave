@@ -65,7 +65,7 @@ def test_logger_update_resource(
     """
     resp = fastapi_client.patch(
         f'/accounts/{account.id}',
-        json=dict(name='Maria Felix'),
+        json={'name': 'Maria Felix'},
     )
     json_body = resp.json()
     status_code = resp.status_code
@@ -136,7 +136,7 @@ def test_logger_upload_resource(fastapi_client: TestClient, caplog) -> None:
         file_body = f.read()
     response = fastapi_client.post(
         '/files',
-        files=dict(file=(None, file_body), file_name=(None, 'test_file.txt')),
+        files={'file': (None, file_body), 'file_name': (None, 'test_file.txt')},
     )
 
     assert response.status_code == 201

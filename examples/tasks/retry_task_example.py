@@ -11,8 +11,8 @@ QUEUE_URL = 'http://127.0.0.1:4000/123456789012/core.fifo'
 class YouCanTryAgain(Exception): ...
 
 
-def test_your_luck(message):
-    value = random.uniform(100)
+def test_your_luck(message) -> None:
+    value = random.uniform(0, 100)
     if 0 < value <= 33:
         print('you are lucky!', message)
     elif 33 < value <= 66:

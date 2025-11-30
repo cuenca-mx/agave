@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Any, Optional, Type, cast
+from typing import Any, Callable, NoReturn, Optional, Type, cast
 from urllib.parse import urlencode
 
 try:
@@ -18,31 +18,31 @@ from ..core.blueprints.decorators import copy_attributes
 
 
 class RestApiBlueprint(Blueprint):
-    def get(self, path: str, **kwargs):
+    def get(self, path: str, **kwargs) -> Callable:
         return self.route(path, methods=['GET'], **kwargs)
 
-    def post(self, path: str, **kwargs):
+    def post(self, path: str, **kwargs) -> Callable:
         return self.route(path, methods=['POST'], **kwargs)
 
-    def patch(self, path: str, **kwargs):
+    def patch(self, path: str, **kwargs) -> Callable:
         return self.route(path, methods=['PATCH'], **kwargs)
 
-    def delete(self, path: str, **kwargs):
+    def delete(self, path: str, **kwargs) -> Callable:
         return self.route(path, methods=['DELETE'], **kwargs)
 
     @property
-    def current_user_id(self):
+    def current_user_id(self) -> str:
         return self.current_request.context['user_id']
 
     @property
-    def current_platform_id(self):
+    def current_platform_id(self) -> str:
         return self.current_request.context['platform_id']
 
     @property
-    def current_api_key_id(self):
+    def current_api_key_id(self) -> str:
         return self.current_request.context['api_key_id']
 
-    def user_id_filter_required(self):
+    def user_id_filter_required(self) -> bool:
         """
         This method is required to be implemented with your own business logic.
         You are responsible of determining when `user_id` filter is required.
@@ -51,7 +51,7 @@ class RestApiBlueprint(Blueprint):
             'this method should be override'
         )  # pragma: no cover
 
-    def platform_id_filter_required(self):
+    def platform_id_filter_required(self) -> bool:
         """
         This method is required to be implemented with your own business logic.
         You are responsible of determining when `user_id` filter is required.
@@ -81,7 +81,7 @@ class RestApiBlueprint(Blueprint):
             raise NotFoundError('Not valid id')
         return data
 
-    def validate(self, validation_type: Type[BaseModel]):
+    def validate(self, validation_type: Type[BaseModel]) -> Callable:
         """This decorator validate the request body using a
         custom pydantyc model. If validation fails return a
         BadRequest response with details
@@ -103,7 +103,7 @@ class RestApiBlueprint(Blueprint):
 
         return decorator
 
-    def resource(self, path: str):
+    def resource(self, path: str) -> Callable:
         """Decorator to transform a class in Chalice REST endpoints
 
         @app.resource('/my_resource')
@@ -164,7 +164,7 @@ class RestApiBlueprint(Blueprint):
 
                 @copy_attributes(cls)
                 def update(id: str):
-                    params = self.current_request.json_body or dict()
+                    params = self.current_request.json_body or {}
                     try:
                         data = cls.update_validator(**params)
                     except ValidationError as e:
@@ -238,7 +238,7 @@ class RestApiBlueprint(Blueprint):
                     next_page = <url_for_next_items>
                 }
                 """
-                params = self.current_request.query_params or dict()
+                params = self.current_request.query_params or {}
                 try:
                     query_params = cls.query_validator(**params)
                 except ValidationError as e:
@@ -272,7 +272,7 @@ class RestApiBlueprint(Blueprint):
 
             def _count(filters: Q):
                 count = cls.model.objects.filter(filters).count()
-                return dict(count=count)
+                return {'count': count}
 
             def _all(query: QueryParams, filters: Q):
                 if query.limit:
@@ -302,7 +302,7 @@ class RestApiBlueprint(Blueprint):
                     if self.platform_id_filter_required():
                         params.pop('platform_id')
                     next_page_uri = f'{path}?{urlencode(params)}'
-                return dict(items=item_dicts, next_page_uri=next_page_uri)
+                return {'items': item_dicts, 'next_page_uri': next_page_uri}
 
             return cls
 

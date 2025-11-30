@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from cuenca_validations.errors import NoPasswordFoundError, WrongCredsError
 
 from agave.core.exc import UnauthorizedError
@@ -10,7 +12,7 @@ app = RestApiBlueprint()
 
 @app.get('/healthy_auth')
 def health_auth_check() -> dict:
-    return dict(greeting="I'm authenticated and healthy !!!")
+    return {'greeting': "I'm authenticated and healthy !!!"}
 
 
 @app.get('/raise_cuenca_errors')
@@ -31,24 +33,24 @@ def you_shall_not_pass() -> None:
     ...
 
 
-@app.post('/simulate_400')
-def simulate_bad_request():
+@app.post('/simulate_400', response_model=None)
+def simulate_bad_request() -> NoReturn:
     """Simulated endpoint that raises a bad request error (400)."""
     raise HTTPException(status_code=400, detail='Intentional bad request')
 
 
-@app.post('/simulate_500')
-def simulate_internal_error():
+@app.post('/simulate_500', response_model=None)
+def simulate_internal_error() -> NoReturn:
     """Simulated endpoint that raises an internal server error (500)."""
     raise Exception('Intentional server error')
 
 
-@app.post('/simulate_401')
-def simulate_unauthorized():
+@app.post('/simulate_401', response_model=None)
+def simulate_unauthorized() -> NoReturn:
     """Simulated endpoint that raises an unauthorized error (401)."""
     raise NoPasswordFoundError('Password not set')
 
 
 @app.get('/get_ip')
-def get_ip(request: Request):
+def get_ip(request: Request) -> str:
     return get_source_ip(request)

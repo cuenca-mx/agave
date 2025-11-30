@@ -16,7 +16,7 @@ class AuthedBlueprint(Blueprint):
 
     """
 
-    def route(self, path: str, **kwargs):
+    def route(self, path: str, **kwargs) -> Callable:
         """
         Builds route decorator with custom authentication.
         It is only a function wrapper for `Blueprint._register_handler` methods
@@ -48,12 +48,12 @@ class AuthedBlueprint(Blueprint):
                 user_handler.__name__,
                 authed_handler,
                 authed_handler,
-                dict(path=path, kwargs=kwargs),
+                {'path': path, 'kwargs': kwargs},
             )
 
         return decorator
 
-    def user_id_filter_required(self):
+    def user_id_filter_required(self) -> bool:
         """
         It overrides `RestApiBlueprint.user_id_filter_required()` method.
 
@@ -74,7 +74,7 @@ class AuthedBlueprint(Blueprint):
         """
         return False
 
-    def platform_id_filter_required(self):
+    def platform_id_filter_required(self) -> bool:
         """
         It overrides `RestApiBlueprint.platform_id_filter_required()` method.
         :return:

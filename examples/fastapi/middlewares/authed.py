@@ -38,16 +38,16 @@ class AuthedMiddleware(ContextMiddleware):
         """
         return False
 
-    async def authenticate(self):
+    async def authenticate(self) -> None:
         self.token = _request_scope_context_storage.set(
-            dict(
-                user_id=TEST_DEFAULT_USER_ID,
-                platform_id=TEST_DEFAULT_PLATFORM_ID,
-                api_key_id=TEST_DEFAULT_API_KEY_ID,
-            )
+            {
+                'user_id': TEST_DEFAULT_USER_ID,
+                'platform_id': TEST_DEFAULT_PLATFORM_ID,
+                'api_key_id': TEST_DEFAULT_API_KEY_ID,
+            }
         )
 
-    async def authorize(self):
+    async def authorize(self) -> None:
         context = _request_scope_context_storage.get()
         context['user_id_filter_required'] = self.required_user_id()
         context['platform_id_filter_required'] = self.required_platform_id()

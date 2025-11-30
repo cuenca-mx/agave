@@ -53,7 +53,7 @@ def test_create_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    data = dict(name='Doroteo Arango')
+    data = {'name': 'Doroteo Arango'}
     resp = client.post('/accounts', json=data)
     json_body = resp.json()
     status_code = resp.status_code
@@ -74,7 +74,7 @@ def test_create_resource_bad_request(
     client_fixture: str, framework_config: dict, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    data = dict(invalid_field='some value')
+    data = {'invalid_field': 'some value'}
     resp = client.post('/accounts', json=data)
     assert resp.status_code == framework_config['validation_error_code']
 
@@ -181,7 +181,7 @@ def test_update_resource_with_invalid_params(
     client_fixture: str, framework_config: dict, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    wrong_params = dict(wrong_param='wrong_value')
+    wrong_params = {'wrong_param': 'wrong_value'}
     response = client.patch(
         '/accounts/NOT_EXISTS',
         json=wrong_params,
@@ -212,7 +212,7 @@ def test_update_resource_that_doesnt_exist(
     client = request.getfixturevalue(client_fixture)
     resp = client.patch(
         '/accounts/5f9b4d0ff8d7255e3cc3c128',
-        json=dict(name='Frida'),
+        json={'name': 'Frida'},
     )
     assert resp.status_code == 404
 
@@ -226,7 +226,7 @@ def test_update_resource(
     client = request.getfixturevalue(client_fixture)
     resp = client.patch(
         f'/accounts/{account.id}',
-        json=dict(name='Maria Felix'),
+        json={'name': 'Maria Felix'},
     )
     json_body = resp.json()
     status_code = resp.status_code
@@ -271,7 +271,7 @@ def test_query_count_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    query_params = dict(count=1, name='Frida Kahlo')
+    query_params = {'count': 1, 'name': 'Frida Kahlo'}
     resp = client.get(f'/accounts?{urlencode(query_params)}')
     json_body = resp.json()
     status_code = resp.status_code
@@ -288,7 +288,7 @@ def test_query_all_with_limit(
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     limit = 2
-    query_params = dict(limit=limit)
+    query_params = {'limit': limit}
     resp = client.get(f'/accounts?{urlencode(query_params)}')
     json_body = resp.json()
     status_code = resp.status_code
@@ -310,7 +310,7 @@ def test_query_all_resource(
     accounts = list(reversed(accounts))
 
     items = []
-    page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+    page_uri = f'/accounts?{urlencode({"page_size": 2})}'
 
     while page_uri:
         resp = client.get(page_uri)
@@ -332,7 +332,7 @@ def test_query_all_filter_active(
     accounts: list[Account],
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    query_params = dict(active=True)
+    query_params = {'active': True}
     # Query active items
     resp = client.get(f'/accounts?{urlencode(query_params)}')
     json_body = resp.json()
@@ -353,7 +353,7 @@ def test_query_all_filter_active(
     assert len(items) == len(accounts) - 1
 
     # Query deactivated items
-    query_params = dict(active=False)
+    query_params = {'active': False}
     resp = client.get(f'/accounts?{urlencode(query_params)}')
     json_body = resp.json()
     status_code = resp.status_code
@@ -375,7 +375,7 @@ def test_query_all_created_after(
     created_at = dt.datetime(2020, 2, 1)
     expected_length = len([a for a in accounts if a.created_at > created_at])
 
-    query_params = dict(created_after=created_at.isoformat())
+    query_params = {'created_after': created_at.isoformat()}
     resp = client.get(f'/accounts?{urlencode(query_params)}')
     json_body = resp.json()
     status_code = resp.status_code
@@ -410,7 +410,7 @@ def test_query_platform_id_filter_required(
         )
 
         items = []
-        page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+        page_uri = f'/accounts?{urlencode({"page_size": 2})}'
 
         while page_uri:
             resp = client.get(page_uri)
@@ -446,7 +446,7 @@ def test_query_user_id_filter_required(
             )
         )
         items = []
-        page_uri = f'/accounts?{urlencode(dict(page_size=2))}'
+        page_uri = f'/accounts?{urlencode({"page_size": 2})}'
 
         while page_uri:
             resp = client.get(page_uri)
@@ -471,7 +471,7 @@ def test_query_resource_with_invalid_params(
     client_fixture: str, request: pytest.FixtureRequest, framework_config: dict
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    wrong_params = dict(wrong_param='wrong_value')
+    wrong_params = {'wrong_param': 'wrong_value'}
     resp = client.get(f'/accounts?{urlencode(wrong_params)}')
     assert resp.status_code == framework_config['validation_error_code']
 
@@ -484,7 +484,7 @@ def test_query_custom_method(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    query_params = dict(page_size=2)
+    query_params = {'page_size': 2}
     resp = client.get(f'/cards?{urlencode(query_params)}')
     json_body = resp.json()
     status_code = resp.status_code
@@ -507,7 +507,7 @@ def test_cannot_create_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    resp = client.post('/billers', json=dict())
+    resp = client.post('/billers', json={})
     assert resp.status_code == 405
 
 
@@ -522,7 +522,7 @@ def test_cannot_query_resource(
     client_fixture: str, request: pytest.FixtureRequest, framework_config: dict
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    query_params = dict(count=1, name='Frida Kahlo')
+    query_params = {'count': 1, 'name': 'Frida Kahlo'}
     resp = client.get(f'/transactions?{urlencode(query_params)}')
     assert resp.status_code == framework_config['method_not_allowed_code']
 
@@ -534,7 +534,7 @@ def test_cannot_update_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    resp = client.patch('/transactions/123', json=dict())
+    resp = client.patch('/transactions/123', json={})
     assert resp.status_code == 405
 
 
@@ -631,7 +631,7 @@ def test_upload_resource(fastapi_client: TestClient) -> None:
         file_body = f.read()
     resp = fastapi_client.post(
         '/files',
-        files=dict(file=(None, file_body), file_name=(None, 'test_file.txt')),
+        files={'file': (None, file_body), 'file_name': (None, 'test_file.txt')},
     )
     assert resp.status_code == 201
     json = resp.json()
@@ -639,6 +639,6 @@ def test_upload_resource(fastapi_client: TestClient) -> None:
 
 
 def test_upload_resource_with_invalid_form(fastapi_client: TestClient) -> None:
-    wrong_form = dict(another_file=b'Whasaaaaap')
+    wrong_form = {'another_file': b'Whasaaaaap'}
     resp = fastapi_client.post('/files', files=wrong_form)
     assert resp.status_code == 400

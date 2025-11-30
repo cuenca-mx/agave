@@ -1,5 +1,5 @@
 import mimetypes
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
@@ -83,7 +83,7 @@ class RestApiBlueprint(APIRouter):
             raise NotFoundError('Not valid id')
         return data
 
-    def resource(self, path: str):
+    def resource(self, path: str) -> Callable:
         """Decorator to transform a class in FastApi REST endpoints
 
         @app.resource('/my_resource')
@@ -111,7 +111,7 @@ class RestApiBlueprint(APIRouter):
             :param cls: Resoucre class
             :return:
             """
-            response_model = Any
+            response_model: type[BaseModel] = None
             response_sample = {}
             include_in_schema = getattr(cls, 'include_in_schema', True)
             if hasattr(cls, 'response_model'):
@@ -399,7 +399,7 @@ class RestApiBlueprint(APIRouter):
 
             async def _count(filters: Q):
                 count = await cls.model.objects.filter(filters).async_count()
-                return dict(count=count)
+                return {'count': count}
 
             async def _all(query: QueryParams, filters: Q, resource_path: str):
                 if query.limit:
@@ -431,7 +431,7 @@ class RestApiBlueprint(APIRouter):
                     if self.platform_id_filter_required():
                         params.pop('platform_id')
                     next_page_uri = f'{resource_path}?{urlencode(params)}'
-                return dict(items=item_dicts, next_page_uri=next_page_uri)
+                return {'items': item_dicts, 'next_page_uri': next_page_uri}
 
             return cls
 

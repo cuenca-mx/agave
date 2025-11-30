@@ -19,7 +19,7 @@ setup(
     url='https://github.com/cuenca-mx/agave',
     packages=find_packages(),
     include_package_data=True,
-    package_data=dict(agave=['py.typed']),
+    package_data={'agave': ['py.typed']},
     python_requires='>=3.9',
     install_requires=[
         'cuenca-validations>=2.1.0,<3.0.0',

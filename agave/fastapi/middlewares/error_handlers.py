@@ -21,14 +21,14 @@ class AgaveErrorHandler(BaseHTTPMiddleware):
         except CuencaError as exc:
             return JSONResponse(
                 status_code=exc.status_code,
-                content=dict(
-                    code=exc.code,
-                    error=str(exc),
-                ),
+                content={
+                    'code': exc.code,
+                    'error': str(exc),
+                },
             )
         except AgaveError as exc:
             return JSONResponse(
-                status_code=exc.status_code, content=dict(error=exc.error)
+                status_code=exc.status_code, content={'error': exc.error}
             )
 
 

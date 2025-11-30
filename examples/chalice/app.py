@@ -20,5 +20,5 @@ connect(
 
 
 @app.route('/')
-def health_check():
-    return dict(greeting="I'm testing app!!!")
+def health_check() -> dict:
+    return {'greeting': "I'm testing app!!!"}

@@ -2,9 +2,9 @@ import datetime as dt
 import functools
 import logging
 import os
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 from functools import partial
-from typing import Callable
+from typing import Any, Callable
 
 import aiobotocore
 import boto3
@@ -212,9 +212,9 @@ def aws_endpoint_urls(
     server = ThreadedMotoServer(port=4000)
     server.start()
 
-    endpoints = dict(
-        sqs='http://127.0.0.1:4000/',
-    )
+    endpoints = {
+        'sqs': 'http://127.0.0.1:4000/',
+    }
     yield endpoints
 
     server.stop()
@@ -264,7 +264,7 @@ def patch_boto3_create_client(
 
 @deprecated('Use fixtures from cuenca-test-fixtures')
 @pytest.fixture
-async def sqs_client():
+async def sqs_client() -> AsyncGenerator[Any, None]:
     session = aiobotocore.session.get_session()
     async with session.create_client('sqs', 'us-east-1') as sqs:
         await sqs.create_queue(
@@ -287,7 +287,7 @@ async def sqs_client():
 
 
 @pytest.fixture(autouse=True)
-def set_log_level(caplog):
+def set_log_level(caplog) -> None:
     """
     Automatically set logging level to INFO for all tests.
     """

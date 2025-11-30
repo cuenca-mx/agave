@@ -37,13 +37,13 @@ class SqsClient:
     ) -> None:
         await self.close()
 
-    async def start(self):
+    async def start(self) -> None:
         session = get_session()
         context = session.create_client('sqs', self.region_name)
         self._background_tasks = set()
         self._sqs = await context.__aenter__()
 
-    async def close(self):
+    async def close(self) -> None:
         await self._sqs.__aexit__(None, None, None)
 
     async def send_message(

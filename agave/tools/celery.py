@@ -15,34 +15,34 @@ def build_celery_message(
     task_id = str(uuid4())
     # la definición de esta plantila se encuentra en:
     # docs.celeryproject.org/en/stable/internals/protocol.html#definition
-    message = dict(
-        properties=dict(
-            correlation_id=task_id,
-            content_type='application/json',
-            content_encoding='utf-8',
-            body_encoding='base64',
-            delivery_info=dict(exchange='', routing_key='celery'),
-        ),
-        headers=dict(
-            lang='py',
-            task=task_name,
-            id=task_id,
-            root_id=task_id,
-            parent_id=None,
-            group=None,
-        ),
-        body=_b64_encode(
+    message = {
+        'properties': {
+            'correlation_id': task_id,
+            'content_type': 'application/json',
+            'content_encoding': 'utf-8',
+            'body_encoding': 'base64',
+            'delivery_info': {'exchange': '', 'routing_key': 'celery'},
+        },
+        'headers': {
+            'lang': 'py',
+            'task': task_name,
+            'id': task_id,
+            'root_id': task_id,
+            'parent_id': None,
+            'group': None,
+        },
+        'body': _b64_encode(
             json.dumps(
                 (
                     args_,
                     kwargs_,
-                    dict(
-                        callbacks=None, errbacks=None, chain=None, chord=None
-                    ),
+                    {
+                        'callbacks': None, 'errbacks': None, 'chain': None, 'chord': None
+                    },
                 )
             )
         ),
-    )
+    }
     message['content-encoding'] = 'utf-8'
     message['content-type'] = 'application/json'
 

@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Any, Dict
 
 from chalice.test import Client as OriginalChaliceClient
 
@@ -25,15 +26,15 @@ class ChaliceResponse:
         self._status_code = chalice_response.status_code
         self._headers = chalice_response.headers
 
-    def json(self):
+    def json(self) -> Dict[str, Any]:
         return self._json_body
 
     @property
-    def status_code(self):
+    def status_code(self) -> int:
         return self._status_code
 
     @property
-    def headers(self):
+    def headers(self) -> Dict[str, Any]:
         return self._headers
 
 

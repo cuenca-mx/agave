@@ -12,7 +12,7 @@ from ..utils import CORE_QUEUE_REGION, extract_log_data
 
 
 async def test_execute_tasks_logger(sqs_client, caplog) -> None:
-    test_message = dict(foo='bar')
+    test_message = {'foo': 'bar'}
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='1234',
@@ -62,9 +62,9 @@ async def test_execute_tasks_with_validator_logger(sqs_client, caplog) -> None:
             id='abc123', api_key='1234567890', status='success'
         )
 
-    data = dict(id='abc123', secret='my-secret')
-    expected_message = dict(id='abc123', secret='*****ret')
-    expected_response = dict(id='abc123', api_key='*****890', status='success')
+    data = {'id': 'abc123', 'secret': 'my-secret'}
+    expected_message = {'id': 'abc123', 'secret': '*****ret'}
+    expected_response = {'id': 'abc123', 'api_key': '*****890', 'status': 'success'}
 
     test_message = ValidatorRequest(**data)
     await sqs_client.send_message(
@@ -108,18 +108,18 @@ async def test_execute_tasks_with_union_validator_logger(
     async def my_task(data: Union[User, Company]) -> None:
         await async_mock_function(data.model_dump())
 
-    task_params = dict(
-        queue_url=sqs_client.queue_url,
-        region_name=CORE_QUEUE_REGION,
-        wait_time_seconds=1,
-        visibility_timeout=1,
-    )
-    test_message = dict(
-        id='ID123', name='Sor Juana Inés de la Cruz', secret='my-secret'
-    )
-    expected_message_user = dict(
-        id='ID123', name='Sor Juana Inés de la Cruz', secret='*****ret'
-    )
+    task_params = {
+        'queue_url': sqs_client.queue_url,
+        'region_name': CORE_QUEUE_REGION,
+        'wait_time_seconds': 1,
+        'visibility_timeout': 1,
+    }
+    test_message = {
+        'id': 'ID123', 'name': 'Sor Juana Inés de la Cruz', 'secret': 'my-secret'
+    }
+    expected_message_user = {
+        'id': 'ID123', 'name': 'Sor Juana Inés de la Cruz', 'secret': '*****ret'
+    }
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='4321',
@@ -128,18 +128,18 @@ async def test_execute_tasks_with_union_validator_logger(
     async_mock_function.assert_called_with(test_message)
 
     async_mock_function.reset_mock()
-    test_message = dict(
-        id='ID123',
-        legal_name='FastAgave',
-        rfc='FA123456789',
-        secret='my-secret',
-    )
-    expected_message_company = dict(
-        id='ID123',
-        legal_name='FastAgave',
-        rfc='FA123456789',
-        secret='*****ret',
-    )
+    test_message = {
+        'id': 'ID123',
+        'legal_name': 'FastAgave',
+        'rfc': 'FA123456789',
+        'secret': 'my-secret',
+    }
+    expected_message_company = {
+        'id': 'ID123',
+        'legal_name': 'FastAgave',
+        'rfc': 'FA123456789',
+        'secret': '*****ret',
+    }
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='54321',
@@ -157,7 +157,7 @@ async def test_execute_tasks_with_union_validator_logger(
 
 
 async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
-    test_message = dict(foo='bar')
+    test_message = {'foo': 'bar'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -167,7 +167,7 @@ async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
 
     async def my_task_with_logger(data: dict) -> dict:
         await async_mock_function(data)
-        my_response = dict(response='my_custom_response')
+        my_response = {'response': 'my_custom_response'}
         return my_response
 
     await task(
@@ -185,9 +185,9 @@ async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
     assert log_data[0]['request']['task_func'] == my_task_with_logger.__name__
     assert log_data[0]['request']['body'] == test_message
     assert log_data[0]['response']['status'] == 'success'
-    assert log_data[0]['response']['body'] == dict(
-        response='my_custom_response'
-    )
+    assert log_data[0]['response']['body'] == {
+        'response': 'my_custom_response'
+    }
 
 
 async def test_execute_tasks_with_response_non_serializable(
@@ -197,7 +197,7 @@ async def test_execute_tasks_with_response_non_serializable(
         def __init__(self, value):
             self.value = value
 
-    test_message = dict(foo='bar')
+    test_message = {'foo': 'bar'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -230,7 +230,7 @@ async def test_execute_tasks_with_response_non_serializable(
 async def test_retry_tasks_default_max_retries_logger(
     sqs_client, caplog
 ) -> None:
-    test_message = dict(id='abc123', name='fast-agave')
+    test_message = {'id': 'abc123', 'name': 'fast-agave'}
 
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
@@ -286,7 +286,7 @@ async def test_retry_tasks_default_max_retries_logger(
 
 
 async def test_task_with_exception_logger(sqs_client, caplog) -> None:
-    test_message = dict(foo='bar')
+    test_message = {'foo': 'bar'}
     await sqs_client.send_message(
         MessageBody=json.dumps(test_message),
         MessageGroupId='1234',

@@ -1,7 +1,7 @@
 from typing import Any, Callable, Type
 
 
-def copy_attributes(resource: Type[Any]):
+def copy_attributes(resource: Type[Any]) -> Callable:
     """
     Copy every attached property from resource methods definition to the
     real function handler.
