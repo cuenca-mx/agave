@@ -28,7 +28,6 @@ def obfuscate_sensitive_data(
     body: dict[str, Any],
     sensitive_fields: dict[str, LogConfig],
 ) -> dict[str, Any]:
-
     ofuscated_body = body.copy()
     for field_name, log_config in sensitive_fields.items():
         if field_name not in ofuscated_body:
@@ -77,7 +76,7 @@ def get_request_model(
 
 
 def get_response_model(
-    function: Callable[..., Any]
+    function: Callable[..., Any],
 ) -> Optional[Type[BaseModel]]:
     """
     Extracts the response model from the function's return type

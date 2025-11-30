@@ -1,6 +1,5 @@
-from fastapi.responses import JSONResponse as Response
-
 from agave.core.filters import generic_query
+from fastapi.responses import JSONResponse as Response
 
 from ...models import Card as CardModel
 from ...validators import CardQuery

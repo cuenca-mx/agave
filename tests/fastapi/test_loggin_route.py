@@ -112,8 +112,8 @@ def test_logger_test_logger_retrieve_resource_not_found(
     - A request for a non-existent resource returns a 404
     - The request and response are properly logged
     """
-    resource_id = "unknown_id"
-    response = fastapi_client.get(f"/accounts/{resource_id}")
+    resource_id = 'unknown_id'
+    response = fastapi_client.get(f'/accounts/{resource_id}')
 
     assert response.status_code == 404
 
@@ -121,7 +121,7 @@ def test_logger_test_logger_retrieve_resource_not_found(
     log_output = caplog.text
     log_data = extract_log_data(log_output)
 
-    assert log_data[0]['request']['url'].endswith(f"/accounts/{resource_id}")
+    assert log_data[0]['request']['url'].endswith(f'/accounts/{resource_id}')
     assert response.status_code == log_data[0]['response']['status_code']
     assert response.json()['error'] == log_data[0]['response']['error']
 

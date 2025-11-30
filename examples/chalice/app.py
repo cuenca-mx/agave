@@ -1,6 +1,7 @@
 import mongomock as mongomock
-from chalice import Chalice
 from mongoengine import connect
+
+from chalice import Chalice
 
 from .resources import app as resources
 

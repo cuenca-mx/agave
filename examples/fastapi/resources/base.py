@@ -1,9 +1,9 @@
 from cuenca_validations.errors import NoPasswordFoundError, WrongCredsError
-from fastapi import HTTPException, Request
 
 from agave.core.exc import UnauthorizedError
 from agave.fastapi import RestApiBlueprint
 from agave.fastapi.middlewares.utils import get_source_ip
+from fastapi import HTTPException, Request
 
 app = RestApiBlueprint()
 
@@ -31,24 +31,24 @@ def you_shall_not_pass() -> None:
     ...
 
 
-@app.post("/simulate_400")
+@app.post('/simulate_400')
 def simulate_bad_request():
     """Simulated endpoint that raises a bad request error (400)."""
-    raise HTTPException(status_code=400, detail="Intentional bad request")
+    raise HTTPException(status_code=400, detail='Intentional bad request')
 
 
-@app.post("/simulate_500")
+@app.post('/simulate_500')
 def simulate_internal_error():
     """Simulated endpoint that raises an internal server error (500)."""
-    raise Exception("Intentional server error")
+    raise Exception('Intentional server error')
 
 
-@app.post("/simulate_401")
+@app.post('/simulate_401')
 def simulate_unauthorized():
     """Simulated endpoint that raises an unauthorized error (401)."""
     raise NoPasswordFoundError('Password not set')
 
 
-@app.get("/get_ip")
+@app.get('/get_ip')
 def get_ip(request: Request):
     return get_source_ip(request)

@@ -12,31 +12,31 @@ from agave.core.loggers import (
 
 
 @pytest.mark.parametrize(
-    "body, sensitive_fields, expected_result",
+    'body, sensitive_fields, expected_result',
     [
         # Test 1: Obfuscate with exclusion
         (
-            {"username": "user123", "password": "secret"},
-            {"password": LogConfig(excluded=True)},
-            {"username": "user123"},
+            {'username': 'user123', 'password': 'secret'},
+            {'password': LogConfig(excluded=True)},
+            {'username': 'user123'},
         ),
         # Test 2: Obfuscate with masking
         (
-            {"username": "user123", "password": "secret"},
-            {"password": LogConfig(masked=True)},
-            {"username": "user123", "password": "*****"},
+            {'username': 'user123', 'password': 'secret'},
+            {'password': LogConfig(masked=True)},
+            {'username': 'user123', 'password': '*****'},
         ),
         # Test 3: Obfuscate with partial masking
         (
-            {"username": "user123", "password": "supersecret"},
-            {"password": LogConfig(masked=True, unmasked_chars_length=4)},
-            {"username": "user123", "password": "*****cret"},
+            {'username': 'user123', 'password': 'supersecret'},
+            {'password': LogConfig(masked=True, unmasked_chars_length=4)},
+            {'username': 'user123', 'password': '*****cret'},
         ),
         # Test 4: Obfuscate non-existing field
         (
-            {"username": "user123"},
-            {"password": LogConfig(masked=True)},
-            {"username": "user123"},
+            {'username': 'user123'},
+            {'password': LogConfig(masked=True)},
+            {'username': 'user123'},
         ),
     ],
 )

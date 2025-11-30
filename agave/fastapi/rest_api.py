@@ -11,11 +11,12 @@ try:
     from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 except ImportError:
     raise ImportError(
-        "You must install agave with [fastapi] option.\n"
-        "You can install it with: pip install agave[fastapi]"
+        'You must install agave with [fastapi] option.\n'
+        'You can install it with: pip install agave[fastapi]'
     )
 
-from fastapi.responses import JSONResponse as Response, StreamingResponse
+from fastapi.responses import JSONResponse as Response
+from fastapi.responses import StreamingResponse
 from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, Field, ValidationError
 from starlette_context import context
@@ -24,13 +25,12 @@ from ..core.blueprints.decorators import copy_attributes
 from ..core.exc import NotFoundError, UnprocessableEntity
 
 SAMPLE_404 = {
-    "summary": "Not found item",
-    "value": {"error": "Not valid id"},
+    'summary': 'Not found item',
+    'value': {'error': 'Not valid id'},
 }
 
 
 class RestApiBlueprint(APIRouter):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, route_class=LoggingRoute, **kwargs)
 
@@ -152,10 +152,10 @@ class RestApiBlueprint(APIRouter):
                     response_model=response_model,
                     include_in_schema=include_in_schema,
                     openapi_extra={
-                        "requestBody": {
-                            "content": {
-                                "form-data": {
-                                    "schema": cls.upload_validator.schema()
+                        'requestBody': {
+                            'content': {
+                                'form-data': {
+                                    'schema': cls.upload_validator.schema()
                                 }
                             }
                         }
@@ -200,7 +200,6 @@ class RestApiBlueprint(APIRouter):
             completely your responsibility.
             """
             if hasattr(cls, 'update'):
-
                 request_model = get_request_model(cls.update)
                 cls.update.request_model = request_model
                 cls.update.request_log_config_fields = get_sensitive_fields(
@@ -274,7 +273,7 @@ class RestApiBlueprint(APIRouter):
                         media_type=mimetype,
                         headers={
                             'Content-Disposition': (
-                                'attachment; ' f'filename={filename}'
+                                f'attachment; filename={filename}'
                             )
                         },
                     )
@@ -319,8 +318,7 @@ class RestApiBlueprint(APIRouter):
                 items: Optional[list[response_model]] = Field(
                     [],
                     description=(
-                        f'List of {cls.__name__} that match with query '
-                        f'filters'
+                        f'List of {cls.__name__} that match with query filters'
                     ),
                 )
                 next_page_uri: Optional[str] = Field(
@@ -410,7 +408,7 @@ class RestApiBlueprint(APIRouter):
                 else:
                     limit = query.page_size
                 query_set = (
-                    cls.model.objects.order_by("-created_at")
+                    cls.model.objects.order_by('-created_at')
                     .filter(filters)
                     .limit(limit)
                 )

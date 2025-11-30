@@ -14,7 +14,7 @@ def test_chalice_import_error(monkeypatch):
     with pytest.raises(ImportError) as exc_info:
         importlib.import_module('agave.chalice.rest_api')
 
-    assert "You must install agave with [chalice] option" in str(
+    assert 'You must install agave with [chalice] option' in str(
         exc_info.value
     )
-    assert "pip install agave[chalice]" in str(exc_info.value)
+    assert 'pip install agave[chalice]' in str(exc_info.value)

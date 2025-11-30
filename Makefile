@@ -2,8 +2,7 @@ SHELL := bash
 PATH := ./venv/bin:${PATH}
 PYTHON = python3.13	
 PROJECT = agave
-isort = isort $(PROJECT) examples tests setup.py
-black = black -S -l 79 --target-version py313 $(PROJECT) tests setup.py examples
+sources = $(PROJECT)/**/*.py examples/**/*.py tests/**/*.py
 
 
 .PHONY: all
@@ -27,15 +26,14 @@ test: clean install-test lint
 
 .PHONY: format
 format:
-	$(isort)
-	$(black)
+	ruff check --fix .
+	ruff format .
 
 .PHONY: lint
 lint:
-	flake8 $(PROJECT) tests setup.py
-	$(isort) --check-only
-	$(black) --check
-	mypy $(PROJECT) tests
+	ruff check .
+	ruff format --check .
+	mypy $(sources)
 
 .PHONY: clean
 clean:
@@ -46,6 +44,7 @@ clean:
 	rm -rf .cache
 	rm -rf .pytest_cache
 	rm -rf .mypy_cache
+	rm -rf .ruff_cache
 	rm -rf htmlcov
 	rm -rf *.egg-info
 	rm -f .coverage

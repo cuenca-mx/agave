@@ -47,14 +47,14 @@ FRAMEWORK_CONFIGS = {
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_create_resource(
     client_fixture: str, request: pytest.FixtureRequest
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     data = dict(name='Doroteo Arango')
-    resp = client.post("/accounts", json=data)
+    resp = client.post('/accounts', json=data)
     json_body = resp.json()
     status_code = resp.status_code
     model = Account.objects.get(id=json_body['id'])
@@ -64,10 +64,10 @@ def test_create_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_create_resource_bad_request(
@@ -80,7 +80,7 @@ def test_create_resource_bad_request(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_retrieve_resource(
     client_fixture: str, request: pytest.FixtureRequest, account: Account
@@ -95,10 +95,10 @@ def test_retrieve_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_retrieve_resource_platform_id_filter_required(
@@ -107,18 +107,18 @@ def test_retrieve_resource_platform_id_filter_required(
     request: pytest.FixtureRequest,
     other_account: Account,
 ) -> None:
-    patch_target = framework_config["platform_id_filter"]
+    patch_target = framework_config['platform_id_filter']
     with patch(patch_target, MagicMock(return_value=True)):
         client = request.getfixturevalue(client_fixture)
-        resp = client.get(f"/accounts/{other_account.id}")
+        resp = client.get(f'/accounts/{other_account.id}')
         assert resp.status_code == 404
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_retrieve_resource_user_id_filter_required(
@@ -127,18 +127,18 @@ def test_retrieve_resource_user_id_filter_required(
     request: pytest.FixtureRequest,
     other_account: Account,
 ) -> None:
-    patch_target = framework_config["user_id_filter"]
+    patch_target = framework_config['user_id_filter']
     with patch(patch_target, MagicMock(return_value=True)):
         client = request.getfixturevalue(client_fixture)
-        resp = client.get(f"/accounts/{other_account.id}")
+        resp = client.get(f'/accounts/{other_account.id}')
         assert resp.status_code == 404
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_retrieve_resource_user_id_and_platform_id_filter_required(
@@ -147,21 +147,20 @@ def test_retrieve_resource_user_id_and_platform_id_filter_required(
     request: pytest.FixtureRequest,
     other_account: Account,
 ) -> None:
-    platform_id_filter_target = framework_config["platform_id_filter"]
-    user_id_filter_target = framework_config["user_id_filter"]
+    platform_id_filter_target = framework_config['platform_id_filter']
+    user_id_filter_target = framework_config['user_id_filter']
 
     with (
         patch(platform_id_filter_target, MagicMock(return_value=True)),
         patch(user_id_filter_target, MagicMock(return_value=True)),
     ):
-
         client = request.getfixturevalue(client_fixture)
-        resp = client.get(f"/accounts/{other_account.id}")
+        resp = client.get(f'/accounts/{other_account.id}')
         assert resp.status_code == 404
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_retrieve_resource_not_found(
     client_fixture: str, request: pytest.FixtureRequest
@@ -172,10 +171,10 @@ def test_retrieve_resource_not_found(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_update_resource_with_invalid_params(
@@ -191,7 +190,7 @@ def test_update_resource_with_invalid_params(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_retrieve_custom_method(
     client_fixture: str, request: pytest.FixtureRequest, card: Card
@@ -205,7 +204,7 @@ def test_retrieve_custom_method(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_update_resource_that_doesnt_exist(
     client_fixture: str, request: pytest.FixtureRequest
@@ -219,7 +218,7 @@ def test_update_resource_that_doesnt_exist(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_update_resource(
     client_fixture: str, request: pytest.FixtureRequest, account: Account
@@ -238,7 +237,7 @@ def test_update_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_delete_resource(
     client_fixture: str, request: pytest.FixtureRequest, account: Account
@@ -254,7 +253,7 @@ def test_delete_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_delete_resource_not_exists(
     client_fixture: str, request: pytest.FixtureRequest
@@ -265,7 +264,7 @@ def test_delete_resource_not_exists(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 @pytest.mark.usefixtures('accounts')
 def test_query_count_resource(
@@ -281,7 +280,7 @@ def test_query_count_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 @pytest.mark.usefixtures('accounts')
 def test_query_all_with_limit(
@@ -299,7 +298,7 @@ def test_query_all_with_limit(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 @pytest.mark.usefixtures('accounts')
 def test_query_all_resource(
@@ -325,7 +324,7 @@ def test_query_all_resource(
     assert all(a.to_dict() == b for a, b in zip(accounts, items))
 
 
-@pytest.mark.parametrize("client_fixture", ["chalice_client"])
+@pytest.mark.parametrize('client_fixture', ['chalice_client'])
 def test_query_all_filter_active(
     client_fixture: str,
     request: pytest.FixtureRequest,
@@ -365,7 +364,7 @@ def test_query_all_filter_active(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_query_all_created_after(
     client_fixture: str,
@@ -385,10 +384,10 @@ def test_query_all_created_after(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_query_platform_id_filter_required(
@@ -398,7 +397,7 @@ def test_query_platform_id_filter_required(
     accounts: list[Account],
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    patch_target = framework_config["platform_id_filter"]
+    patch_target = framework_config['platform_id_filter']
     with patch(patch_target, MagicMock(return_value=True)):
         accounts = list(
             reversed(
@@ -426,10 +425,10 @@ def test_query_platform_id_filter_required(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_query_user_id_filter_required(
@@ -439,7 +438,7 @@ def test_query_user_id_filter_required(
     accounts: list[Account],
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    patch_target = framework_config["user_id_filter"]
+    patch_target = framework_config['user_id_filter']
     with patch(patch_target, MagicMock(return_value=True)):
         accounts = list(
             reversed(
@@ -462,10 +461,10 @@ def test_query_user_id_filter_required(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_query_resource_with_invalid_params(
@@ -478,7 +477,7 @@ def test_query_resource_with_invalid_params(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 @pytest.mark.usefixtures('cards')
 def test_query_custom_method(
@@ -502,7 +501,7 @@ def test_query_custom_method(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_cannot_create_resource(
     client_fixture: str, request: pytest.FixtureRequest
@@ -513,10 +512,10 @@ def test_cannot_create_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_cannot_query_resource(
@@ -529,7 +528,7 @@ def test_cannot_query_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_cannot_update_resource(
     client_fixture: str, request: pytest.FixtureRequest
@@ -540,7 +539,7 @@ def test_cannot_update_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_cannot_delete_resource(
     client_fixture: str, request: pytest.FixtureRequest
@@ -551,10 +550,10 @@ def test_cannot_delete_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture, framework_config",
+    'client_fixture, framework_config',
     [
-        ("fastapi_client", FRAMEWORK_CONFIGS["fastapi"]),
-        ("chalice_client", FRAMEWORK_CONFIGS["chalice"]),
+        ('fastapi_client', FRAMEWORK_CONFIGS['fastapi']),
+        ('chalice_client', FRAMEWORK_CONFIGS['chalice']),
     ],
 )
 def test_not_found(
@@ -566,7 +565,7 @@ def test_not_found(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 def test_download_resource(
     client_fixture: str, request: pytest.FixtureRequest, file: File
@@ -579,7 +578,7 @@ def test_download_resource(
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 @pytest.mark.usefixtures('users')
 def test_filter_no_user_id_query(
@@ -613,7 +612,7 @@ def test_update_user_with_ip(fastapi_client: TestClient, user: User) -> None:
 
 
 @pytest.mark.parametrize(
-    "client_fixture", ["fastapi_client", "chalice_client"]
+    'client_fixture', ['fastapi_client', 'chalice_client']
 )
 @pytest.mark.usefixtures('billers')
 def test_filter_no_user_id_and_no_platform_id_query(

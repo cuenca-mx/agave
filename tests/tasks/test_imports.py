@@ -35,7 +35,7 @@ def test_tasks_import_error(
     with pytest.raises(ImportError) as exc_info:
         importlib.import_module(module_path)
 
-    assert f"You must install agave with [{required_option}] option" in str(
+    assert f'You must install agave with [{required_option}] option' in str(
         exc_info.value
     )
-    assert f"pip install agave[{required_option}]" in str(exc_info.value)
+    assert f'pip install agave[{required_option}]' in str(exc_info.value)

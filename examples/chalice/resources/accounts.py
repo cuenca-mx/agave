@@ -1,8 +1,7 @@
 import datetime as dt
 
-from chalice import Response
-
 from agave.core.filters import generic_query
+from chalice import Response
 
 from ...models import Account as AccountModel
 from ...validators import AccountQuery, AccountRequest, AccountUpdateRequest

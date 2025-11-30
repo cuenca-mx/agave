@@ -14,7 +14,7 @@ def test_fast_import_error(monkeypatch):
     with pytest.raises(ImportError) as exc_info:
         importlib.import_module('agave.fastapi.rest_api')
 
-    assert "You must install agave with [fastapi] option" in str(
+    assert 'You must install agave with [fastapi] option' in str(
         exc_info.value
     )
-    assert "pip install agave[fastapi]" in str(exc_info.value)
+    assert 'pip install agave[fastapi]' in str(exc_info.value)

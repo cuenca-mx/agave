@@ -8,8 +8,8 @@ try:
     from types_boto3_sqs import SQSClient as Boto3SQSClient
 except ImportError:
     raise ImportError(
-        "You must install agave with [sync_aws_tools] option.\n"
-        "You can install it with: pip install agave[sync_aws_tools]"
+        'You must install agave with [sync_aws_tools] option.\n'
+        'You can install it with: pip install agave[sync_aws_tools]'
     )
 
 

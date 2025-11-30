@@ -1,9 +1,7 @@
 pytest==8.3.4
 pytest-cov==6.0.0
-black==24.10.0
-isort==5.13.2
-flake8==7.1.1
-mypy==1.14.1
+ruff==0.14.7
+mypy==1.19.0
 mongomock==4.3.0
 mock==5.1.0
 pytest-freezegun==0.4.2

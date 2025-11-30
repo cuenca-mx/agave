@@ -6,8 +6,8 @@ try:
     from chalice import Blueprint, NotFoundError, Response
 except ImportError:
     raise ImportError(
-        "You must install agave with [chalice] option.\n"
-        "You can install it with: pip install agave[chalice]"
+        'You must install agave with [chalice] option.\n'
+        'You can install it with: pip install agave[chalice]'
     )
 
 from cuenca_validations.types import QueryParams
@@ -205,7 +205,7 @@ class RestApiBlueprint(Blueprint):
                         headers={
                             'Content-Type': mimetype,
                             'Content-Disposition': (
-                                'attachment; ' f'filename={filename}'
+                                f'attachment; filename={filename}'
                             ),
                         },
                         status_code=200,
@@ -281,7 +281,7 @@ class RestApiBlueprint(Blueprint):
                 else:
                     limit = query.page_size
                 items = (
-                    cls.model.objects.order_by("-created_at")
+                    cls.model.objects.order_by('-created_at')
                     .filter(filters)
                     .limit(limit)
                 )

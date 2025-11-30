@@ -2,10 +2,11 @@ import asyncio
 import json
 import logging
 import os
+from collections.abc import AsyncGenerator, Coroutine
 from functools import wraps
 from itertools import count
 from json import JSONDecodeError
-from typing import AsyncGenerator, Callable, Coroutine
+from typing import Callable
 
 from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session

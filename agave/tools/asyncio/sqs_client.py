@@ -9,8 +9,8 @@ try:
     from types_aiobotocore_sqs import SQSClient
 except ImportError:
     raise ImportError(
-        "You must install agave with [asyncio_aws_tools] option.\n"
-        "You can install it with: pip install agave[asyncio_aws_tools]"
+        'You must install agave with [asyncio_aws_tools] option.\n'
+        'You can install it with: pip install agave[asyncio_aws_tools]'
     )
 
 
@@ -25,7 +25,7 @@ class SqsClient:
     def background_tasks(self) -> set:
         return self._background_tasks
 
-    async def __aenter__(self) -> "SqsClient":
+    async def __aenter__(self) -> 'SqsClient':
         await self.start()
         return self
 

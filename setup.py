@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 version = SourceFileLoader('version', 'agave/version.py').load_module()
 
-with open('README.md', 'r') as f:
+with open('README.md') as f:
     long_description = f.read()
 
 

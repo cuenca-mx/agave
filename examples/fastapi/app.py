@@ -1,10 +1,10 @@
 import asyncio
 
 import mongomock as mongomock
-from fastapi import FastAPI
 from mongoengine import connect
 
 from agave.fastapi.middlewares import AgaveErrorHandler
+from fastapi import FastAPI
 
 from ..tasks.task_example import dummy_task, task_validator
 from .middlewares import AuthedMiddleware

@@ -1,6 +1,6 @@
 import json
 from base64 import b64encode
-from typing import Iterable
+from collections.abc import Iterable
 from uuid import uuid4
 
 

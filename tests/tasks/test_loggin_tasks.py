@@ -193,7 +193,6 @@ async def test_execute_tasks_with_response_logger(sqs_client, caplog) -> None:
 async def test_execute_tasks_with_response_non_serializable(
     sqs_client, caplog
 ) -> None:
-
     class NonSerializableResponse:
         def __init__(self, value):
             self.value = value

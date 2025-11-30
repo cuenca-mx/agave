@@ -1,9 +1,4 @@
-import datetime as dt
-
-from fastapi import Request
 from fastapi.responses import JSONResponse as Response
-
-from agave.core.filters import generic_query
 
 from ...models import ApiKey as ApiKeyModel
 from ...validators import ApiKeyRequest, ApiKeyResponse

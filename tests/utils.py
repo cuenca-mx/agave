@@ -11,7 +11,7 @@ def extract_log_data(log_output: str) -> list[dict]:
     Extracts JSON data from log output using a regex
     pattern and returns a list of matches.
     """
-    matches = re.findall(r"(\{.*\})", log_output)
+    matches = re.findall(r'(\{.*\})', log_output)
     if not matches:
         return []
 

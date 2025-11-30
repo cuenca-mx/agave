@@ -2,8 +2,9 @@ import datetime as dt
 import functools
 import logging
 import os
+from collections.abc import Generator
 from functools import partial
-from typing import Callable, Generator
+from typing import Callable
 
 import aiobotocore
 import boto3
@@ -94,18 +95,18 @@ def accounts() -> list[Account]:
 
 
 @pytest.fixture
-def account(accounts: list[Account]) -> Generator[Account, None, None]:
-    yield accounts[0]
+def account(accounts: list[Account]) -> Account:
+    return accounts[0]
 
 
 @pytest.fixture
-def user(users: list[User]) -> Generator[User, None, None]:
-    yield users[0]
+def user(users: list[User]) -> User:
+    return users[0]
 
 
 @pytest.fixture
-def other_account(accounts: list[Account]) -> Generator[Account, None, None]:
-    yield accounts[-1]
+def other_account(accounts: list[Account]) -> Account:
+    return accounts[-1]
 
 
 @pytest.fixture
@@ -120,8 +121,8 @@ def files() -> list[File]:
 
 
 @pytest.fixture
-def file(files: list[File]) -> Generator[File, None, None]:
-    yield files[0]
+def file(files: list[File]) -> File:
+    return files[0]
 
 
 @pytest.fixture
@@ -152,8 +153,8 @@ def cards() -> list[Card]:
 
 
 @pytest.fixture
-def card(cards: list[Card]) -> Generator[Card, None, None]:
-    yield cards[0]
+def card(cards: list[Card]) -> Card:
+    return cards[0]
 
 
 @pytest.fixture
@@ -175,19 +176,19 @@ def billers() -> list[Biller]:
 
 
 @pytest.fixture
-def fastapi_client() -> Generator[FastAPIClient, None, None]:
+def fastapi_client() -> FastAPIClient:
     from examples.fastapi.app import app
 
     client = FastAPIClient(app)
-    yield client
+    return client
 
 
-@pytest.fixture()
-def chalice_client() -> Generator[ChaliceClient, None, None]:
+@pytest.fixture
+def chalice_client() -> ChaliceClient:
     from examples.chalice import app
 
     client = ChaliceClient(app)
-    yield client
+    return client
 
 
 @deprecated('Use fixtures from cuenca-test-fixtures')

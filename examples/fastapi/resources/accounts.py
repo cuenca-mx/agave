@@ -1,9 +1,8 @@
 import datetime as dt
 
+from agave.core.filters import generic_query
 from fastapi import Request
 from fastapi.responses import JSONResponse as Response
-
-from agave.core.filters import generic_query
 
 from ...models import Account as AccountModel
 from ...validators import (

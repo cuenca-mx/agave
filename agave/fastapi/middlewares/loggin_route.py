@@ -29,12 +29,10 @@ def get_exception_status_and_detail(exc: Exception) -> tuple[int, str]:
 
 
 class LoggingRoute(APIRoute):
-
     def get_route_handler(self) -> Callable:
         original_route_handler = super().get_route_handler()
 
         async def logging_route_handler(request: Request) -> Response:
-
             req_handler = request.scope['route_handler']
 
             try:
@@ -74,7 +72,6 @@ class LoggingRoute(APIRoute):
                 }
                 raise
             else:
-
                 if hasattr(response, 'body'):
                     try:
                         ofuscated_response_body = obfuscate_sensitive_data(
