@@ -54,14 +54,26 @@ def accept_trace_from_queue(func: Callable) -> Callable:
             ...
     """
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
+    def _accept(kwargs):
         trace_headers = kwargs.pop(TRACE_HEADERS_KEY, None)
         if trace_headers:
             accept_trace_headers(trace_headers, transport_type="Queue")
+
+    if inspect.iscoroutinefunction(func):
+
+        @wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            _accept(kwargs)
+            return await func(*args, **kwargs)
+
+        return async_wrapper
+
+    @wraps(func)
+    def sync_wrapper(*args, **kwargs):
+        _accept(kwargs)
         return func(*args, **kwargs)
 
-    return wrapper
+    return sync_wrapper
 
 
 def inject_trace_headers(param_name: str = "trace_headers"):

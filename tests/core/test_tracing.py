@@ -102,6 +102,32 @@ def test_accept_trace_from_queue_works_without_headers():
         mock_accept.assert_not_called()
 
 
+def test_accept_trace_from_queue_async_accepts_headers():
+    @accept_trace_from_queue
+    async def my_task(data: dict):
+        return data
+
+    with patch("agave.core.tracing.accept_trace_headers") as mock_accept:
+        result = asyncio.run(
+            my_task({"value": 1}, _nr_trace_headers={"traceparent": "abc"})
+        )
+        assert result == {"value": 1}
+        mock_accept.assert_called_once_with(
+            {"traceparent": "abc"}, transport_type="Queue"
+        )
+
+
+def test_accept_trace_from_queue_async_works_without_headers():
+    @accept_trace_from_queue
+    async def my_task(data: dict):
+        return data
+
+    with patch("agave.core.tracing.accept_trace_headers") as mock_accept:
+        result = asyncio.run(my_task({"value": 1}))
+        assert result == {"value": 1}
+        mock_accept.assert_not_called()
+
+
 def test_inject_trace_headers_async_keyword_arg():
     @inject_trace_headers()
     async def my_func(_url: str, trace_headers: dict | None = None):
