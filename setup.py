@@ -31,6 +31,9 @@ setup(
         'chalice': [
             'chalice>=1.30.0,<2.0.0',
         ],
+        'tracing': [
+            'newrelic>=7.0.0,<12.0.0',
+        ],
         'fastapi': [
             'fastapi>=0.115.0,<1.0.0',
             # TODO: Remove this once we upgrade to starlette:
