@@ -1,13 +1,30 @@
 from __future__ import annotations
 
 import inspect
+from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import newrelic.agent
 
 # trace headers key
 TRACE_HEADERS_KEY = "_nr_trace_headers"
+
+
+@contextmanager
+def background_task(
+    name: str,
+    group: str = "Task",
+    trace_headers: Optional[dict] = None,
+):
+    with newrelic.agent.BackgroundTask(
+        application=newrelic.agent.application(),
+        name=name,
+        group=group,
+    ):
+        if trace_headers:
+            accept_trace_headers(trace_headers, transport_type="Queue")
+        yield
 
 
 def get_trace_headers() -> dict:

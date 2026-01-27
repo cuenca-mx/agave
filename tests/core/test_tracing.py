@@ -9,6 +9,7 @@ from agave.core.tracing import (
     accept_trace_from_queue,
     accept_trace_headers,
     add_custom_attribute,
+    background_task,
     get_trace_headers,
     inject_trace_headers,
     trace_attributes,
@@ -416,3 +417,51 @@ def test_add_attributes_with_non_callable_non_string_extractor():
     with patch("agave.core.tracing.add_custom_attribute") as mock_add:
         _add_attributes(kwargs, extractors)
         mock_add.assert_called_once_with("result", None)
+
+
+def test_background_task_creates_transaction():
+    """Test that background_task creates a New Relic BackgroundTask."""
+    with patch("agave.core.tracing.newrelic.agent") as mock_agent:
+        mock_agent.application.return_value = "test_app"
+        mock_agent.BackgroundTask.return_value.__enter__ = lambda s: None
+        mock_agent.BackgroundTask.return_value.__exit__ = lambda s, *a: None
+
+        with background_task("my_task", "Redis/Queue"):
+            pass
+
+        mock_agent.BackgroundTask.assert_called_once_with(
+            application="test_app",
+            name="my_task",
+            group="Redis/Queue",
+        )
+
+
+def test_background_task_accepts_trace_headers():
+    """Test that background_task accepts trace headers inside transaction."""
+    with patch("agave.core.tracing.newrelic.agent") as mock_agent:
+        mock_agent.application.return_value = "test_app"
+        mock_agent.BackgroundTask.return_value.__enter__ = lambda s: None
+        mock_agent.BackgroundTask.return_value.__exit__ = lambda s, *a: None
+
+        with patch("agave.core.tracing.accept_trace_headers") as mock_accept:
+            headers = {"traceparent": "abc"}
+            with background_task("my_task", "SQS/Queue", headers):
+                pass
+
+            mock_accept.assert_called_once_with(
+                headers, transport_type="Queue"
+            )
+
+
+def test_background_task_does_not_accept_when_no_headers():
+    """Test that background_task skips accept when no trace headers."""
+    with patch("agave.core.tracing.newrelic.agent") as mock_agent:
+        mock_agent.application.return_value = "test_app"
+        mock_agent.BackgroundTask.return_value.__enter__ = lambda s: None
+        mock_agent.BackgroundTask.return_value.__exit__ = lambda s, *a: None
+
+        with patch("agave.core.tracing.accept_trace_headers") as mock_accept:
+            with background_task("my_task", "Task"):
+                pass
+
+            mock_accept.assert_not_called()
