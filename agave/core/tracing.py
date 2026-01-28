@@ -1,0 +1,169 @@
+import inspect
+from contextlib import contextmanager
+from functools import wraps
+from typing import Any, Callable, Optional, Union
+
+try:
+    import newrelic.agent
+except ImportError:  # pragma: no cover
+    raise ImportError(
+        "You must install agave with [tracing] option.\n"
+        "You can install it with: pip install agave[tracing]"
+    )
+
+# trace headers key
+TRACE_HEADERS_KEY = "_nr_trace_headers"
+
+
+@contextmanager
+def background_task(
+    name: str,
+    group: str = "Task",
+    trace_headers: Optional[dict[str, str]] = None,
+):
+    with newrelic.agent.BackgroundTask(
+        application=newrelic.agent.application(),
+        name=name,
+        group=group,
+    ):
+        if trace_headers:
+            accept_trace_headers(trace_headers, transport_type="Queue")
+        yield
+
+
+def get_trace_headers() -> dict[str, str]:
+    headers_list: list = []
+    newrelic.agent.insert_distributed_trace_headers(headers_list)
+    return dict(headers_list)
+
+
+def accept_trace_headers(
+    headers: Optional[dict[str, str]], transport_type: str = "HTTP"
+) -> None:
+    if not headers:
+        return
+    newrelic.agent.accept_distributed_trace_headers(
+        headers, transport_type=transport_type
+    )
+
+
+def add_custom_attribute(key: str, value: Any) -> None:
+    if value is not None:
+        newrelic.agent.add_custom_attribute(key, value)
+
+
+def accept_trace_from_queue(func: Callable) -> Callable:
+    def _accept(args, kwargs):
+        trace_headers = kwargs.pop(TRACE_HEADERS_KEY, None)
+        if not trace_headers and args and isinstance(args[0], dict):
+            trace_headers = args[0].pop(TRACE_HEADERS_KEY, None)
+        if trace_headers:
+            accept_trace_headers(trace_headers, transport_type="Queue")
+
+    if inspect.iscoroutinefunction(func):
+
+        @wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            _accept(args, kwargs)
+            return await func(*args, **kwargs)
+
+        return async_wrapper
+
+    @wraps(func)
+    def sync_wrapper(*args, **kwargs):
+        _accept(args, kwargs)
+        return func(*args, **kwargs)
+
+    return sync_wrapper
+
+
+def inject_trace_headers(param_name: str = "trace_headers"):
+    def decorator(func: Callable) -> Callable:
+        sig = inspect.signature(func)
+
+        def _inject(args, kwargs):
+            bound = sig.bind_partial(*args, **kwargs)
+            headers = dict(bound.arguments.get(param_name) or {})
+            headers.update(get_trace_headers())
+            bound.arguments[param_name] = headers
+            return bound.args, bound.kwargs
+
+        if inspect.iscoroutinefunction(func):
+
+            @wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                new_args, new_kwargs = _inject(args, kwargs)
+                return await func(*new_args, **new_kwargs)
+
+            return async_wrapper
+
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            new_args, new_kwargs = _inject(args, kwargs)
+            return func(*new_args, **new_kwargs)
+
+        return sync_wrapper
+
+    return decorator
+
+
+def trace_attributes(**extractors: Union[Callable, str]):
+    def decorator(func: Callable) -> Callable:
+        sig = inspect.signature(func)
+
+        def _extract(args, kwargs):
+            bound = sig.bind(*args, **kwargs)
+            bound.apply_defaults()
+            _add_attributes(bound.arguments, extractors)
+
+        if inspect.iscoroutinefunction(func):
+
+            @wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                _extract(args, kwargs)
+                return await func(*args, **kwargs)
+
+            return async_wrapper
+
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            _extract(args, kwargs)
+            return func(*args, **kwargs)
+
+        return sync_wrapper
+
+    return decorator
+
+
+def _get_nested_value(obj: Any, path: str) -> Any:
+    parts = path.split(".")
+    value = (
+        obj.get(parts[0])
+        if isinstance(obj, dict)
+        else getattr(obj, parts[0], None)
+    )
+
+    for part in parts[1:]:
+        if value is None:
+            return None
+        if isinstance(value, dict):
+            value = value.get(part)
+        else:
+            value = getattr(value, part, None)
+    return value
+
+
+def _add_attributes(kwargs: dict, extractors: dict) -> None:
+    for attr_name, extractor in extractors.items():
+        try:
+            if callable(extractor):
+                value = extractor(kwargs)
+            elif isinstance(extractor, str):
+                value = _get_nested_value(kwargs, extractor)
+            else:
+                value = None
+
+            add_custom_attribute(attr_name, value)
+        except Exception:
+            pass  # Silent exception
+            # we don't want to fail if unable to extract an attribute
