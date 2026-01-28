@@ -1,4 +1,5 @@
 import asyncio
+import json
 from typing import Optional
 from unittest.mock import patch
 
@@ -13,6 +14,9 @@ from agave.core.tracing import (
     inject_trace_headers,
     trace_attributes,
 )
+from agave.tasks.sqs_tasks import task
+
+from ..utils import CORE_QUEUE_REGION
 
 
 def test_get_trace_headers_returns_dict_with_headers():
@@ -464,3 +468,64 @@ def test_background_task_does_not_accept_when_no_headers():
                 pass
 
             mock_accept.assert_not_called()
+
+
+async def test_accept_trace_from_queue_with_sqs_task(sqs_client):
+    @task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+    )
+    @accept_trace_from_queue
+    async def my_task(data: dict):
+        return data
+
+    message = {"value": 1, "_nr_trace_headers": {"traceparent": "abc123"}}
+    await sqs_client.send_message(
+        MessageBody=json.dumps(message),
+        MessageGroupId="1234",
+    )
+
+    with patch("agave.core.tracing.accept_trace_headers") as mock_accept:
+        await my_task()
+        mock_accept.assert_called_once_with(
+            {"traceparent": "abc123"}, transport_type="Queue"
+        )
+
+
+async def test_trace_headers_propagation_through_queue(sqs_client):
+    received_data = {}
+
+    @task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+    )
+    @accept_trace_from_queue
+    async def consumer_task(data: dict):
+        received_data.update(data)
+
+    trace_headers = {
+        "traceparent": "00-abc123-def456-01",
+        "tracestate": "nr=xyz",
+    }
+    message = {
+        "order_id": "ORD001",
+        "_nr_trace_headers": trace_headers,
+    }
+
+    await sqs_client.send_message(
+        MessageBody=json.dumps(message),
+        MessageGroupId="propagation-test",
+    )
+
+    with patch("agave.core.tracing.accept_trace_headers") as mock_accept:
+        await consumer_task()
+        mock_accept.assert_called_once_with(
+            trace_headers, transport_type="Queue"
+        )
+
+    assert received_data == {"order_id": "ORD001"}
+    assert "_nr_trace_headers" not in received_data
