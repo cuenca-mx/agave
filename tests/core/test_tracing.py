@@ -1,6 +1,5 @@
-from __future__ import annotations
-
 import asyncio
+from typing import Optional
 from unittest.mock import patch
 
 from agave.core.tracing import (
@@ -131,7 +130,7 @@ def test_accept_trace_from_queue_async_works_without_headers():
 
 def test_inject_trace_headers_async_keyword_arg():
     @inject_trace_headers()
-    async def my_func(_url: str, trace_headers: dict | None = None):
+    async def my_func(_url: str, trace_headers: Optional[dict] = None):
         return trace_headers
 
     with patch(
@@ -144,7 +143,7 @@ def test_inject_trace_headers_async_keyword_arg():
 
 def test_inject_trace_headers_merges_existing_headers_async():
     @inject_trace_headers()
-    async def my_func(_url: str, trace_headers: dict | None = None):
+    async def my_func(_url: str, trace_headers: Optional[dict] = None):
         return trace_headers
 
     with patch(
@@ -161,7 +160,7 @@ def test_inject_trace_headers_handles_positional_headers_async():
     """Test that positional args don't cause 'multiple values' error."""
 
     @inject_trace_headers("headers")
-    async def my_func(_url: str, headers: dict | None = None):
+    async def my_func(_url: str, headers: Optional[dict] = None):
         return headers
 
     with patch(
@@ -177,7 +176,7 @@ def test_inject_trace_headers_handles_positional_headers_async():
 
 def test_inject_trace_headers_sync_keyword_arg():
     @inject_trace_headers()
-    def my_func(_url: str, trace_headers: dict | None = None):
+    def my_func(_url: str, trace_headers: Optional[dict] = None):
         return trace_headers
 
     with patch(
@@ -190,7 +189,7 @@ def test_inject_trace_headers_sync_keyword_arg():
 
 def test_inject_trace_headers_merges_existing_headers_sync():
     @inject_trace_headers()
-    def my_func(_url: str, trace_headers: dict | None = None):
+    def my_func(_url: str, trace_headers: Optional[dict] = None):
         return trace_headers
 
     with patch(
@@ -207,7 +206,7 @@ def test_inject_trace_headers_handles_positional_headers_sync():
     """Test that positional args don't cause 'multiple values' error."""
 
     @inject_trace_headers("headers")
-    def my_func(_url: str, headers: dict | None = None):
+    def my_func(_url: str, headers: Optional[dict] = None):
         return headers
 
     with patch(
@@ -221,7 +220,7 @@ def test_inject_trace_headers_handles_positional_headers_sync():
 
 def test_inject_trace_headers_custom_param_name():
     @inject_trace_headers("custom_headers")
-    def my_func(_url: str, custom_headers: dict | None = None):
+    def my_func(_url: str, custom_headers: Optional[dict] = None):
         return custom_headers
 
     with patch(

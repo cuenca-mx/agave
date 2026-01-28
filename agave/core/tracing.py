@@ -1,11 +1,15 @@
-from __future__ import annotations
-
 import inspect
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
-import newrelic.agent
+try:
+    import newrelic.agent
+except ImportError:  # pragma: no cover
+    raise ImportError(
+        "You must install agave with [tracing] option.\n"
+        "You can install it with: pip install agave[tracing]"
+    )
 
 # trace headers key
 TRACE_HEADERS_KEY = "_nr_trace_headers"
@@ -15,7 +19,7 @@ TRACE_HEADERS_KEY = "_nr_trace_headers"
 def background_task(
     name: str,
     group: str = "Task",
-    trace_headers: Optional[dict] = None,
+    trace_headers: Optional[dict[str, str]] = None,
 ):
     with newrelic.agent.BackgroundTask(
         application=newrelic.agent.application(),
@@ -27,14 +31,14 @@ def background_task(
         yield
 
 
-def get_trace_headers() -> dict:
+def get_trace_headers() -> dict[str, str]:
     headers_list: list = []
     newrelic.agent.insert_distributed_trace_headers(headers_list)
     return dict(headers_list)
 
 
 def accept_trace_headers(
-    headers: dict | None, transport_type: str = "HTTP"
+    headers: Optional[dict[str, str]], transport_type: str = "HTTP"
 ) -> None:
     """
     Accept incoming trace headers to continue a distributed trace.
@@ -136,7 +140,7 @@ def inject_trace_headers(param_name: str = "trace_headers"):
     return decorator
 
 
-def trace_attributes(**extractors: Callable | str):
+def trace_attributes(**extractors: Union[Callable, str]):
     """
     Decorator to add custom attributes to New Relic traces.
 
