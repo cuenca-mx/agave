@@ -1,7 +1,9 @@
 import datetime as dt
 import functools
+import json
 import logging
 import os
+import signal
 from functools import partial
 from typing import Callable, Generator
 
@@ -291,3 +293,23 @@ def set_log_level(caplog):
     Automatically set logging level to INFO for all tests.
     """
     caplog.set_level(logging.INFO)
+
+
+TEST_MESSAGE = dict(id='abc123', name='fast-agave')
+
+
+@pytest.fixture
+async def enqueued_message(sqs_client):
+    await sqs_client.send_message(
+        MessageBody=json.dumps(TEST_MESSAGE),
+        MessageGroupId='1234',
+    )
+    return TEST_MESSAGE
+
+
+@pytest.fixture
+def trigger_shutdown():
+    def _trigger():
+        os.kill(os.getpid(), signal.SIGTERM)
+
+    return _trigger

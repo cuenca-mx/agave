@@ -13,6 +13,7 @@ from agave.core.exc import RetryTask
 from agave.tasks.sqs_tasks import (
     BACKGROUND_TASKS,
     get_running_fast_agave_tasks,
+    message_consumer,
     task,
 )
 
@@ -427,3 +428,389 @@ async def test_invalid_json_message(sqs_client) -> None:
     resp = await sqs_client.receive_message()
     assert 'Messages' not in resp
     assert len(BACKGROUND_TASKS) == 0
+
+
+async def test_delete_on_failure_false_unhandled_exception(
+    sqs_client,
+    enqueued_message,
+    trigger_shutdown,
+) -> None:
+    """
+    Cuando delete_on_failure=False, un mensaje que falla por una excepción
+    no controlada NO debe ser eliminado del queue (para que el redrive
+    policy lo envíe al DLQ)
+    """
+    async_mock_function = AsyncMock()
+
+    async def my_task(data: dict) -> None:
+        await async_mock_function(data)
+        trigger_shutdown()
+        raise Exception('something went wrong :(')
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        max_retries=1,
+        delete_on_failure=False,
+    )(my_task)()
+
+    assert async_mock_function.call_count == 1
+    async_mock_function.assert_called_with(enqueued_message)
+
+    resp = await sqs_client.receive_message(WaitTimeSeconds=2)
+    assert 'Messages' in resp
+
+
+async def test_delete_on_failure_false_retries_exhausted(
+    sqs_client,
+    enqueued_message,
+    trigger_shutdown,
+) -> None:
+    """
+    Cuando delete_on_failure=False y se agotan los reintentos por RetryTask,
+    el mensaje NO debe ser eliminado del queue
+    """
+    retry_count = 0
+    async_mock_function = AsyncMock(side_effect=RetryTask)
+
+    async def my_task(data: dict) -> None:
+        nonlocal retry_count
+        retry_count += 1
+        if retry_count >= 2:
+            trigger_shutdown()
+        await async_mock_function(data)
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        max_retries=1,
+        delete_on_failure=False,
+    )(my_task)()
+
+    expected_calls = [call(enqueued_message)] * 2
+    assert async_mock_function.call_count == len(expected_calls)
+    async_mock_function.assert_has_calls(expected_calls)
+
+    resp = await sqs_client.receive_message(WaitTimeSeconds=2)
+    assert 'Messages' in resp
+
+
+async def test_delete_on_failure_true_is_default_behavior(
+    sqs_client,
+    enqueued_message,
+) -> None:
+    """
+    Verifica que delete_on_failure=True (el default) mantiene el
+    comportamiento actual: elimina el mensaje cuando hay una excepción
+    no controlada
+    """
+    async_mock_function = AsyncMock(
+        side_effect=Exception('something went wrong :(')
+    )
+
+    async def my_task(data: dict) -> None:
+        await async_mock_function(data)
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        max_retries=1,
+        delete_on_failure=True,
+    )(my_task)()
+
+    async_mock_function.assert_called_with(enqueued_message)
+    assert async_mock_function.call_count == 1
+
+    resp = await sqs_client.receive_message()
+    assert 'Messages' not in resp
+
+
+async def test_graceful_shutdown_completes_inflight_task(
+    sqs_client,
+    enqueued_message,
+    trigger_shutdown,
+) -> None:
+    """
+    Verifica que al recibir SIGTERM, los tasks en vuelo completan
+    antes de que el listener se detenga
+    """
+    task_completed = False
+
+    async def my_task(data: dict) -> None:
+        nonlocal task_completed
+        trigger_shutdown()
+        await asyncio.sleep(0.5)
+        task_completed = True
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=10,
+    )(my_task)()
+
+    assert task_completed is True
+
+
+async def test_no_new_messages_after_shutdown(
+    sqs_client,
+    trigger_shutdown,
+) -> None:
+    """
+    Verifica que después de recibir SIGTERM con max_concurrent=1,
+    el consumer se detiene y los mensajes restantes quedan en
+    el queue
+    """
+    for i in range(3):
+        await sqs_client.send_message(
+            MessageBody=json.dumps(dict(id=f'msg{i}')),
+            MessageGroupId=str(i),
+        )
+
+    processed = []
+
+    async def my_task(data: dict) -> None:
+        processed.append(data['id'])
+        if data['id'] == 'msg0':
+            trigger_shutdown()
+            await asyncio.sleep(0.5)
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=10,
+        max_concurrent_tasks=1,
+    )(my_task)()
+
+    assert processed[0] == 'msg0'
+    assert 'msg2' not in processed
+
+
+async def test_shutdown_before_receive() -> None:
+    """
+    Cuando shutdown_event ya está activo antes de que el consumer
+    intente leer, debe detenerse inmediatamente sin llamar receive_message
+    """
+    shutdown_event = asyncio.Event()
+    can_read = asyncio.Event()
+    can_read.set()
+    shutdown_event.set()
+
+    mock_sqs = AsyncMock()
+
+    messages = []
+    async for msg in message_consumer(
+        'queue_url',
+        1,
+        1,
+        can_read,
+        mock_sqs,
+        shutdown_event,
+    ):
+        messages.append(msg)
+
+    assert messages == []
+    mock_sqs.receive_message.assert_not_called()
+
+
+async def test_http_client_error_during_shutdown() -> None:
+    """
+    Cuando ocurre un HTTPClientError y shutdown_event ya está activo,
+    el consumer debe detenerse inmediatamente
+    """
+    shutdown_event = asyncio.Event()
+    can_read = asyncio.Event()
+    can_read.set()
+
+    mock_sqs = AsyncMock()
+
+    async def receive_and_shutdown(**kw):
+        shutdown_event.set()
+        raise HTTPClientError(error='Connection reset')
+
+    mock_sqs.receive_message = receive_and_shutdown
+
+    messages = []
+    async for msg in message_consumer(
+        'queue_url',
+        1,
+        1,
+        can_read,
+        mock_sqs,
+        shutdown_event,
+    ):
+        messages.append(msg)
+
+    assert messages == []
+
+
+async def test_graceful_shutdown_timeout(
+    sqs_client,
+    enqueued_message,
+    trigger_shutdown,
+    caplog,
+) -> None:
+    """
+    Cuando un task en vuelo no termina dentro del visibility_timeout,
+    el shutdown debe completar con un warning de timeout
+    """
+
+    async def my_task(data: dict) -> None:
+        trigger_shutdown()
+        await asyncio.sleep(60)
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+    )(my_task)()
+
+    assert any(
+        'Graceful shutdown timeout' in r.message for r in caplog.records
+    )
+
+
+async def test_duration_ms_in_log(
+    sqs_client,
+    enqueued_message,
+    caplog,
+) -> None:
+    """
+    Verifica que el log de request/response incluye duration_ms
+    """
+
+    async def my_task(data: dict) -> None:
+        await asyncio.sleep(0.1)
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+    )(my_task)()
+
+    request_logs = [
+        json.loads(r.message)
+        for r in caplog.records
+        if r.name == 'agave.tasks.sqs_tasks'
+        and '{' in r.message
+        and 'duration_ms' in r.message
+    ]
+    assert len(request_logs) >= 1
+    assert request_logs[0]['response']['duration_ms'] >= 100
+
+
+async def test_metrics_callback_is_called(
+    sqs_client,
+    enqueued_message,
+) -> None:
+    """
+    Verifica que metrics_callback se invoca con los datos
+    correctos después de ejecutar un task
+    """
+    metrics_mock = AsyncMock()
+
+    async def my_task(data: dict) -> None:
+        pass
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        metrics_callback=metrics_mock,
+    )(my_task)()
+
+    metrics_mock.assert_called_once()
+    call_kwargs = metrics_mock.call_args.kwargs
+    assert call_kwargs['task_name'] == 'my_task'
+    assert call_kwargs['status'] == 'success'
+    assert call_kwargs['duration_ms'] >= 0
+    assert 'concurrent_tasks' in call_kwargs
+    assert 'queue_url' in call_kwargs
+
+
+async def test_metrics_callback_on_failure(
+    sqs_client,
+    enqueued_message,
+) -> None:
+    """
+    Verifica que metrics_callback reporta status='failed'
+    cuando el task falla
+    """
+    metrics_mock = AsyncMock()
+
+    async def my_task(data: dict) -> None:
+        raise Exception('boom')
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        metrics_callback=metrics_mock,
+    )(my_task)()
+
+    metrics_mock.assert_called_once()
+    assert metrics_mock.call_args.kwargs['status'] == 'failed'
+
+
+async def test_metrics_callback_on_retry(
+    sqs_client,
+    enqueued_message,
+) -> None:
+    """
+    Verifica que metrics_callback reporta status='retrying'
+    cuando el task hace retry
+    """
+    metrics_mock = AsyncMock()
+
+    async def my_task(data: dict) -> None:
+        raise RetryTask()
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        max_retries=1,
+        metrics_callback=metrics_mock,
+    )(my_task)()
+
+    assert metrics_mock.call_count == 2
+    statuses = [c.kwargs['status'] for c in metrics_mock.call_args_list]
+    assert 'retrying' in statuses
+
+
+async def test_metrics_callback_error_is_handled(
+    sqs_client,
+    enqueued_message,
+) -> None:
+    """
+    Si metrics_callback lanza una excepción, el task debe completar
+    normalmente sin propagar el error
+    """
+    async_mock_function = AsyncMock()
+    metrics_mock = AsyncMock(side_effect=Exception('metrics broke'))
+
+    async def my_task(data: dict) -> None:
+        await async_mock_function(data)
+
+    await task(
+        queue_url=sqs_client.queue_url,
+        region_name=CORE_QUEUE_REGION,
+        wait_time_seconds=1,
+        visibility_timeout=1,
+        metrics_callback=metrics_mock,
+    )(my_task)()
+
+    async_mock_function.assert_called_with(enqueued_message)
+    metrics_mock.assert_called_once()
