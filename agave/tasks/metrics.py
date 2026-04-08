@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Awaitable, Callable, Optional
 
 
 @dataclass
@@ -13,7 +13,7 @@ async def emit_metrics(
     metrics: TaskMetrics,
     status: str,
     duration_ms: float,
-    metrics_callback: Optional[Callable] = None,
+    metrics_callback: Optional[Callable[..., Awaitable[None]]] = None,
 ) -> None:
     if not metrics_callback:
         return

@@ -430,35 +430,6 @@ async def test_invalid_json_message(sqs_client) -> None:
     assert len(BACKGROUND_TASKS) == 0
 
 
-async def test_invalid_json_message_is_deleted(sqs_client) -> None:
-    """
-    Verifica que los mensajes con JSON inválido son eliminados del queue
-    y el task nunca es ejecutado, con visibility_timeout alto para
-    confirmar que la eliminación es explícita
-    """
-    await sqs_client.send_message(
-        MessageBody='not valid json!!!',
-        MessageGroupId='1234',
-    )
-
-    async_mock_function = AsyncMock()
-
-    async def my_task(data: dict) -> None:
-        await async_mock_function(data)
-
-    await task(
-        queue_url=sqs_client.queue_url,
-        region_name=CORE_QUEUE_REGION,
-        wait_time_seconds=1,
-        visibility_timeout=10,
-    )(my_task)()
-
-    async_mock_function.assert_not_called()
-
-    resp = await sqs_client.receive_message()
-    assert 'Messages' not in resp
-
-
 async def test_delete_on_failure_false_unhandled_exception(
     sqs_client,
     enqueued_message,
@@ -620,6 +591,33 @@ async def test_no_new_messages_after_shutdown(
 
     assert processed[0] == 'msg0'
     assert 'msg2' not in processed
+
+
+async def test_shutdown_before_receive() -> None:
+    """
+    Cuando shutdown_event ya está activo antes de que el consumer
+    intente leer, debe detenerse inmediatamente sin llamar receive_message
+    """
+    shutdown_event = asyncio.Event()
+    can_read = asyncio.Event()
+    can_read.set()
+    shutdown_event.set()
+
+    mock_sqs = AsyncMock()
+
+    messages = []
+    async for msg in message_consumer(
+        'queue_url',
+        1,
+        1,
+        can_read,
+        mock_sqs,
+        shutdown_event,
+    ):
+        messages.append(msg)
+
+    assert messages == []
+    mock_sqs.receive_message.assert_not_called()
 
 
 async def test_http_client_error_during_shutdown() -> None:

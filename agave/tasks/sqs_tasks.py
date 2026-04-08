@@ -7,7 +7,7 @@ import time
 from functools import wraps
 from itertools import count
 from json import JSONDecodeError
-from typing import AsyncGenerator, Callable, Coroutine, Optional
+from typing import AsyncGenerator, Awaitable, Callable, Coroutine, Optional
 
 from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session
@@ -42,7 +42,7 @@ async def run_task(
     delete_on_failure: bool,
     task_name: str,
     task_module: str,
-    metrics_callback: Optional[Callable] = None,
+    metrics_callback: Optional[Callable[..., Awaitable[None]]] = None,
 ) -> None:
     delete_message = True
     request_model = get_request_model(task_func)
@@ -71,6 +71,10 @@ async def run_task(
     start_time = time.monotonic()
     try:
         resp = await task_func(body)
+    except asyncio.CancelledError:
+        delete_message = False
+        log_data['response']['status'] = 'cancelled'
+        raise
     except RetryTask as retry:
         retries_exhausted = message_receive_count >= max_retries + 1
         delete_message = retries_exhausted and delete_on_failure
@@ -81,7 +85,9 @@ async def run_task(
                 VisibilityTimeout=retry.countdown,
             )
         log_data['response']['delete_message'] = delete_message
-        log_data['response']['status'] = 'retrying'
+        log_data['response']['status'] = (
+            'failed' if retries_exhausted else 'retrying'
+        )
     except Exception as exp:
         delete_message = delete_on_failure
         log_data['response']['status'] = 'failed'
@@ -150,6 +156,8 @@ async def message_consumer(
                 return
             await asyncio.sleep(1)
             continue
+        if shutdown_event.is_set():
+            return
         for message in messages:
             yield message
 
@@ -170,7 +178,7 @@ def task(
     max_retries: int = 1,
     max_concurrent_tasks: int = 5,
     delete_on_failure: bool = True,
-    metrics_callback: Optional[Callable] = None,
+    metrics_callback: Optional[Callable[..., Awaitable[None]]] = None,
 ):
     def task_builder(task_func: Callable):
         @wraps(task_func)
