@@ -50,11 +50,13 @@ class SqsClient:
         self,
         data: Union[str, dict],
         message_group_id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         await self._sqs.send_message(
             QueueUrl=self.queue_url,
             MessageBody=data if type(data) is str else json.dumps(data),
             MessageGroupId=message_group_id or str(uuid4()),
+            **kwargs,
         )
 
     def send_message_async(
