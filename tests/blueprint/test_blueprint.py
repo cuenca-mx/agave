@@ -6,12 +6,14 @@ from urllib.parse import urlencode
 import pytest
 from fastapi.testclient import TestClient
 
+from agave.core.filters import generic_query
 from examples.config import (
     TEST_DEFAULT_API_KEY_ID,
     TEST_DEFAULT_PLATFORM_ID,
     TEST_DEFAULT_USER_ID,
     TEST_SECOND_PLATFORM_ID,
 )
+from examples.fastapi.resources.billers import Biller as BillerResource
 from examples.models import Account, Card, File, User
 
 # Constants for both frameworks
@@ -625,6 +627,26 @@ def test_filter_no_user_id_and_no_platform_id_query(
     status_code = resp.status_code
     assert status_code == 200
     assert len(resp_json['items']) == 1
+
+
+@pytest.mark.usefixtures('billers')
+def test_query_with_async_get_query_filter(
+    fastapi_client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+
+    async def async_filter(query):
+        return generic_query(query)
+
+    monkeypatch.setattr(
+        BillerResource, 'get_query_filter', staticmethod(async_filter)
+    )
+
+    resp = fastapi_client.get('/billers?name=ATT')
+    resp_json = resp.json()
+    assert resp.status_code == 200
+    assert len(resp_json['items']) == 1
+    assert resp_json['items'][0]['name'] == 'ATT'
 
 
 def test_upload_resource(fastapi_client: TestClient) -> None:
