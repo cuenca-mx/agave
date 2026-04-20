@@ -1,3 +1,4 @@
+import asyncio
 import mimetypes
 from typing import Any, Optional
 from urllib.parse import urlencode
@@ -95,7 +96,7 @@ class RestApiBlueprint(APIRouter):
             def create(): ...
             def delete(id): ...
             def retrieve(id): ...
-            def get_query_filter(): ...
+            def get_query_filter(): ...  # may also be `async def`
 
         This implementation create the following endpoints
 
@@ -389,6 +390,8 @@ class RestApiBlueprint(APIRouter):
                 self.custom_filter_required(query_params, cls.model)
 
                 filters = cls.get_query_filter(query_params)
+                if asyncio.iscoroutine(filters):
+                    filters = await filters
                 if query_params.count:
                     result = await _count(filters)
                 elif hasattr(cls, 'query'):
