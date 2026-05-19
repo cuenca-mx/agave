@@ -50,19 +50,24 @@ class SqsClient:
         self,
         data: Union[str, dict],
         message_group_id: Optional[str] = None,
+        **kwargs,
     ) -> None:
         await self._sqs.send_message(
             QueueUrl=self.queue_url,
             MessageBody=data if type(data) is str else json.dumps(data),
             MessageGroupId=message_group_id or str(uuid4()),
+            **kwargs,
         )
 
     def send_message_async(
         self,
         data: Union[str, dict],
         message_group_id: Optional[str] = None,
+        **kwargs,
     ) -> asyncio.Task:
-        task = asyncio.create_task(self.send_message(data, message_group_id))
+        task = asyncio.create_task(
+            self.send_message(data, message_group_id, **kwargs)
+        )
         self._background_tasks.add(task)
         task.add_done_callback(self._background_tasks.discard)
         return task
