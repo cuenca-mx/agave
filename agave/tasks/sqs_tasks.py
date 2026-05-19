@@ -76,6 +76,7 @@ async def run_task(
     except Exception as exp:
         log_data['response']['status'] = 'failed'
         log_data['response']['error'] = str(exp)
+        raise exp
     else:
         if isinstance(resp, BaseModel):
             ofuscated_response_body = obfuscate_sensitive_data(
