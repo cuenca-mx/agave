@@ -10,6 +10,7 @@ from typing import AsyncGenerator, Callable, Coroutine
 from aiobotocore.httpsession import HTTPClientError
 from aiobotocore.session import get_session
 from pydantic import BaseModel, validate_call
+from sentry_sdk import capture_exception
 
 from ..core.exc import RetryTask
 from ..core.loggers import (
@@ -76,7 +77,7 @@ async def run_task(
     except Exception as exp:
         log_data['response']['status'] = 'failed'
         log_data['response']['error'] = str(exp)
-        raise exp
+        capture_exception(exp)
     else:
         if isinstance(resp, BaseModel):
             ofuscated_response_body = obfuscate_sensitive_data(

@@ -26,6 +26,7 @@ setup(
         'mongoengine>=0.29.0,<0.30.0',
         'mongoengine-plus>=1.0.0,<2.0.0',
         'python-multipart>=0.0.20,<0.0.30',
+        'sentry_sdk>=2.20.0,<3.0.0',
     ],
     extras_require={
         'chalice': [
