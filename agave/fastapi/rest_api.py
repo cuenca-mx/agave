@@ -1,6 +1,6 @@
 import asyncio
 import mimetypes
-from typing import Any, Optional, cast
+from typing import Any, Optional
 from urllib.parse import urlencode
 
 from cuenca_validations.types import QueryParams
@@ -23,7 +23,7 @@ from starlette_context import context
 
 from ..core.blueprints.decorators import copy_attributes
 from ..core.exc import NotFoundError, UnprocessableEntity
-from ..core.query_params import QueryParamMapping, validate_query_params
+from ..core.query_params import validate_query_params
 
 SAMPLE_404 = {
     "summary": "Not found item",
@@ -360,8 +360,7 @@ class RestApiBlueprint(APIRouter):
             def validate_params(request: Request):
                 try:
                     return validate_query_params(
-                        cast(QueryParamMapping, request.query_params),
-                        cls.query_validator,
+                        request.query_params, cls.query_validator
                     )
                 except ValidationError as e:
                     raise UnprocessableEntity(e.json())

@@ -1,13 +1,12 @@
-from typing import Optional, cast
+from typing import Optional
 
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
 from starlette.datastructures import QueryParams
 
 from agave.core.query_params import (
-    ParseQsQueryMapping,
-    QueryParamMapping,
-    build_query_dict,
+    EmptyQueryMapping,
+    _is_list_annotation,
     validate_query_params,
 )
 
@@ -20,50 +19,24 @@ class SampleQuery(BaseModel):
     active: Optional[bool] = None
 
 
-def test_build_query_dict_repeated_ids() -> None:
-    query = cast(QueryParamMapping, QueryParams('ids=US1&ids=US2&active=true'))
-    params = build_query_dict(query, SampleQuery)
-    assert params == {'ids': ['US1', 'US2'], 'active': 'true'}
-
-
-def test_build_query_dict_single_id() -> None:
-    query = cast(QueryParamMapping, QueryParams('ids=US1'))
-    params = build_query_dict(query, SampleQuery)
-    assert params == {'ids': ['US1']}
-
-
-def test_build_query_dict_unknown_param_for_extra_forbid() -> None:
-    query = cast(QueryParamMapping, QueryParams('wrong_param=value'))
-    params = build_query_dict(query, SampleQuery)
-    assert params == {'wrong_param': 'value'}
-
-
 def test_validate_query_params_list_fields() -> None:
-    query = cast(QueryParamMapping, QueryParams('ids=a&ids=b&name=Frida'))
+    query = QueryParams('ids=a&ids=b&name=Frida')
     validated = validate_query_params(query, SampleQuery)
     assert validated.ids == ['a', 'b']
     assert validated.name == 'Frida'
 
 
-def test_validate_query_params_rejects_invalid_list() -> None:
-    # Starlette last-value semantics without getlist would pass a string;
-    # validate_query_params must still produce a list for list fields.
-    query = cast(QueryParamMapping, QueryParams('ids=a&ids=b'))
+def test_validate_query_params_single_list_value() -> None:
+    query = QueryParams('ids=US1')
     validated = validate_query_params(query, SampleQuery)
-    assert validated.ids == ['a', 'b']
+    assert validated.ids == ['US1']
 
 
-def test_parse_qs_query_mapping() -> None:
-    mapping = ParseQsQueryMapping('ids=US1&ids=US2&name=test')
-    assert mapping.getlist('ids') == ['US1', 'US2']
-    assert mapping.get('name') == 'test'
-    assert 'missing' not in mapping
-
-
-def test_validate_query_params_parse_qs_mapping() -> None:
-    mapping = ParseQsQueryMapping('ids=x&ids=y')
-    validated = validate_query_params(mapping, SampleQuery)
-    assert validated.ids == ['x', 'y']
+def test_validate_query_params_scalar_field() -> None:
+    query = QueryParams('name=Frida')
+    validated = validate_query_params(query, SampleQuery)
+    assert validated.name == 'Frida'
+    assert validated.ids is None
 
 
 def test_old_unpack_pattern_would_fail_validation() -> None:
@@ -73,6 +46,28 @@ def test_old_unpack_pattern_would_fail_validation() -> None:
 
 
 def test_validate_query_params_rejects_unknown_fields() -> None:
-    query = cast(QueryParamMapping, QueryParams('wrong_param=value'))
+    query = QueryParams('wrong_param=value')
     with pytest.raises(ValidationError):
         validate_query_params(query, SampleQuery)
+
+
+def test_empty_query_mapping() -> None:
+    mapping = EmptyQueryMapping()
+    assert 'x' not in mapping
+    assert mapping.get('x') is None
+    assert mapping.get('x', 'default') == 'default'
+    assert mapping.getlist('x') == []
+    assert list(mapping) == []
+
+
+def test_validate_query_params_empty_mapping() -> None:
+    validated = validate_query_params(EmptyQueryMapping(), SampleQuery)
+    assert validated.ids is None
+    assert validated.name is None
+
+
+def test_is_list_annotation() -> None:
+    assert _is_list_annotation(list[str]) is True
+    assert _is_list_annotation(Optional[list[str]]) is True
+    assert _is_list_annotation(str) is False
+    assert _is_list_annotation(Optional[str]) is False
