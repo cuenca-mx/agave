@@ -15,6 +15,7 @@ from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
 from ..core.blueprints.decorators import copy_attributes
+from ..core.query_params import EmptyQueryMapping, validate_query_params
 
 
 class RestApiBlueprint(Blueprint):
@@ -238,9 +239,13 @@ class RestApiBlueprint(Blueprint):
                     next_page = <url_for_next_items>
                 }
                 """
-                params = self.current_request.query_params or dict()
+                query_mapping = (
+                    self.current_request.query_params or EmptyQueryMapping()
+                )
                 try:
-                    query_params = cls.query_validator(**params)
+                    query_params = validate_query_params(
+                        query_mapping, cls.query_validator
+                    )
                 except ValidationError as e:
                     return Response(e.json(), status_code=400)
 
@@ -301,7 +306,7 @@ class RestApiBlueprint(Blueprint):
                         params.pop('user_id')
                     if self.platform_id_filter_required():
                         params.pop('platform_id')
-                    next_page_uri = f'{path}?{urlencode(params)}'
+                    next_page_uri = f'{path}?{urlencode(params, doseq=True)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)
 
             return cls

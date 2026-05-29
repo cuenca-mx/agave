@@ -15,6 +15,7 @@ def generic_query(query: QueryParams, excluded: list[str] = []) -> Q:
         'limit',
         'page_size',
         'key',
+        'ids',
         *excluded,
     }
     fields = query.model_dump(exclude=exclude_fields)
