@@ -1,4 +1,7 @@
-from typing import Optional
+import builtins
+import importlib
+import sys
+from typing import Optional, Union
 
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -71,3 +74,31 @@ def test_is_list_annotation() -> None:
     assert _is_list_annotation(Optional[list[str]]) is True
     assert _is_list_annotation(str) is False
     assert _is_list_annotation(Optional[str]) is False
+
+
+def test_reload_query_params_without_union_type() -> None:
+    mod_key = 'agave.core.query_params'
+    original_import = builtins.__import__
+
+    def custom_import(
+        name,
+        globals=None,
+        locals=None,
+        fromlist=(),
+        level=0,
+    ):
+        if name == 'types' and fromlist == ('UnionType',):
+            raise ImportError
+        return original_import(name, globals, locals, fromlist, level)
+
+    sys.modules.pop(mod_key, None)
+    builtins.__import__ = custom_import
+    try:
+        mod = importlib.import_module(mod_key)
+        assert mod.UnionType is None
+        assert mod._UNION_ORIGINS == (Union,)
+        assert mod._is_list_annotation(Optional[list[str]]) is True
+    finally:
+        builtins.__import__ = original_import
+        sys.modules.pop(mod_key, None)
+        importlib.import_module(mod_key)

@@ -1,9 +1,17 @@
 from __future__ import annotations
 
-from types import UnionType
-from typing import Any, Iterator, TypeVar, Union, get_args, get_origin
+from typing import Any, Iterator, Tuple, TypeVar, Union, get_args, get_origin
 
 from pydantic import BaseModel
+
+try:
+    from types import UnionType
+except ImportError:  # Python < 3.10
+    UnionType = None  # type: ignore[misc, assignment]
+
+_UNION_ORIGINS: Tuple[Any, ...] = (
+    (Union, UnionType) if UnionType is not None else (Union,)
+)
 
 ModelT = TypeVar('ModelT', bound=BaseModel)
 
@@ -12,7 +20,7 @@ def _is_list_annotation(annotation: Any) -> bool:
     origin = get_origin(annotation)
     if origin is list:
         return True
-    if origin in (Union, UnionType):
+    if origin in _UNION_ORIGINS:
         return any(
             _is_list_annotation(arg)
             for arg in get_args(annotation)
