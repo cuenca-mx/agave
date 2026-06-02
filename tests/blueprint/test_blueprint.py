@@ -286,12 +286,12 @@ def test_query_count_resource(
     "client_fixture", ["fastapi_client", "chalice_client"]
 )
 @pytest.mark.usefixtures('accounts')
-def test_query_with_repeated_ids_param(
+def test_query_with_comma_separated_ids_param(
     client_fixture: str,
     request: pytest.FixtureRequest,
 ) -> None:
     client = request.getfixturevalue(client_fixture)
-    resp = client.get('/accounts?ids=US1&ids=US2')
+    resp = client.get('/accounts?ids=US1,US2')
     assert resp.status_code == 200
     assert 'items' in resp.json()
 
@@ -300,21 +300,20 @@ def test_query_with_repeated_ids_param(
     "client_fixture", ["fastapi_client", "chalice_client"]
 )
 @pytest.mark.usefixtures('accounts')
-def test_query_pagination_preserves_repeated_ids(
+def test_query_pagination_preserves_comma_separated_ids(
     client_fixture: str,
     request: pytest.FixtureRequest,
     accounts: list[Account],
 ) -> None:
     client = request.getfixturevalue(client_fixture)
     account_ids = [accounts[0].id, accounts[1].id]
-    query = '&'.join(f'ids={account_id}' for account_id in account_ids)
-    resp = client.get(f'/accounts?{query}&page_size=1&limit=10')
+    ids_param = ','.join(account_ids)
+    resp = client.get(f'/accounts?ids={ids_param}&page_size=1&limit=10')
     assert resp.status_code == 200
     json_body = resp.json()
     next_page_uri = json_body['next_page_uri']
     assert next_page_uri is not None
-    for account_id in account_ids:
-        assert f'ids={account_id}' in next_page_uri
+    assert f'ids={ids_param}' in next_page_uri.replace('%2C', ',')
 
     resp = client.get(next_page_uri)
     assert resp.status_code == 200

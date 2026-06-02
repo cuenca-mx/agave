@@ -1,26 +1,24 @@
 from __future__ import annotations
 
-from typing import Any, Iterator, Tuple, TypeVar, Union, get_args, get_origin
+from types import UnionType
+from typing import Any, Iterator, TypeVar, Union, get_args, get_origin
 
 from pydantic import BaseModel
 
-try:
-    from types import UnionType
-except ImportError:  # Python < 3.10
-    UnionType = None  # type: ignore[misc, assignment]
-
-_UNION_ORIGINS: Tuple[Any, ...] = (
-    (Union, UnionType) if UnionType is not None else (Union,)
-)
-
 ModelT = TypeVar('ModelT', bound=BaseModel)
+
+
+def comma_separated_list(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [part.strip() for part in value.split(',') if part.strip()]
 
 
 def _is_list_annotation(annotation: Any) -> bool:
     origin = get_origin(annotation)
     if origin is list:
         return True
-    if origin in _UNION_ORIGINS:
+    if origin in (Union, UnionType):
         return any(
             _is_list_annotation(arg)
             for arg in get_args(annotation)
@@ -29,17 +27,41 @@ def _is_list_annotation(annotation: Any) -> bool:
     return False
 
 
+def build_query_dict(
+    query_mapping: Any, model_cls: type[BaseModel]
+) -> dict[str, Any]:
+    params: dict[str, Any] = {}
+    for name in query_mapping:
+        raw = query_mapping.get(name)
+        if name in model_cls.model_fields:
+            field = model_cls.model_fields[name]
+            if _is_list_annotation(field.annotation):
+                if raw is None:
+                    continue
+                if isinstance(raw, str):
+                    params[name] = comma_separated_list(raw)
+                else:
+                    params[name] = list(raw)
+            else:
+                params[name] = raw
+        else:
+            params[name] = raw
+    return params
+
+
 def validate_query_params(
     query_mapping: Any, model_cls: type[ModelT]
 ) -> ModelT:
-    params: dict[str, Any] = {}
-    for name in query_mapping:
-        field = model_cls.model_fields.get(name)
-        if field and _is_list_annotation(field.annotation):
-            params[name] = query_mapping.getlist(name)
-        else:
-            params[name] = query_mapping.get(name)
-    return model_cls(**params)
+    return model_cls(**build_query_dict(query_mapping, model_cls))
+
+
+def query_params_for_url(query: BaseModel) -> dict[str, Any]:
+    params = query.model_dump()
+    for name, field in type(query).model_fields.items():
+        value = params.get(name)
+        if _is_list_annotation(field.annotation) and isinstance(value, list):
+            params[name] = ','.join(value)
+    return params
 
 
 class EmptyQueryMapping:
@@ -51,6 +73,3 @@ class EmptyQueryMapping:
 
     def get(self, key: str, default: Any = None) -> Any:
         return default
-
-    def getlist(self, key: str) -> list[str]:
-        return []

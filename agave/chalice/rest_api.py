@@ -15,7 +15,11 @@ from mongoengine import DoesNotExist, Q
 from pydantic import BaseModel, ValidationError
 
 from ..core.blueprints.decorators import copy_attributes
-from ..core.query_params import EmptyQueryMapping, validate_query_params
+from ..core.query_params import (
+    EmptyQueryMapping,
+    query_params_for_url,
+    validate_query_params,
+)
 
 
 class RestApiBlueprint(Blueprint):
@@ -301,12 +305,12 @@ class RestApiBlueprint(Blueprint):
                 if wants_more and has_more:
                     query.created_before = item_dicts[-1]['created_at']
                     path = self.current_request.context['resourcePath']
-                    params = query.model_dump()
+                    params = query_params_for_url(query)
                     if self.user_id_filter_required():
-                        params.pop('user_id')
+                        params.pop('user_id', None)
                     if self.platform_id_filter_required():
-                        params.pop('platform_id')
-                    next_page_uri = f'{path}?{urlencode(params, doseq=True)}'
+                        params.pop('platform_id', None)
+                    next_page_uri = f'{path}?{urlencode(params)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)
 
             return cls

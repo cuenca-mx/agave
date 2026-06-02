@@ -1,7 +1,4 @@
-import builtins
-import importlib
-import sys
-from typing import Optional, Union
+from typing import Optional
 
 import pytest
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -9,7 +6,8 @@ from starlette.datastructures import QueryParams
 
 from agave.core.query_params import (
     EmptyQueryMapping,
-    _is_list_annotation,
+    comma_separated_list,
+    query_params_for_url,
     validate_query_params,
 )
 
@@ -22,17 +20,19 @@ class SampleQuery(BaseModel):
     active: Optional[bool] = None
 
 
-def test_validate_query_params_list_fields() -> None:
-    query = QueryParams('ids=a&ids=b&name=Frida')
+def test_comma_separated_list() -> None:
+    assert comma_separated_list('a,b') == ['a', 'b']
+    assert comma_separated_list('a, b ,c') == ['a', 'b', 'c']
+    assert comma_separated_list('US1') == ['US1']
+    assert comma_separated_list('') == []
+    assert comma_separated_list(None) == []
+
+
+def test_validate_query_params_comma_separated_ids() -> None:
+    query = QueryParams('ids=a,b&name=Frida')
     validated = validate_query_params(query, SampleQuery)
     assert validated.ids == ['a', 'b']
     assert validated.name == 'Frida'
-
-
-def test_validate_query_params_single_list_value() -> None:
-    query = QueryParams('ids=US1')
-    validated = validate_query_params(query, SampleQuery)
-    assert validated.ids == ['US1']
 
 
 def test_validate_query_params_scalar_field() -> None:
@@ -40,12 +40,6 @@ def test_validate_query_params_scalar_field() -> None:
     validated = validate_query_params(query, SampleQuery)
     assert validated.name == 'Frida'
     assert validated.ids is None
-
-
-def test_old_unpack_pattern_would_fail_validation() -> None:
-    query = QueryParams('ids=US1&ids=US2')
-    with pytest.raises(ValidationError):
-        SampleQuery(**dict(query))  # type: ignore[arg-type]
 
 
 def test_validate_query_params_rejects_unknown_fields() -> None:
@@ -59,7 +53,6 @@ def test_empty_query_mapping() -> None:
     assert 'x' not in mapping
     assert mapping.get('x') is None
     assert mapping.get('x', 'default') == 'default'
-    assert mapping.getlist('x') == []
     assert list(mapping) == []
 
 
@@ -69,36 +62,6 @@ def test_validate_query_params_empty_mapping() -> None:
     assert validated.name is None
 
 
-def test_is_list_annotation() -> None:
-    assert _is_list_annotation(list[str]) is True
-    assert _is_list_annotation(Optional[list[str]]) is True
-    assert _is_list_annotation(str) is False
-    assert _is_list_annotation(Optional[str]) is False
-
-
-def test_reload_query_params_without_union_type() -> None:
-    mod_key = 'agave.core.query_params'
-    original_import = builtins.__import__
-
-    def custom_import(
-        name,
-        globals=None,
-        locals=None,
-        fromlist=(),
-        level=0,
-    ):
-        if name == 'types' and fromlist == ('UnionType',):
-            raise ImportError
-        return original_import(name, globals, locals, fromlist, level)
-
-    sys.modules.pop(mod_key, None)
-    builtins.__import__ = custom_import
-    try:
-        mod = importlib.import_module(mod_key)
-        assert mod.UnionType is None
-        assert mod._UNION_ORIGINS == (Union,)
-        assert mod._is_list_annotation(Optional[list[str]]) is True
-    finally:
-        builtins.__import__ = original_import
-        sys.modules.pop(mod_key, None)
-        importlib.import_module(mod_key)
+def test_query_params_for_url_serializes_list_as_comma_separated() -> None:
+    query = SampleQuery(ids=['a', 'b'], name='Frida')
+    assert query_params_for_url(query)['ids'] == 'a,b'

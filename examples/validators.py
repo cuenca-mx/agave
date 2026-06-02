@@ -10,7 +10,6 @@ class AccountQuery(QueryParams):
     user_id: Optional[str] = None
     platform_id: Optional[str] = None
     active: Optional[bool] = None
-    ids: Optional[list[str]] = None
 
 
 class TransactionQuery(QueryParams):

@@ -23,7 +23,7 @@ from starlette_context import context
 
 from ..core.blueprints.decorators import copy_attributes
 from ..core.exc import NotFoundError, UnprocessableEntity
-from ..core.query_params import validate_query_params
+from ..core.query_params import query_params_for_url, validate_query_params
 
 SAMPLE_404 = {
     "summary": "Not found item",
@@ -433,14 +433,12 @@ class RestApiBlueprint(APIRouter):
                 next_page_uri: Optional[str] = None
                 if wants_more and has_more:
                     query.created_before = item_dicts[-1]['created_at']
-                    params = query.model_dump()
+                    params = query_params_for_url(query)
                     if self.user_id_filter_required():
-                        params.pop('user_id')
+                        params.pop('user_id', None)
                     if self.platform_id_filter_required():
-                        params.pop('platform_id')
-                    next_page_uri = (
-                        f'{resource_path}?{urlencode(params, doseq=True)}'
-                    )
+                        params.pop('platform_id', None)
+                    next_page_uri = f'{resource_path}?{urlencode(params)}'
                 return dict(items=item_dicts, next_page_uri=next_page_uri)
 
             return cls
