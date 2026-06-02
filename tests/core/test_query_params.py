@@ -6,6 +6,7 @@ from starlette.datastructures import QueryParams
 
 from agave.core.query_params import (
     EmptyQueryMapping,
+    build_query_dict,
     comma_separated_list,
     query_params_for_url,
     validate_query_params,
@@ -65,3 +66,46 @@ def test_validate_query_params_empty_mapping() -> None:
 def test_query_params_for_url_serializes_list_as_comma_separated() -> None:
     query = SampleQuery(ids=['a', 'b'], name='Frida')
     assert query_params_for_url(query)['ids'] == 'a,b'
+
+
+def test_query_params_for_url_skips_none_list_fields() -> None:
+    query = SampleQuery(name='Frida')
+    params = query_params_for_url(query)
+    assert params['name'] == 'Frida'
+    assert params.get('ids') is None
+
+
+class _ListQueryMapping:
+    def __init__(self, values: dict[str, object]) -> None:
+        self._values = values
+
+    def __iter__(self):
+        return iter(self._values)
+
+    def get(self, key: str, default: object = None) -> object:
+        return self._values.get(key, default)
+
+
+def test_build_query_dict_list_from_non_string_value() -> None:
+    mapping = _ListQueryMapping({'ids': ['a', 'b']})
+    params = build_query_dict(mapping, SampleQuery)
+    assert params['ids'] == ['a', 'b']
+
+
+def test_build_query_dict_skips_none_list_value() -> None:
+    mapping = _ListQueryMapping({'ids': None})
+    params = build_query_dict(mapping, SampleQuery)
+    assert 'ids' not in params
+
+
+class _ExtraFieldQuery(BaseModel):
+    model_config = ConfigDict(extra='allow')
+
+    name: Optional[str] = None
+
+
+def test_build_query_dict_unknown_field() -> None:
+    mapping = _ListQueryMapping({'unknown': 'value', 'name': 'Frida'})
+    params = build_query_dict(mapping, _ExtraFieldQuery)
+    assert params['unknown'] == 'value'
+    assert params['name'] == 'Frida'
