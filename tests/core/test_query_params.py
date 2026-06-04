@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pytest
+from cuenca_validations.types import QueryParams as CuencaQueryParams
 from pydantic import BaseModel, ConfigDict, ValidationError
 from starlette.datastructures import QueryParams
 
@@ -92,6 +93,24 @@ def test_build_query_dict_list_from_non_string_value() -> None:
     assert params['ids'] == ['a', 'b']
 
 
+def test_build_query_dict_ids_stays_string() -> None:
+    class StrIdsQuery(BaseModel):
+        ids: Optional[str] = None
+
+    mapping = _ListQueryMapping({'ids': 'US1,US2'})
+    params = build_query_dict(mapping, StrIdsQuery)
+    assert params['ids'] == 'US1,US2'
+
+
+def test_build_query_dict_skips_none_str_ids_value() -> None:
+    class StrIdsQuery(BaseModel):
+        ids: Optional[str] = None
+
+    mapping = _ListQueryMapping({'ids': None})
+    params = build_query_dict(mapping, StrIdsQuery)
+    assert 'ids' not in params
+
+
 def test_build_query_dict_skips_none_list_value() -> None:
     mapping = _ListQueryMapping({'ids': None})
     params = build_query_dict(mapping, SampleQuery)
@@ -109,3 +128,10 @@ def test_build_query_dict_unknown_field() -> None:
     params = build_query_dict(mapping, _ExtraFieldQuery)
     assert params['unknown'] == 'value'
     assert params['name'] == 'Frida'
+
+
+def test_validate_query_params_cuenca_ids_stays_string() -> None:
+    validated = validate_query_params(
+        QueryParams('ids=US1,US2'), CuencaQueryParams
+    )
+    assert validated.ids == 'US1,US2'

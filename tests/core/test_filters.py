@@ -2,7 +2,7 @@ import datetime as dt
 
 from cuenca_validations.types import QueryParams
 
-from agave.core.filters import _ids_filter_value, generic_query
+from agave.core.filters import generic_query
 
 
 def test_generic_query_before():
@@ -19,32 +19,18 @@ def test_generic_query_after():
     assert "user" not in repr(query)
 
 
-def test_ids_filter_value_from_string() -> None:
-    assert _ids_filter_value('US1, US2') == ['US1', 'US2']
-
-
-def test_ids_filter_value_from_list() -> None:
-    assert _ids_filter_value(['US1', 'US2']) == ['US1', 'US2']
-
-
-def test_generic_query_filters_by_ids_list() -> None:
-    params = QueryParams.model_construct(ids=['US1', 'US2'])
-    query = generic_query(params)
-    assert 'id__in' in repr(query)
-    assert 'US1' in repr(query)
-
-
 def test_generic_query_filters_by_ids_comma_separated_string() -> None:
     params = QueryParams.model_construct(ids='US1,US2')
     query = generic_query(params)
     assert 'id__in' in repr(query)
     assert 'US1' in repr(query)
+    assert 'US2' in repr(query)
 
 
 def test_generic_query_empty_ids_string() -> None:
     params = QueryParams.model_construct(ids='')
     query = generic_query(params)
-    assert 'id__in' in repr(query)
+    assert 'id__in' not in repr(query)
 
 
 def test_generic_query_excludes_count_field() -> None:

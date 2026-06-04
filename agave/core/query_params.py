@@ -35,6 +35,10 @@ def build_query_dict(
         raw = query_mapping.get(name)
         if name in model_cls.model_fields:
             field = model_cls.model_fields[name]
+            if name == 'ids' and not _is_list_annotation(field.annotation):
+                if raw is not None:
+                    params[name] = raw
+                continue
             if _is_list_annotation(field.annotation):
                 if raw is None:
                     continue
