@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data=dict(agave=['py.typed']),
-    python_requires='>=3.9',
+    python_requires='>=3.10',
     install_requires=[
         'cuenca-validations>=2.1.0,<3.0.0',
         'mongoengine>=0.29.0,<0.30.0',
@@ -54,7 +54,6 @@ setup(
         ],
     },
     classifiers=[
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',

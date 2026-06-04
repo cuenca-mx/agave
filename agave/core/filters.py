@@ -8,6 +8,9 @@ def generic_query(query: QueryParams, excluded: list[str] = []) -> Q:
         filters &= Q(created_at__lt=query.created_before)
     if query.created_after:
         filters &= Q(created_at__gt=query.created_after)
+    ids = getattr(query, 'ids', None)
+    if ids:
+        filters &= Q(id__in=[x.strip() for x in ids.split(',') if x.strip()])
     exclude_fields = {
         'created_before',
         'created_after',
@@ -15,6 +18,7 @@ def generic_query(query: QueryParams, excluded: list[str] = []) -> Q:
         'limit',
         'page_size',
         'key',
+        'ids',
         *excluded,
     }
     fields = query.model_dump(exclude=exclude_fields)
